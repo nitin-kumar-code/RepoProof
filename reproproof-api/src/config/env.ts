@@ -1,19 +1,22 @@
 import 'dotenv/config'
+import { isIP } from 'node:net'
 import { z } from 'zod'
 
 const envSchema = z.object({
   PORT: z.coerce.number().int().min(1).max(65535).default(4000),
+  APP_ENV: z.enum(['development', 'test', 'production']).default('development'),
   CORS_ORIGIN: z.string().url().optional(),
-  // Exact hostnames, comma-separated. An empty allowlist rejects all target URLs.
-  ALLOWED_TARGET_HOSTS: z.string().default('').transform(value =>
-    value.split(',').map(host => host.trim().toLowerCase()).filter(Boolean),
+  // Exact HTTPS origins, comma-separated. An empty allowlist rejects targets.
+  ALLOWED_TARGET_ORIGINS: z.string().default('').transform(value =>
+    value.split(',').map(origin => origin.trim()).filter(Boolean),
   ),
-  // Default to common local web app ports; add other ports deliberately.
-  ALLOWED_TARGET_PORTS: z.string().default('80,443,3000,4000,4173,5000,5173,8000,8080,8081,8443').transform(value =>
-    value.split(',').map(port => port.trim()).filter(Boolean).map(Number),
+  // Additional origins for required APIs/static assets, also exact HTTPS origins.
+  ALLOWED_RESOURCE_ORIGINS: z.string().default('').transform(value =>
+    value.split(',').map(origin => origin.trim()).filter(Boolean),
   ),
-  SUPABASE_URL: z.string().url().optional(),
-  SUPABASE_SERVICE_ROLE_KEY: z.string().min(1).optional(),
+  ALLOW_INSECURE_LOCAL_TARGETS: z.enum(['true', 'false']).default('false').transform(value => value === 'true'),
+  SUPABASE_URL: z.preprocess(value => value === '' ? undefined : value, z.string().url().optional()),
+  SUPABASE_SERVICE_ROLE_KEY: z.preprocess(value => value === '' ? undefined : value, z.string().min(1).optional()),
   PLANNER_MODE: z.enum(['mock', 'openai']).default('mock'),
   OPENAI_API_KEY: z.preprocess(value => value === '' ? undefined : value, z.string().min(1).optional()),
   OPENAI_MODEL: z.string().trim().min(1).default('gpt-4o-mini'),
@@ -28,6 +31,49 @@ if (!parsed.success) {
 
 export const env = parsed.data
 
+export function isDevelopmentLocalHost(hostname: string): boolean {
+  const host = hostname.toLowerCase().replace(/^\[|\]$/g, '').replace(/\.$/, '')
+  if (host === 'localhost' || host.endsWith('.localhost') || host.endsWith('.local')
+    || host.endsWith('.internal') || host.endsWith('.test') || !host.includes('.')) return true
+  if (isIP(host) === 4) {
+    const octets = host.split('.').map(Number)
+    return octets[0] === 10 || octets[0] === 127
+      || (octets[0] === 172 && octets[1] >= 16 && octets[1] <= 31)
+      || (octets[0] === 192 && octets[1] === 168)
+  }
+  if (isIP(host) === 6) {
+    const address = host.toLowerCase()
+    return address === '::1' || address.startsWith('fc') || address.startsWith('fd')
+  }
+  return false
+}
+
+function validateOrigins(origins: string[], name: string): void {
+  for (const value of origins) {
+    let url: URL
+    try {
+      url = new URL(value)
+    } catch {
+      throw new Error(`Invalid ${name} entry "${value}": use an exact HTTPS origin`)
+    }
+    const hostname = url.hostname.toLowerCase().replace(/^\[|\]$/g, '')
+    const localDevelopmentOrigin = env.APP_ENV === 'development' && env.ALLOW_INSECURE_LOCAL_TARGETS && isDevelopmentLocalHost(hostname)
+    const allowedProtocol = url.protocol === 'https:' || (url.protocol === 'http:' && localDevelopmentOrigin)
+    const publicHostname = !isDevelopmentLocalHost(hostname) && !hostname.endsWith('.example') && isIP(hostname) === 0
+    if (!allowedProtocol || (!localDevelopmentOrigin && !publicHostname) || url.origin !== value.replace(/\/$/, '')
+      || url.pathname !== '/' || url.search || url.hash || url.username || url.password) {
+      throw new Error(`Invalid ${name} entry "${value}": use an exact HTTPS public origin, or an explicitly enabled development-only local origin, without a path, credentials, query, or fragment`)
+    }
+  }
+}
+
+if (env.ALLOW_INSECURE_LOCAL_TARGETS && env.APP_ENV !== 'development') {
+  throw new Error('Invalid environment configuration: ALLOW_INSECURE_LOCAL_TARGETS is permitted only when APP_ENV=development')
+}
+
+validateOrigins(env.ALLOWED_TARGET_ORIGINS, 'ALLOWED_TARGET_ORIGINS')
+validateOrigins(env.ALLOWED_RESOURCE_ORIGINS, 'ALLOWED_RESOURCE_ORIGINS')
+
 if (Boolean(env.SUPABASE_URL) !== Boolean(env.SUPABASE_SERVICE_ROLE_KEY)) {
   throw new Error('Invalid environment configuration: SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be configured together')
 }
@@ -38,16 +84,4 @@ if (env.PLANNER_MODE === 'openai' && !env.OPENAI_API_KEY) {
 
 if (Boolean(env.APPROVAL_USERNAME) !== Boolean(env.APPROVAL_PASSWORD)) {
   throw new Error('Invalid environment configuration: APPROVAL_USERNAME and APPROVAL_PASSWORD must be configured together')
-}
-
-for (const host of env.ALLOWED_TARGET_HOSTS) {
-  if (host.includes('/') || host.includes(':') || host.includes('@') || host.includes('*')) {
-    throw new Error(`Invalid ALLOWED_TARGET_HOSTS entry "${host}": use exact hostnames without ports or wildcards`)
-  }
-}
-
-for (const port of env.ALLOWED_TARGET_PORTS) {
-  if (!Number.isInteger(port) || port < 1 || port > 65535) {
-    throw new Error(`Invalid ALLOWED_TARGET_PORTS entry "${port}": use comma-separated ports from 1 to 65535`)
-  }
 }

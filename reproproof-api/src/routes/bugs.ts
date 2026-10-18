@@ -1,8 +1,9 @@
 import { randomUUID } from 'node:crypto'
 import { Router } from 'express'
-import { env } from '../config/env'
 import { bugRepository } from '../db/repository'
 import { BugReportSchema, BugReportSubmissionSchema } from '../schemas/bug'
+import { containsCredentialMaterial } from '../services/secretDetection'
+import { TargetValidationError, validateTargetUrl } from '../services/targetValidation'
 
 export const bugsRouter = Router()
 
@@ -47,22 +48,25 @@ bugsRouter.post('/', async (request, response) => {
   }
 
   const submission = parsed.data
+  const reportText = [submission.title, submission.description, ...(submission.steps ?? []).map(step => step.instruction),
+    submission.expectedBehavior ?? '', submission.actualBehavior ?? '', submission.environment.targetUrl ?? '',
+    submission.environment.appVersion ?? '', submission.environment.operatingSystem ?? '']
+  if (containsCredentialMaterial(reportText)) {
+    response.status(400).json({
+      error: 'sensitive_data_detected',
+      message: 'Remove passwords, API keys, access tokens, and credential values. Keep credentials in server-side configuration.',
+    })
+    return
+  }
   const targetUrl = submission.environment.targetUrl
   if (targetUrl) {
-    const parsedTarget = new URL(targetUrl)
-    const targetHost = parsedTarget.hostname.toLowerCase()
-    if (!env.ALLOWED_TARGET_HOSTS.includes(targetHost)) {
+    try {
+      await validateTargetUrl(targetUrl)
+    } catch (cause) {
+      const code = cause instanceof TargetValidationError ? cause.code : 'target_private_or_unresolved'
       response.status(403).json({
-        error: 'target_not_allowed',
-        message: `Host "${targetHost}" is not in ALLOWED_TARGET_HOSTS. Add it to reproproof-api/.env and restart the API.`,
-      })
-      return
-    }
-    const targetPort = Number(parsedTarget.port || (parsedTarget.protocol === 'https:' ? 443 : 80))
-    if (!env.ALLOWED_TARGET_PORTS.includes(targetPort)) {
-      response.status(403).json({
-        error: 'target_port_not_allowed',
-        message: `Port ${targetPort} is not in ALLOWED_TARGET_PORTS. Add it to reproproof-api/.env only if this is an approved HTTP test service.`,
+        error: code,
+        message: 'Target must use an explicitly approved HTTPS origin that resolves only to public addresses.',
       })
       return
     }

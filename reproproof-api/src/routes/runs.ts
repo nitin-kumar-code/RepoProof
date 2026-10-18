@@ -7,6 +7,7 @@ import { generatePlan } from '../services/planner'
 import { RunWithPlanSchema } from '../schemas/run'
 import { ApprovalError, approvalExpiryFrom, decideRunApproval, hashPlan, verifyApproverAuthorization } from '../services/approvals'
 import { env } from '../config/env'
+import { TargetValidationError } from '../services/targetValidation'
 
 export const runsRouter = Router()
 
@@ -42,7 +43,7 @@ runsRouter.post('/:id/approve', async (request, response) => {
     response.json(await decideRunApproval(run, parsed.data.decision, approver))
   } catch (cause) {
     if (cause instanceof ApprovalError) {
-      const status = cause.code === 'invalid_run_state' ? 409 : cause.code === 'approval_expired' ? 410 : 409
+      const status = cause.code === 'invalid_run_state' ? 409 : cause.code === 'approval_expired' ? 410 : cause.code === 'target_invalid' ? 403 : 409
       response.status(status).json({ error: cause.code })
       return
     }
@@ -80,6 +81,10 @@ runsRouter.post('/', async (request, response) => {
   try {
     plan = await generatePlan(bug)
   } catch (cause) {
+    if (cause instanceof TargetValidationError) {
+      response.status(403).json({ error: cause.code, message: 'Target must use an explicitly approved HTTPS origin that resolves only to public addresses.' })
+      return
+    }
     const rawReason = cause instanceof Error ? cause.message : String(cause)
     const reason = rawReason
       .replace(/Bearer\s+\S+/gi, 'Bearer [redacted]')

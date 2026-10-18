@@ -2,16 +2,40 @@
 
 ## Target URL allowlist
 
-Set `ALLOWED_TARGET_HOSTS` to comma-separated exact hostnames, for example
-`localhost,127.0.0.1,staging.example.com`. Matching is case-insensitive and
-does not include subdomains. An empty allowlist rejects every supplied target
-with a response explaining how to configure it.
+Set `ALLOWED_TARGET_ORIGINS` to comma-separated exact HTTPS origins for verified,
+authorized demo apps (for example, `https://demo.your-company.com`). Do not use
+wildcards, local names, IP addresses, paths, credentials, query strings, or
+fragments. An empty allowlist rejects every target. The API resolves approved
+hosts and rejects private, loopback, link-local, reserved, and unresolved IP
+addresses. Successful public DNS resolutions are cached per browser page for 60
+seconds to avoid repeating lookups for each asset request.
 
-`ALLOWED_TARGET_PORTS` is a comma-separated list of permitted ports. The default
-allows common web and local development ports, while excluding unrelated service
-ports such as SSH and Redis. Add a port explicitly only for an approved HTTP
-test service. Host and port checks apply to intake; a future browser runner must
-also enforce destination checks after DNS resolution and on redirects.
+For local development only, set `APP_ENV=development` and
+`ALLOW_INSECURE_LOCAL_TARGETS=true`, then explicitly list local origins such as
+`http://localhost:3000` in `ALLOWED_TARGET_ORIGINS`. Apply the same rule to any
+local supporting origins in `ALLOWED_RESOURCE_ORIGINS`. The flag is rejected in
+test and production environments; without it, HTTP and private/local targets
+remain blocked. Keep the flag false for staging and production.
+
+Set `ALLOWED_RESOURCE_ORIGINS` only to HTTPS origins required by that app's APIs
+and static assets. The Playwright request guard allows those exact origins and
+checks each request, including redirect hops; other origins and protocols are
+aborted. Non-navigation `data:` image/font/audio/video assets and `blob:` assets
+whose origin is allowlisted are permitted. The guard must be installed on a page
+before its first navigation. Because Chromium performs its own DNS resolution,
+application-level DNS checks cannot eliminate DNS-rebinding (TOCTOU) risk. Keep
+container or network-level egress restrictions, including blocks for private,
+link-local, and cloud metadata ranges, as a second boundary for the browser
+process.
+
+The plan schema accepts only typed browser actions. It rejects extra fields and
+has no JavaScript, shell, or arbitrary-script action. Destructive actions such
+as delete, remove, drop, and reset are converted to clarification-only steps
+until a disposable sandbox and repeatable reset strategy can be verified.
+Never put passwords, API keys, access tokens, or credential values in reports;
+intake rejects those patterns before storage or model planning. Use synthetic
+data or approved test accounts and keep credentials in server-side configuration
+or a secret store.
 
 ## Storage
 

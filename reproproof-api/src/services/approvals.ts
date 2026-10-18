@@ -3,6 +3,7 @@ import { env } from '../config/env'
 import { runRepository, type ApprovalDecision } from '../db/runRepository'
 import type { AgentPlan } from '../schemas/plan'
 import type { RunWithPlan } from '../schemas/run'
+import { validateTargetUrl } from './targetValidation'
 
 const approvalLifetimeMs = 24 * 60 * 60 * 1000
 
@@ -46,8 +47,18 @@ export function verifyApproverAuthorization(header: string | undefined): string 
 }
 
 export class ApprovalError extends Error {
-  constructor(readonly code: 'approval_expired' | 'plan_changed' | 'approval_required' | 'invalid_run_state') {
+  constructor(readonly code: 'approval_expired' | 'plan_changed' | 'approval_required' | 'invalid_run_state' | 'target_invalid') {
     super(code)
+  }
+}
+
+async function assertPlanTargetAllowed(run: RunWithPlan): Promise<void> {
+  const target = run.plan.preconditions.find(item => item.startsWith('Approved target: '))?.slice('Approved target: '.length)
+  if (!target) throw new ApprovalError('plan_changed')
+  try {
+    await validateTargetUrl(target)
+  } catch {
+    throw new ApprovalError('target_invalid')
   }
 }
 
@@ -66,6 +77,7 @@ export async function decideRunApproval(
   }
 
   if (hashPlan(run.plan) !== run.planHash) throw new ApprovalError('plan_changed')
+  await assertPlanTargetAllowed(run)
   const record: ApprovalDecision = {
     approver,
     decision,
@@ -94,6 +106,7 @@ export async function claimApprovedRun(runId: string, now = new Date()): Promise
   if (currentHash !== run.planHash || run.approval.planHash !== run.planHash) {
     throw new ApprovalError('plan_changed')
   }
+  await assertPlanTargetAllowed(run)
   const claimed = await runRepository.claimExecution(run.id, run.planHash, now.toISOString())
   if (!claimed) throw new ApprovalError('invalid_run_state')
   return claimed
@@ -107,6 +120,7 @@ async function requireApprovedPlan(runId: string, expectedStatus: RunWithPlan['s
   if (hashPlan(run.plan) !== run.planHash || run.approval.planHash !== run.planHash) {
     throw new ApprovalError('plan_changed')
   }
+  await assertPlanTargetAllowed(run)
   return run
 }
 
