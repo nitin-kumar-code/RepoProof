@@ -14,6 +14,9 @@ const envSchema = z.object({
   ),
   SUPABASE_URL: z.string().url().optional(),
   SUPABASE_SERVICE_ROLE_KEY: z.string().min(1).optional(),
+  PLANNER_MODE: z.enum(['mock', 'openai']).default('mock'),
+  OPENAI_API_KEY: z.preprocess(value => value === '' ? undefined : value, z.string().min(1).optional()),
+  OPENAI_MODEL: z.string().trim().min(1).default('gpt-4o-mini'),
 })
 
 const parsed = envSchema.safeParse(process.env)
@@ -25,6 +28,10 @@ export const env = parsed.data
 
 if (Boolean(env.SUPABASE_URL) !== Boolean(env.SUPABASE_SERVICE_ROLE_KEY)) {
   throw new Error('Invalid environment configuration: SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be configured together')
+}
+
+if (env.PLANNER_MODE === 'openai' && !env.OPENAI_API_KEY) {
+  throw new Error('Invalid environment configuration: OPENAI_API_KEY is required when PLANNER_MODE=openai')
 }
 
 for (const host of env.ALLOWED_TARGET_HOSTS) {

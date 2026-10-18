@@ -20,3 +20,11 @@ For persistent storage, set both `SUPABASE_URL` and
 in the Supabase SQL editor. Keep the service role key on the API server only.
 If Supabase is not configured, the API uses an in-memory store for local
 development; those reports do not survive restarts.
+
+## Planner
+
+The deterministic mock planner is the default and needs no model credentials.
+To use OpenAI structured outputs, set `PLANNER_MODE=openai` and
+`OPENAI_API_KEY`; `OPENAI_MODEL` defaults to `gpt-4o-mini`. The key stays on the
+API server. Every model result is parsed by the plan Zod schema and checked
+against the original report before a run is saved.

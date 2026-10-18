@@ -1,13 +1,7 @@
-import { createClient } from '@supabase/supabase-js'
-import { env } from '../config/env'
+import { supabase } from './client'
 import type { BugReport } from '../schemas/bug'
 
 const memoryReports = new Map<string, BugReport>()
-const supabase = env.SUPABASE_URL && env.SUPABASE_SERVICE_ROLE_KEY
-  ? createClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, {
-      auth: { autoRefreshToken: false, persistSession: false },
-    })
-  : undefined
 
 export const bugRepository = {
   async list(): Promise<BugReport[]> {

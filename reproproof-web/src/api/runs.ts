@@ -1,5 +1,9 @@
 import { apiRequest } from './client'
-import type { TestRun } from '../types/run'
+import type { RunRecord } from '../types/run'
 
-export const getRuns = () => apiRequest<TestRun[]>('/api/runs')
-export const getRun = (id: string) => apiRequest<TestRun>(`/api/runs/${encodeURIComponent(id)}`)
+export const createRun = (bugReportId: string) => apiRequest<RunRecord>('/api/runs', {
+  method: 'POST',
+  body: JSON.stringify({ bugReportId }),
+})
+export const getRuns = () => apiRequest<RunRecord[]>('/api/runs')
+export const getRun = (id: string) => apiRequest<RunRecord>(`/api/runs/${encodeURIComponent(id)}`)

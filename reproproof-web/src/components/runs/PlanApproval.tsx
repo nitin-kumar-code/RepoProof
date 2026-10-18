@@ -1,2 +1,32 @@
-import { Check, ChevronDown, CircleDot, Sparkles } from 'lucide-react'
-export default function PlanApproval() { return <section className="panel plan-panel"><div className="panel-heading"><div><div className="eyebrow">AI GENERATED PLAN</div><h2>Reproduction plan</h2></div><span className="status-pill approval"><CircleDot size={12} /> Awaiting approval</span></div><p className="muted">Review the steps before the agent starts the browser session.</p><ol className="plan-steps"><li><span>1</span><div><b>Open the storefront in Safari 17</b><small>Navigate to northstar.shop and wait for the home page to load.</small></div><Check size={16} /></li><li><span>2</span><div><b>Add any item to your cart</b><small>Select a product and click “Add to cart”.</small></div><Check size={16} /></li><li><span>3</span><div><b>Click “Proceed to checkout”</b><small>Verify whether the checkout page opens.</small></div><ChevronDown size={16} /></li></ol><div className="plan-ai"><Sparkles size={15} /><span>Plan generated from the bug description and attached evidence.</span></div><div className="plan-actions"><button className="secondary-button">Edit plan</button><button className="primary-button"><Check size={15} />Approve and run</button></div></section> }
+import { CircleDot, Sparkles } from 'lucide-react'
+import type { AgentPlan, PlanAction, RunRecord } from '../../types/run'
+
+function describeAction(action: PlanAction | null): string {
+  if (!action) return 'No browser action proposed'
+  switch (action.type) {
+    case 'navigate': return `Navigate to ${action.url}`
+    case 'click': return `Click text: ${'text' in action.locator ? action.locator.text : 'name' in action.locator ? action.locator.name : action.locator.value}`
+    case 'fill': return `Fill ${'text' in action.locator ? action.locator.text : 'name' in action.locator ? action.locator.name : action.locator.value} with the reported value`
+    case 'select': return `Select ${action.value}`
+    case 'wait': return `Wait ${action.milliseconds} ms`
+    case 'screenshot': return `Capture screenshot: ${action.label}`
+    case 'assert': return 'Check the reported assertion'
+  }
+}
+
+export default function PlanApproval({ plan, status }: { plan: AgentPlan; status: RunRecord['status'] }) {
+  return <section className="panel plan-panel">
+    <div className="panel-heading"><div><div className="eyebrow">AI GENERATED PLAN</div><h2>Reproduction plan</h2></div><span className="status-pill approval"><CircleDot size={12} /> {status.replaceAll('_', ' ')}</span></div>
+    <p className="muted">{plan.summary}</p>
+    <div className="plan-ai"><Sparkles size={15} /><span>No browser actions have run. Review the plan before execution is implemented.</span></div>
+    {plan.preconditions.length > 0 && <><h3>Preconditions</h3><ul>{plan.preconditions.map(item => <li key={item}>{item}</li>)}</ul></>}
+    {plan.clarifications.length > 0 && <div className="clarification-box" role="status"><b>Report details to clarify:</b><ul>{plan.clarifications.map(item => <li key={item}>{item}</li>)}</ul></div>}
+    <ol className="plan-steps">{plan.steps.map(step => <li key={step.stepOrder}>
+      <span>{step.stepOrder}</span><div><b>{step.instruction}</b><small>{describeAction(step.action)}</small><small>{step.rationale}</small>
+        {step.clarification && <small role="status"><b>Clarification needed:</b> {step.clarification}</small>}
+      </div>
+    </li>)}</ol>
+    <h3>Success criteria</h3><ul>{plan.successCriteria.map((criterion, index) => <li key={`${index}-${criterion}`}>{criterion}</li>)}</ul>
+    <h3>Failure criteria</h3><ul>{plan.failureCriteria.map((criterion, index) => <li key={`${index}-${criterion}`}>{criterion}</li>)}</ul>
+  </section>
+}

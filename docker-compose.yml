@@ -7,6 +7,9 @@ services:
       CORS_ORIGIN: http://localhost:8080
       ALLOWED_TARGET_HOSTS: ${ALLOWED_TARGET_HOSTS:-localhost,127.0.0.1,approved-demo.example}
       ALLOWED_TARGET_PORTS: ${ALLOWED_TARGET_PORTS:-80,443,3000,4000,4173,5000,5173,8000,8080,8081,8443}
+      PLANNER_MODE: ${PLANNER_MODE:-mock}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4o-mini}
     expose:
       - "4000"
     healthcheck:

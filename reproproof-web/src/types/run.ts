@@ -29,12 +29,22 @@ export type PlanAction =
   | { type: 'screenshot'; label: string }
   | { type: 'assert'; assertion: PlanAssertion }
 
+export interface PlannedStep {
+  stepOrder: number
+  instruction: string
+  action: PlanAction | null
+  rationale: string
+  clarification: string | null
+}
+
 /** Structured, non-executable plan contract mirrored by the API Zod schema. */
 export interface AgentPlan {
   summary: string
   preconditions: string[]
-  actions: PlanAction[]
-  successCriteria: PlanAssertion[]
+  clarifications: string[]
+  steps: PlannedStep[]
+  successCriteria: string[]
+  failureCriteria: string[]
 }
 
 export interface RunRecord {
@@ -44,4 +54,5 @@ export interface RunRecord {
   browser: 'chromium'
   createdAt: string
   updatedAt: string
+  plan: AgentPlan
 }

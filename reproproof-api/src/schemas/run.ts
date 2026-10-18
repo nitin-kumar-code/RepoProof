@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { AgentPlanSchema } from './plan'
 
 export const RunStatusSchema = z.enum([
   'pending',
@@ -19,5 +20,8 @@ export const RunSchema = z.object({
   updatedAt: z.string().datetime(),
 }).strict()
 
+export const RunWithPlanSchema = RunSchema.extend({ plan: AgentPlanSchema }).strict()
+
 export type RunRecord = z.infer<typeof RunSchema>
 export type RunStatus = z.infer<typeof RunStatusSchema>
+export type RunWithPlan = z.infer<typeof RunWithPlanSchema>
