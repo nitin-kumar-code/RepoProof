@@ -1,0 +1,297 @@
+<!DOCTYPE html><html lang="en" style=""><head><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0" name="viewport"><meta content="web_dashboard" name="shell-type"><link href="https://fonts.googleapis.com" rel="preconnect"><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&amp;display=swap" rel="stylesheet"><style>body, main { background-color: #F3F0E8 !important; color: #202923 !important; } aside { background-color: #183D33 !important; border-color: rgba(255,255,255,0.12) !important; color: #E7F4EB !important; } aside * { border-color: rgba(255,255,255,0.1) !important; } aside span, aside a { color: #D1E5DB !important; } aside a:hover { background-color: rgba(255,255,255,0.08) !important; color: #FFFFFF !important; } aside .bg-surface-container-low\/50 { background-color: rgba(0,0,0,0.18) !important; } aside .bg-surface-container-lowest { background-color: rgba(255,255,255,0.08) !important; border-color: rgba(255,255,255,0.15) !important; } aside .bg-surface-container-high { background-color: rgba(255,255,255,0.15) !important; color: #FFFFFF !important; } aside [data-active-classes], aside nav a[data-path="investigations-bug-reports"] { background-color: rgba(255,255,255,0.15) !important; color: #FFFFFF !important; font-weight: 600 !important; } header { background-color: #FFFEFA !important; border-color: #D9D7CC !important; } .bg-surface-container-lowest { background-color: #FFFEFA !important; border: 1px solid #D9D7CC !important; } .bg-surface-container-low, .bg-surface-container-low\/60 { background-color: #EAE6DC !important; } .bg-primary-container, .bg-primary { background-color: #C04B2B !important; color: #FFFFFF !important; } .bg-primary-container:hover, .bg-primary:hover { background-color: #A33A1E !important; } .text-primary, .text-primary-container { color: #C04B2B !important; } .text-on-surface { color: #202923 !important; } .text-on-surface-variant { color: #65716A !important; } .border-outline-variant { border-color: #D9D7CC !important; } .font-headline-xl, h1 { font-family: 'Newsreader', Georgia, serif !important; font-weight: 500 !important; color: #202923 !important; letter-spacing: -0.02em !important; } .font-code-sm, kbd, code { font-family: 'JetBrains Mono', monospace !important; } th { color: #65716A !important; border-bottom: 1px solid #D9D7CC !important; font-family: 'JetBrains Mono', monospace !important; } table tbody tr { border-bottom: 1px solid #EDE9DE !important; } table tbody tr:hover { background-color: #F8F5EE !important; } </style><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{"colors":{"secondary-container":"#2170e4","surface-container-highest":"#dae2fd","on-background":"#131b2e","on-surface":"#131b2e","on-primary-container":"#eeefff","on-tertiary-container":"#eaf1fa","inverse-on-surface":"#eef0ff","surface-dim":"#d2d9f4","inverse-primary":"#b4c5ff","primary-container":"#2563eb","surface-container-lowest":"#ffffff","on-tertiary-fixed":"#151c23","on-surface-variant":"#434655","on-primary":"#ffffff","primary-fixed":"#dbe1ff","on-tertiary":"#ffffff","on-secondary":"#ffffff","surface":"#faf8ff","on-error":"#ffffff","secondary-fixed-dim":"#adc6ff","tertiary-fixed":"#dce3ec","surface-bright":"#faf8ff","error":"#ba1a1a","secondary":"#0058be","error-container":"#ffdad6","surface-tint":"#0053db","background":"#faf8ff","primary":"#004ac6","outline-variant":"#c3c6d7","tertiary":"#4e565d","outline":"#737686","tertiary-container":"#676e76","on-primary-fixed":"#00174b","inverse-surface":"#283044","on-secondary-fixed-variant":"#004395","secondary-fixed":"#d8e2ff","tertiary-fixed-dim":"#c0c7d0","on-tertiary-fixed-variant":"#40484f","surface-container-high":"#e2e7ff","surface-container":"#eaedff","surface-variant":"#dae2fd","surface-container-low":"#f2f3ff","on-primary-fixed-variant":"#003ea8","on-secondary-container":"#fefcff","on-secondary-fixed":"#001a42","primary-fixed-dim":"#b4c5ff","on-error-container":"#93000a"},"borderRadius":{"DEFAULT":"0.125rem","lg":"0.25rem","xl":"0.5rem","full":"0.75rem"},"spacing":{"margin":"1rem","space-sm":"0.5rem","gutter-desktop":"1.5rem","space-md":"1rem","space-xs":"0.25rem","space-xl":"2rem","space-lg":"1.5rem","margin-desktop":"2rem","gutter":"1rem"},"fontFamily":{"label-sm":["Inter"],"headline-lg":["Inter"],"headline-md":["Inter"],"headline-sm":["Inter"],"code-sm":["JetBrains Mono"],"body-md":["Inter"],"body-lg":["Inter"],"headline-xl":["Inter"],"code-md":["JetBrains Mono"],"body-sm":["Inter"],"headline-xl-mobile":["Inter"],"label-md":["Inter"]},"fontSize":{"label-sm":["0.75rem",{"lineHeight":"1rem","letterSpacing":"0.02em","fontWeight":"500"}],"headline-lg":["1.5rem",{"lineHeight":"2rem","letterSpacing":"-0.02em","fontWeight":"600"}],"headline-md":["1.25rem",{"lineHeight":"1.75rem","letterSpacing":"-0.015em","fontWeight":"600"}],"headline-sm":["1.125rem",{"lineHeight":"1.5rem","letterSpacing":"-0.01em","fontWeight":"600"}],"code-sm":["0.75rem",{"lineHeight":"1rem","letterSpacing":"0em","fontWeight":"400"}],"body-md":["0.875rem",{"lineHeight":"1.25rem","letterSpacing":"0em","fontWeight":"400"}],"body-lg":["1rem",{"lineHeight":"1.5rem","letterSpacing":"0em","fontWeight":"400"}],"headline-xl":["2rem",{"lineHeight":"2.5rem","letterSpacing":"-0.025em","fontWeight":"700"}],"code-md":["0.875rem",{"lineHeight":"1.25rem","letterSpacing":"0em","fontWeight":"400"}],"body-sm":["0.75rem",{"lineHeight":"1rem","letterSpacing":"0.01em","fontWeight":"400"}],"headline-xl-mobile":["1.75rem",{"lineHeight":"2.25rem","letterSpacing":"-0.02em","fontWeight":"700"}],"label-md":["0.875rem",{"lineHeight":"1.25rem","letterSpacing":"0em","fontWeight":"500"}]}}}}</script></head><body class="bg-surface font-body-md text-on-surface antialiased"><aside class="fixed left-0 top-0 h-screen w-64 bg-surface-container-lowest border-r border-outline-variant z-50 flex flex-col justify-between select-none shadow-sm"><div class="flex flex-col flex-1 min-h-0"><div class="h-16 px-space-md border-b border-outline-variant flex items-center justify-between"><div class="flex items-center gap-space-sm"><div class="w-8 h-8 rounded-lg bg-primary-container flex items-center justify-center text-on-primary shadow-sm"><span class="material-symbols-outlined text-[20px]">bug_report</span></div><div class="flex flex-col"><span class="font-headline-sm text-headline-sm text-on-surface leading-none font-bold tracking-tight">ReproProof</span><span class="font-code-sm text-code-sm text-on-surface-variant font-medium mt-space-xs">DIAGNOSTICS</span></div></div><span class="font-code-sm text-code-sm px-space-xs py-0.5 rounded bg-surface-container text-on-surface-variant font-medium border border-outline-variant">v1.4.2</span></div><div class="p-space-md"><a class="w-full flex items-center justify-center gap-space-sm py-space-sm px-space-md bg-primary-container hover:bg-primary text-on-primary font-label-md text-label-md rounded-xl transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-primary" href="#"><span class="material-symbols-outlined text-[18px]">add</span><span class="">New Bug Report</span></a></div><nav class="flex-1 px-space-sm space-y-0.5 overflow-y-auto" data-active-classes="bg-primary-fixed text-primary font-semibold relative before:absolute before:left-0 before:top-1.5 before:bottom-1.5 before:w-1 before:bg-primary-container before:rounded-r"><a class="flex items-center px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors font-label-md text-label-md" data-path="overview-dashboard" href="#">Overview / Dashboard</a><a class="flex items-center px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors font-label-md text-label-md" data-path="investigations-bug-reports" href="#">Investigations / Bug Reports</a><a class="flex items-center px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors font-label-md text-label-md" data-path="test-runs" href="#">Test Runs</a><a class="flex items-center px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors font-label-md text-label-md" data-path="run-details-plan-approval" href="#">Run Details &amp; Plan Approval</a><a class="flex items-center px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors font-label-md text-label-md" data-path="live-execution" href="#">Live Execution</a><a class="flex items-center px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors font-label-md text-label-md" data-path="evidence-passports" href="#">Evidence Passports</a><a class="flex items-center px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors font-label-md text-label-md" data-path="qa-test-cases" href="#">QA Test Cases</a><a class="flex items-center px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors font-label-md text-label-md" data-path="settings-diagnostics" href="#">Settings &amp; Diagnostics</a></nav></div><div class="p-space-md border-t border-outline-variant bg-surface-container-low/50 space-y-space-sm"><div class="flex items-center justify-between text-code-sm font-code-sm px-space-xs"><div class="flex items-center gap-1.5 text-on-surface"><span class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span><span class="font-medium">MSW (MOCK)</span></div><span class="font-code-sm text-code-sm px-1.5 py-0.5 rounded bg-surface-container-high text-on-surface-variant font-medium">ACTIVE</span></div><div class="flex items-center justify-between text-code-sm font-code-sm px-space-xs text-on-surface-variant"><span class="">ENV</span><span class="font-medium text-on-surface">STAGING: SAFE</span></div><div class="flex items-center justify-between p-space-xs rounded-lg bg-surface-container-lowest border border-outline-variant hover:border-outline cursor-pointer transition-colors"><div class="flex items-center gap-space-sm truncate"><span class="material-symbols-outlined text-primary-container text-[18px]">corporate_fare</span><div class="flex flex-col truncate"><span class="font-label-sm text-label-sm text-on-surface font-medium truncate">workspace-01</span><span class="font-code-sm text-code-sm text-on-surface-variant truncate">Eng Team</span></div></div><span class="material-symbols-outlined text-on-surface-variant text-[18px]">unfold_more</span></div></div></aside><div class="pl-64 flex flex-col min-h-screen"><header class="fixed top-0 left-64 right-0 h-16 bg-surface-container-lowest border-b border-outline-variant z-40 flex items-center justify-between px-space-lg shadow-sm"><div class="flex items-center gap-space-md"><div class="flex items-center gap-space-xs font-body-sm text-body-sm text-on-surface-variant"><span class="hover:text-on-surface cursor-pointer font-medium">ReproProof</span><span class="text-outline-variant">/</span><span class="hover:text-on-surface cursor-pointer font-medium">Diagnostics</span><span class="text-outline-variant">/</span><span class="font-code-sm text-code-sm text-primary font-semibold bg-surface-container-high px-1.5 py-0.5 rounded border border-outline-variant">ENG-SUITE</span></div><div class="hidden xl:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-code-sm text-code-sm"><span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span><span class="font-medium">MOCK DATA / INTERCEPTOR ACTIVE</span></div></div><div class="flex items-center gap-space-md"><div class="relative flex items-center w-64"><span class="material-symbols-outlined absolute left-2.5 text-on-surface-variant text-[18px]">search</span><input class="w-full h-9 pl-9 pr-8 bg-surface-container-lowest border border-outline-variant rounded-xl font-body-sm text-body-sm text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:ring-1 focus:ring-primary-container focus:border-primary-container transition-all" placeholder="Search tests, traces..." type="text"><kbd class="absolute right-2 px-1.5 py-0.5 rounded bg-surface-container font-code-sm text-code-sm text-on-surface-variant border border-outline-variant">⌘K</kbd></div><a class="flex items-center gap-1.5 h-9 px-3 bg-primary-container hover:bg-primary text-on-primary font-label-sm text-label-sm rounded-xl transition-colors shadow-sm focus:outline-none" href="#"><span class="material-symbols-outlined text-[16px]">add</span><span class="">New Bug</span></a><button class="relative p-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded-xl transition-colors" type="button"><span class="material-symbols-outlined text-[20px]">notifications</span><span class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-error ring-2 ring-surface-container-lowest"></span></button><div class="h-6 w-px bg-outline-variant"></div><div class="flex items-center gap-space-sm pl-space-xs"><div class="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div><div class="hidden md:flex flex-col text-left"><span class="font-label-sm text-label-sm text-on-surface font-semibold leading-tight">Alex Chen</span><span class="font-code-sm text-code-sm text-on-surface-variant leading-tight">QA Lead</span></div></div></div></header><main class="w-full pt-16 bg-surface min-h-screen"><div class="flex flex-col w-full">
+<!-- Top Workspace Context Notice -->
+<div class="px-space-md lg:px-margin-desktop pt-space-md">
+<div class="flex flex-wrap items-center justify-between gap-space-sm bg-surface-container-low px-space-md py-space-xs rounded-xl shadow-sm"><button class="inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-surface-container-lowest text-on-surface font-label-md text-label-md shadow-sm hover:bg-surface-container-low transition-colors" type="button" title="Simulated export for prototype demo"><span class="material-symbols-outlined text-[18px] text-on-surface-variant">file_download</span><span class="">Export CSV <span class="font-code-sm text-code-sm text-on-surface-variant">(Demo)</span></span></button><button class="inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-surface-container-lowest text-on-surface font-label-md text-label-md shadow-sm hover:bg-surface-container-low transition-colors" type="button" title="Simulated sync for prototype demo"><span class="material-symbols-outlined text-[18px] text-on-surface-variant">sync</span><span class="">Sync Jira / GitHub <span class="font-code-sm text-code-sm text-on-surface-variant">(Demo)</span></span></button><a class="inline-flex items-center gap-2 h-10 px-5 rounded-xl bg-primary-container hover:bg-primary text-on-primary font-label-md text-label-md shadow-sm transition-all focus:outline-none" data-path="run-details-plan-approval" href="#"><span class="material-symbols-outlined text-[20px]">add_circle</span><span class="font-semibold">+ New Bug Report</span></a></div>
+</div>
+<!-- Primary Page Header -->
+<div class="px-space-md lg:px-margin-desktop pt-space-lg pb-space-md">
+<div class="flex flex-col xl:flex-row xl:items-end justify-between gap-space-md">
+<div class="space-y-space-xs max-w-3xl">
+<div class="flex items-center gap-space-xs">
+<span class="font-code-sm text-code-sm uppercase tracking-wider text-primary font-bold">Telemetric Records &amp; State Proofs</span>
+<span class="text-outline-variant font-code-sm text-code-sm">•</span>
+<span class="font-code-sm text-code-sm text-on-surface-variant">Sandbox Node #04</span>
+</div>
+<h1 class="font-headline-xl text-headline-xl text-on-surface tracking-tight" style="font-family: Newsreader, Georgia, serif; font-size: 2.5rem; line-height: 2.75rem; color: rgb(32, 41, 35); font-weight: 500;">Investigations</h1>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">Track reported bugs, reproduction history, and deterministic state verifications across staging environments. <span class="font-code-sm text-code-sm px-1.5 py-0.5 rounded bg-surface-container-high text-primary font-medium">Mock Data — Not Live Verified</span></p>
+</div>
+<!-- Action Group -->
+<div class="flex items-center gap-space-sm flex-wrap"><button class="inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-surface-container-lowest text-on-surface font-label-md text-label-md shadow-sm hover:bg-surface-container-low transition-colors" type="button" title="Simulated export for prototype demo"><span class="material-symbols-outlined text-[18px] text-on-surface-variant">file_download</span><span class="">Export CSV <span class="font-code-sm text-code-sm text-on-surface-variant">(Demo)</span></span></button><button class="inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-surface-container-lowest text-on-surface font-label-md text-label-md shadow-sm hover:bg-surface-container-low transition-colors" type="button" title="Simulated sync for prototype demo"><span class="material-symbols-outlined text-[18px] text-on-surface-variant">sync</span><span class="">Sync Jira / GitHub <span class="font-code-sm text-code-sm text-on-surface-variant">(Demo)</span></span></button><a class="inline-flex items-center gap-2 h-10 px-5 rounded-xl bg-primary-container hover:bg-primary text-on-primary font-label-md text-label-md shadow-sm transition-all focus:outline-none" data-path="run-details-plan-approval" href="#"><span class="material-symbols-outlined text-[20px]">add_circle</span><span class="font-semibold">+ New Bug Report</span></a></div>
+</div>
+</div>
+<!-- Metric Strip (4 Bento Cards) -->
+<div class="px-space-md lg:px-margin-desktop pb-space-lg">
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-md">
+<!-- Card 1: All Reports -->
+<div class="p-space-md bg-surface-container-lowest rounded-xl shadow-sm relative overflow-hidden flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant font-medium">All Reports</span>
+<span class="inline-flex items-center gap-1 font-code-sm text-code-sm px-2 py-0.5 rounded-full bg-surface-container-high text-on-surface font-medium">
+<span class="w-1.5 h-1.5 rounded-full bg-primary-container"></span>
+            4 active pipelines
+          </span>
+</div>
+<div class="mt-space-md flex items-baseline justify-between">
+<div class="flex items-baseline gap-2">
+<span class="font-headline-xl text-headline-xl text-on-surface font-bold">28</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">indexed</span>
+</div>
+<!-- Sparkline SVG -->
+<div class="w-20 h-8 flex items-end">
+<svg class="w-full h-full text-primary" fill="none" viewBox="0 0 100 32">
+<path d="M0 24 L18 18 L34 26 L52 12 L70 19 L86 8 L100 14" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path>
+<circle class="fill-current text-primary-container" cx="100" cy="14" r="3"></circle>
+</svg>
+</div>
+</div>
+<div class="mt-space-sm pt-space-xs flex items-center justify-between font-code-sm text-code-sm text-on-surface-variant"><span class="">Staging sandbox v2</span><span class="text-primary font-medium">Synthetic telemetry</span></div>
+</div>
+<!-- Card 2: Confirmed Deterministic Truth -->
+<div class="p-space-md bg-surface-container-lowest rounded-xl shadow-sm relative overflow-hidden flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant font-medium">Reproduced (Truth)</span>
+<span class="inline-flex items-center gap-1 font-code-sm text-code-sm px-2 py-0.5 rounded bg-surface-container-high text-primary font-bold">
+            Deterministic
+          </span>
+</div>
+<div class="mt-space-md flex items-baseline justify-between">
+<div class="flex items-baseline gap-2">
+<span class="font-headline-xl text-headline-xl text-on-surface font-bold">14</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">confirmed</span>
+</div>
+<div class="flex items-center gap-1 font-code-sm text-code-sm font-semibold px-2 py-1 rounded bg-surface-container-low text-primary">
+<span class="material-symbols-outlined text-[16px]">verified</span>
+            50.0% rate
+          </div>
+</div>
+<div class="mt-space-sm pt-space-xs flex items-center justify-between font-code-sm text-code-sm text-on-surface-variant"><span class="">Sample repro speed</span><span class="text-on-surface font-semibold font-code-sm text-code-sm">1m 42s (Synthetic)</span></div>
+</div>
+<!-- Card 3: Not Reproduced -->
+<div class="p-space-md bg-surface-container-lowest rounded-xl shadow-sm relative overflow-hidden flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant font-medium">Not Reproduced</span>
+<span class="font-code-sm text-code-sm px-2 py-0.5 rounded bg-surface-container text-tertiary font-medium">
+            50-Cycle Test
+          </span>
+</div>
+<div class="mt-space-md flex items-baseline justify-between">
+<div class="flex items-baseline gap-2">
+<span class="font-headline-xl text-headline-xl text-on-surface font-bold">9</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">runs clean</span>
+</div>
+<div class="w-16 h-8 flex items-center justify-end">
+<div class="w-full bg-surface-container-high h-2 rounded-full overflow-hidden">
+<div class="bg-tertiary h-full w-[32%] rounded-full"></div>
+</div>
+</div>
+</div>
+<div class="mt-space-sm pt-space-xs flex items-center justify-between font-code-sm text-code-sm text-on-surface-variant"><span class="">Flakiness tested</span><span class="text-on-surface font-medium">0 false positives (Mock Run)</span></div>
+</div>
+<!-- Card 4: Inconclusive / Blocked -->
+<div class="p-space-md bg-surface-container-lowest rounded-xl shadow-sm relative overflow-hidden flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant font-medium">Inconclusive / Blocked</span>
+<span class="inline-flex items-center gap-1 font-code-sm text-code-sm px-2 py-0.5 rounded bg-surface-container-high text-error font-medium">
+<span class="material-symbols-outlined text-[14px]">gavel</span>
+            Gate Action
+          </span>
+</div>
+<div class="mt-space-md flex items-baseline justify-between">
+<div class="flex items-baseline gap-2">
+<span class="font-headline-xl text-headline-xl text-on-surface font-bold">5</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">awaiting approval</span>
+</div>
+<span class="font-code-sm text-code-sm px-2 py-0.5 rounded bg-surface-container-low text-on-surface font-medium">
+            2 Destructive
+          </span>
+</div>
+<div class="mt-space-sm pt-space-xs flex items-center justify-between font-code-sm text-code-sm text-on-surface-variant"><span class="">Interlock Gate</span><span class="text-error font-medium">Halted: RUN-8822 requires human auth</span></div>
+</div>
+</div>
+</div>
+<!-- Interactive States Switcher Ribbon (Preview Tool) -->
+<div class="px-space-md lg:px-margin-desktop pb-space-sm">
+<div class="bg-surface-container-lowest p-space-xs rounded-xl shadow-sm flex flex-wrap items-center justify-between gap-space-sm"><button class="inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-surface-container-lowest text-on-surface font-label-md text-label-md shadow-sm hover:bg-surface-container-low transition-colors" type="button" title="Simulated export for prototype demo"><span class="material-symbols-outlined text-[18px] text-on-surface-variant">file_download</span><span class="">Export CSV <span class="font-code-sm text-code-sm text-on-surface-variant">(Demo)</span></span></button><button class="inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-surface-container-lowest text-on-surface font-label-md text-label-md shadow-sm hover:bg-surface-container-low transition-colors" type="button" title="Simulated sync for prototype demo"><span class="material-symbols-outlined text-[18px] text-on-surface-variant">sync</span><span class="">Sync Jira / GitHub <span class="font-code-sm text-code-sm text-on-surface-variant">(Demo)</span></span></button><a class="inline-flex items-center gap-2 h-10 px-5 rounded-xl bg-primary-container hover:bg-primary text-on-primary font-label-md text-label-md shadow-sm transition-all focus:outline-none" data-path="run-details-plan-approval" href="#"><span class="material-symbols-outlined text-[20px]">add_circle</span><span class="font-semibold">+ New Bug Report</span></a></div>
+</div>
+<!-- Control & Filter Toolbar -->
+<div class="px-space-md lg:px-margin-desktop py-space-sm">
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex flex-col gap-space-md">
+<!-- Top Row: Search and Quick Filters -->
+<div class="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-space-md">
+<!-- Search Input -->
+<div class="relative flex-1 max-w-xl">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">search</span>
+<input class="w-full h-10 pl-10 pr-24 rounded-lg bg-surface-container-low font-body-md text-body-md text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary-container transition-all" id="searchInput" placeholder="Search by Bug ID, title, or service..." type="text" value="">
+<div class="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center gap-1">
+<kbd class="px-1.5 py-0.5 rounded bg-surface-container-high font-code-sm text-code-sm text-on-surface font-semibold">⌘K</kbd>
+</div>
+</div>
+<!-- Dropdowns and View Switcher -->
+<div class="flex items-center gap-space-sm flex-wrap"><button class="inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-surface-container-lowest text-on-surface font-label-md text-label-md shadow-sm hover:bg-surface-container-low transition-colors" type="button" title="Simulated export for prototype demo"><span class="material-symbols-outlined text-[18px] text-on-surface-variant">file_download</span><span class="">Export CSV <span class="font-code-sm text-code-sm text-on-surface-variant">(Demo)</span></span></button><button class="inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-surface-container-lowest text-on-surface font-label-md text-label-md shadow-sm hover:bg-surface-container-low transition-colors" type="button" title="Simulated sync for prototype demo"><span class="material-symbols-outlined text-[18px] text-on-surface-variant">sync</span><span class="">Sync Jira / GitHub <span class="font-code-sm text-code-sm text-on-surface-variant">(Demo)</span></span></button><a class="inline-flex items-center gap-2 h-10 px-5 rounded-xl bg-primary-container hover:bg-primary text-on-primary font-label-md text-label-md shadow-sm transition-all focus:outline-none" data-path="run-details-plan-approval" href="#"><span class="material-symbols-outlined text-[20px]">add_circle</span><span class="font-semibold">+ New Bug Report</span></a></div>
+</div>
+<!-- Bottom Row: Filter Tabs -->
+<div class="flex items-center justify-between border-t border-surface-container-low pt-space-sm flex-wrap gap-space-sm"><button class="inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-surface-container-lowest text-on-surface font-label-md text-label-md shadow-sm hover:bg-surface-container-low transition-colors" type="button" title="Simulated export for prototype demo"><span class="material-symbols-outlined text-[18px] text-on-surface-variant">file_download</span><span class="">Export CSV <span class="font-code-sm text-code-sm text-on-surface-variant">(Demo)</span></span></button><button class="inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-surface-container-lowest text-on-surface font-label-md text-label-md shadow-sm hover:bg-surface-container-low transition-colors" type="button" title="Simulated sync for prototype demo"><span class="material-symbols-outlined text-[18px] text-on-surface-variant">sync</span><span class="">Sync Jira / GitHub <span class="font-code-sm text-code-sm text-on-surface-variant">(Demo)</span></span></button><a class="inline-flex items-center gap-2 h-10 px-5 rounded-xl bg-primary-container hover:bg-primary text-on-primary font-label-md text-label-md shadow-sm transition-all focus:outline-none" data-path="run-details-plan-approval" href="#"><span class="material-symbols-outlined text-[20px]">add_circle</span><span class="font-semibold">+ New Bug Report</span></a></div>
+</div>
+</div>
+<!-- Main Content Area: State 1 (Active Table Results) -->
+<div class="px-space-md lg:px-margin-desktop py-space-sm" id="state-active-container">
+<div class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden">
+<!-- Horizontal Scrollable Container -->
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse min-w-[1100px]">
+<thead>
+<tr class="bg-surface-container-low text-on-surface-variant font-code-sm text-code-sm uppercase tracking-wider">
+<th class="py-3.5 px-4 font-semibold w-28" scope="col">Bug ID</th>
+<th class="py-3.5 px-4 font-semibold min-w-[280px]" scope="col">Bug Title &amp; Fingerprint</th>
+<th class="py-3.5 px-4 font-semibold w-36" scope="col">Service</th>
+<th class="py-3.5 px-4 font-semibold w-28" scope="col">Severity</th>
+<th class="py-3.5 px-4 font-semibold w-40" scope="col">Environment</th>
+<th class="py-3.5 px-4 font-semibold w-32" scope="col">Status</th>
+<th class="py-3.5 px-4 font-semibold w-36" scope="col">Latest Verdict</th>
+<th class="py-3.5 px-4 font-semibold w-24" scope="col">Updated</th>
+<th class="py-3.5 px-4 font-semibold text-right pr-6 w-36" scope="col">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container font-body-sm text-body-sm">
+<!-- Row 1: BUG-1042 (Checkout cart coupon double-click) -->
+<tr class="hover:bg-surface-container-low/60 transition-colors group"><td class="py-4 px-4 font-code-sm text-code-sm font-bold text-primary"><a class="flex items-center gap-1.5 hover:underline" data-path="evidence-passports" href="#"><span class="material-symbols-outlined text-[16px] text-primary">check_circle</span>BUG-1042</a></td><td class="py-4 px-4"><div class="flex flex-col"><a class="font-label-md text-label-md font-semibold text-on-surface group-hover:text-primary transition-colors hover:underline" data-path="evidence-passports" href="#">Checkout cart underflow race condition on rapid coupon click</a><div class="flex items-center gap-2 mt-1"><span class="font-code-sm text-code-sm text-on-surface-variant bg-surface-container-high px-1.5 py-0.5 rounded" title="Synthetic SHA fingerprint">mock-sha256:7b9f2e...4d01</span><span class="text-on-surface-variant font-code-sm text-code-sm">TC1 • 2 race mutations recorded</span></div></div></td><td class="py-4 px-4"><span class="font-code-sm text-code-sm px-2 py-1 rounded bg-surface-container font-medium text-on-surface">ecommerce-api</span></td><td class="py-4 px-4"><span class="inline-flex items-center px-2 py-0.5 rounded font-code-sm text-code-sm font-bold bg-error-container text-on-error-container">CRITICAL</span></td><td class="py-4 px-4"><div class="flex items-center gap-1.5 font-code-sm text-code-sm text-on-surface"><span class="w-2 h-2 rounded-full bg-primary-container"></span>staging-sandbox</div></td><td class="py-4 px-4"><span class="font-label-sm text-label-sm font-semibold text-on-surface">Completed</span></td><td class="py-4 px-4"><span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-code-sm text-code-sm font-bold bg-surface-container-high text-primary" style="background-color: rgb(234, 244, 238); color: rgb(38, 115, 77); border: 1px solid rgb(191, 227, 205);"><span class="w-1.5 h-1.5 rounded-full bg-primary-container"></span>Reproduced</span></td><td class="py-4 px-4 font-code-sm text-code-sm text-on-surface-variant">4m ago</td><td class="py-4 px-4 text-right pr-6"><div class="flex items-center justify-end gap-1.5"><a class="px-2.5 py-1 rounded-lg bg-surface-container-low hover:bg-surface-container text-primary font-label-sm text-label-sm font-semibold transition-colors flex items-center gap-1" data-path="evidence-passports" href="#"><span class="material-symbols-outlined text-[16px]">fingerprint</span><span class="">Passport (EP-8821)</span></a></div></td></tr>
+<!-- Row 2: BUG-1044 (Destructive cascade deletion - Gate Blocked) -->
+<tr class="hover:bg-surface-container-low/60 transition-colors group bg-error-container/20"><td class="py-4 px-4 font-code-sm text-code-sm font-bold text-error"><a class="flex items-center gap-1.5 hover:underline" data-path="run-details-plan-approval" href="#"><span class="material-symbols-outlined text-[16px] text-error">gavel</span>BUG-1044</a></td><td class="py-4 px-4"><div class="flex flex-col"><div class="flex items-center gap-2"><a class="font-label-md text-label-md font-semibold text-on-surface group-hover:text-error transition-colors hover:underline" data-path="run-details-plan-approval" href="#">DELETE /api/users wipes organization cascade when ID is null</a><span class="px-1.5 py-0.5 rounded bg-error-container text-on-error-container font-code-sm text-code-sm font-bold">SAFETY GATE</span></div><div class="flex items-center gap-2 mt-1"><span class="font-code-sm text-code-sm text-on-surface-variant bg-surface-container-high px-1.5 py-0.5 rounded" title="Synthetic SHA fingerprint">mock-sha256:3d11ca...8e90</span><span class="text-error font-body-sm text-body-sm font-semibold">TC3 • Halted: Prevented real SQL wipe in prototype</span></div></div></td><td class="py-4 px-4"><span class="font-code-sm text-code-sm px-2 py-1 rounded bg-surface-container font-medium text-on-surface">admin-portal</span></td><td class="py-4 px-4"><span class="inline-flex items-center px-2 py-0.5 rounded font-code-sm text-code-sm font-bold bg-error-container text-on-error-container">CRITICAL</span></td><td class="py-4 px-4"><div class="flex items-center gap-1.5 font-code-sm text-code-sm text-on-surface"><span class="w-2 h-2 rounded-full bg-error"></span>ephemeral-microvm</div></td><td class="py-4 px-4"><span class="font-label-sm text-label-sm font-semibold text-error">Awaiting Auth</span></td><td class="py-4 px-4"><span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-code-sm text-code-sm font-bold bg-surface-container-highest text-on-surface" style="background-color: rgb(252, 239, 239); color: rgb(184, 58, 58); border: 1px solid rgb(245, 198, 198);"><span class="material-symbols-outlined text-[13px] text-error">block</span>Gate Blocked</span></td><td class="py-4 px-4 font-code-sm text-code-sm text-on-surface-variant">18m ago</td><td class="py-4 px-4 text-right pr-6"><div class="flex items-center justify-end gap-1.5"><a class="px-2.5 py-1 rounded-lg bg-error hover:bg-on-error-container text-on-error font-label-sm text-label-sm font-semibold transition-colors shadow-sm flex items-center gap-1" data-path="run-details-plan-approval" href="#" style="background-color: rgb(192, 75, 43); color: rgb(255, 255, 255);"><span class="material-symbols-outlined text-[16px]">shield</span><span class="">Review Plan (RUN-8822)</span></a></div></td></tr>
+<!-- Row 3: BUG-1043 (OAuth token refresh concurrency) -->
+<tr class="hover:bg-surface-container-low/60 transition-colors group"><td class="py-4 px-4 font-code-sm text-code-sm font-bold text-on-surface-variant"><a class="flex items-center gap-1.5 hover:underline" data-path="qa-test-cases" href="#"><span class="material-symbols-outlined text-[16px] text-on-surface-variant">done_all</span>BUG-1043</a></td><td class="py-4 px-4"><div class="flex flex-col"><a class="font-label-md text-label-md font-semibold text-on-surface group-hover:text-primary transition-colors hover:underline" data-path="qa-test-cases" href="#">OAuth token refresh concurrency desync under 50 cycles</a><div class="flex items-center gap-2 mt-1"><span class="font-code-sm text-code-sm text-on-surface-variant bg-surface-container-high px-1.5 py-0.5 rounded" title="Synthetic SHA fingerprint">mock-sha256:a140f7...66b2</span><span class="text-on-surface-variant font-code-sm text-code-sm">TC2 • Executed 50x cleanly in mock sandbox</span></div></div></td><td class="py-4 px-4"><span class="font-code-sm text-code-sm px-2 py-1 rounded bg-surface-container font-medium text-on-surface">auth-service</span></td><td class="py-4 px-4"><span class="inline-flex items-center px-2 py-0.5 rounded font-code-sm text-code-sm font-bold bg-surface-container-high text-on-surface">HIGH</span></td><td class="py-4 px-4"><div class="flex items-center gap-1.5 font-code-sm text-code-sm text-on-surface"><span class="w-2 h-2 rounded-full bg-primary-container"></span>staging-sandbox</div></td><td class="py-4 px-4"><span class="font-label-sm text-label-sm font-semibold text-on-surface">Completed</span></td><td class="py-4 px-4"><span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-code-sm text-code-sm font-bold bg-surface-container text-tertiary" style="background-color: rgb(243, 239, 230); color: rgb(88, 101, 94); border: 1px solid rgb(217, 212, 199);"><span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>Not Reproduced</span></td><td class="py-4 px-4 font-code-sm text-code-sm text-on-surface-variant">1h ago</td><td class="py-4 px-4 text-right pr-6"><div class="flex items-center justify-end gap-1.5"><a class="px-2.5 py-1 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface font-label-sm text-label-sm font-semibold transition-colors flex items-center gap-1" data-path="qa-test-cases" href="#"><span class="material-symbols-outlined text-[16px]">list_alt</span><span class="">View TC-2 Traces</span></a></div></td></tr>
+<!-- Row 4: BUG-1046 (Synthetic JWT token exposure) -->
+<tr class="hover:bg-surface-container-low/60 transition-colors group"><td class="py-4 px-4 font-code-sm text-code-sm font-bold text-primary"><a class="flex items-center gap-1.5 hover:underline" data-path="evidence-passports" href="#"><span class="material-symbols-outlined text-[16px] text-primary">verified</span>BUG-1046</a></td><td class="py-4 px-4"><div class="flex flex-col"><div class="flex items-center gap-2"><a class="font-label-md text-label-md font-semibold text-on-surface group-hover:text-primary transition-colors hover:underline" data-path="evidence-passports" href="#">Synthetic JWT token exposure in client headers</a><span class="px-1.5 py-0.5 rounded bg-surface-container-high text-primary font-code-sm text-code-sm font-semibold">DLP REDACTED</span></div><div class="flex items-center gap-2 mt-1"><span class="font-code-sm text-code-sm text-on-surface-variant bg-surface-container-high px-1.5 py-0.5 rounded" title="Synthetic SHA fingerprint">mock-sha256:cc9810...09f4</span><span class="text-on-surface-variant font-code-sm text-code-sm">TC4 • DLP token redactions verified in dumps</span></div></div></td><td class="py-4 px-4"><span class="font-code-sm text-code-sm px-2 py-1 rounded bg-surface-container font-medium text-on-surface">gateway</span></td><td class="py-4 px-4"><span class="inline-flex items-center px-2 py-0.5 rounded font-code-sm text-code-sm font-bold bg-surface-container-high text-on-surface">HIGH</span></td><td class="py-4 px-4"><div class="flex items-center gap-1.5 font-code-sm text-code-sm text-on-surface"><span class="w-2 h-2 rounded-full bg-primary-container"></span>staging-sandbox</div></td><td class="py-4 px-4"><span class="font-label-sm text-label-sm font-semibold text-on-surface">Completed</span></td><td class="py-4 px-4"><span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-code-sm text-code-sm font-bold bg-surface-container-high text-primary" style="background-color: rgb(234, 244, 238); color: rgb(38, 115, 77); border: 1px solid rgb(191, 227, 205);"><span class="w-1.5 h-1.5 rounded-full bg-primary-container"></span>Reproduced</span></td><td class="py-4 px-4 font-code-sm text-code-sm text-on-surface-variant">2h ago</td><td class="py-4 px-4 text-right pr-6"><div class="flex items-center justify-end gap-1.5"><a class="px-2.5 py-1 rounded-lg bg-surface-container-low hover:bg-surface-container text-primary font-label-sm text-label-sm font-semibold transition-colors flex items-center gap-1" data-path="evidence-passports" href="#"><span class="material-symbols-outlined text-[16px]">fingerprint</span><span class="">Passport (EP-8824)</span></a></div></td></tr>
+<!-- Row 5: BUG-1045 (SVG memory leak on WebGL canvas) -->
+<tr class="hover:bg-surface-container-low/60 transition-colors group"><td class="py-4 px-4 font-code-sm text-code-sm font-bold text-on-surface-variant"><a class="flex items-center gap-1.5 hover:underline" data-path="live-execution" href="#"><span class="material-symbols-outlined text-[16px] text-tertiary">hourglass_top</span>BUG-1045</a></td><td class="py-4 px-4"><div class="flex flex-col"><a class="font-label-md text-label-md font-semibold text-on-surface group-hover:text-primary transition-colors hover:underline" data-path="live-execution" href="#">SVG memory leak on WebGL canvas unmount</a><div class="flex items-center gap-2 mt-1"><span class="font-code-sm text-code-sm text-on-surface-variant bg-surface-container-high px-1.5 py-0.5 rounded" title="Synthetic SHA fingerprint">mock-sha256:55ef21...911b</span><span class="text-on-surface-variant font-code-sm text-code-sm">Profiling heap delta: +142MB (Synthetic)</span></div></div></td><td class="py-4 px-4"><span class="font-code-sm text-code-sm px-2 py-1 rounded bg-surface-container font-medium text-on-surface">render-engine</span></td><td class="py-4 px-4"><span class="inline-flex items-center px-2 py-0.5 rounded font-code-sm text-code-sm font-bold bg-surface-container text-on-surface-variant">MEDIUM</span></td><td class="py-4 px-4"><div class="flex items-center gap-1.5 font-code-sm text-code-sm text-on-surface"><span class="w-2 h-2 rounded-full bg-primary-container"></span>ephemeral-microvm</div></td><td class="py-4 px-4"><span class="font-label-sm text-label-sm font-semibold text-on-surface">In Execution</span></td><td class="py-4 px-4"><span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-code-sm text-code-sm font-bold bg-surface-container-high text-on-surface" style="background-color: rgb(251, 245, 235); color: rgb(148, 99, 21); border: 1px solid rgb(236, 217, 182);"><span class="w-1.5 h-1.5 rounded-full bg-primary animate-ping"></span>Inconclusive</span></td><td class="py-4 px-4 font-code-sm text-code-sm text-on-surface-variant">3h ago</td><td class="py-4 px-4 text-right pr-6"><div class="flex items-center justify-end gap-1.5"><a class="px-2.5 py-1 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface font-label-sm text-label-sm font-semibold transition-colors flex items-center gap-1" data-path="live-execution" href="#"><span class="material-symbols-outlined text-[16px]">monitoring</span><span class="">Live Execution</span></a></div></td></tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination Footer -->
+<div class="px-space-md py-space-sm bg-surface-container-low/60 flex flex-col sm:flex-row items-center justify-between gap-space-sm">
+<div class="font-body-sm text-body-sm text-on-surface-variant">
+          Showing <span class="font-semibold text-on-surface">1</span> to <span class="font-semibold text-on-surface">5</span> of <span class="font-semibold text-on-surface">28</span> investigations
+        </div>
+<div class="flex items-center gap-1">
+<button class="p-1.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-lowest disabled:opacity-40" disabled="" type="button">
+<span class="material-symbols-outlined text-[18px]">chevron_left</span>
+</button>
+<button class="w-8 h-8 rounded-lg font-code-sm text-code-sm font-bold bg-primary-container text-on-primary" type="button" style="background-color: rgb(192, 75, 43) !important; color: rgb(255, 255, 255) !important;">
+            1
+          </button>
+<button class="w-8 h-8 rounded-lg font-code-sm text-code-sm font-medium text-on-surface hover:bg-surface-container-lowest transition-colors" type="button">
+            2
+          </button>
+<button class="w-8 h-8 rounded-lg font-code-sm text-code-sm font-medium text-on-surface hover:bg-surface-container-lowest transition-colors" type="button">
+            3
+          </button>
+<button class="w-8 h-8 rounded-lg font-code-sm text-code-sm font-medium text-on-surface hover:bg-surface-container-lowest transition-colors" type="button">
+            4
+          </button>
+<button class="w-8 h-8 rounded-lg font-code-sm text-code-sm font-medium text-on-surface hover:bg-surface-container-lowest transition-colors" type="button">
+            5
+          </button>
+<button class="w-8 h-8 rounded-lg font-code-sm text-code-sm font-medium text-on-surface hover:bg-surface-container-lowest transition-colors" type="button">
+            6
+          </button>
+<button class="p-1.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-lowest" type="button">
+<span class="material-symbols-outlined text-[18px]">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- State 2: Empty / No Matches State (Hidden by default) -->
+<div class="hidden px-space-md lg:px-margin-desktop py-space-sm" id="state-empty-container">
+<div class="bg-surface-container-lowest rounded-xl shadow-sm p-12 text-center flex flex-col items-center justify-center max-w-2xl mx-auto">
+<div class="w-16 h-16 rounded-full bg-surface-container-high flex items-center justify-center text-primary-container mb-space-md">
+<span class="material-symbols-outlined text-[32px]">manage_search</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface font-semibold">No investigations match your filter</h3>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-md mt-space-xs">
+        We couldn't find any test runs or recorded deterministic proofs for query <span class="font-code-sm text-code-sm text-on-surface font-semibold bg-surface-container px-1 rounded">"payment-gateway-timeout"</span>.
+      </p>
+<div class="flex items-center gap-space-sm mt-space-lg">
+<button class="px-4 py-2 rounded-xl bg-primary-container text-on-primary font-label-md text-label-md shadow-sm hover:bg-primary transition-all" onclick="switchState('active')" type="button">
+          Clear All Filters
+        </button>
+<button class="px-4 py-2 rounded-xl bg-surface-container-low text-on-surface font-label-md text-label-md hover:bg-surface-container transition-all" type="button">
+          Trigger New Replay Run
+        </button>
+</div>
+</div>
+</div>
+<!-- State 3: API Disconnected State (Hidden by default) -->
+<div class="hidden px-space-md lg:px-margin-desktop py-space-sm" id="state-error-container">
+<div class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden">
+<div class="p-space-lg bg-error-container text-on-error-container flex flex-col sm:flex-row items-start sm:items-center justify-between gap-space-md">
+<div class="flex items-center gap-space-md">
+<div class="w-12 h-12 rounded-xl bg-error text-on-error flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[24px]">signal_disconnected</span>
+</div>
+<div>
+<h4 class="font-headline-sm text-headline-sm font-bold">MSW Telemetry Interceptor Offline</h4>
+<p class="font-body-sm text-body-sm text-on-error-container/90 mt-0.5">
+              Lost connection to local replay daemon (ws://127.0.0.1:9443). Active investigations paused.
+            </p>
+</div>
+</div>
+<div class="flex items-center gap-space-sm">
+<button class="px-4 py-2 rounded-xl bg-error text-on-error font-label-md text-label-md shadow-sm hover:bg-on-error-container transition-all flex items-center gap-1.5" onclick="switchState('active')" type="button">
+<span class="material-symbols-outlined text-[18px]">refresh</span>
+<span class="">Retry Connection</span>
+</button>
+</div>
+</div>
+<div class="p-space-xl text-center space-y-space-sm">
+<p class="font-code-sm text-code-sm text-on-surface-variant">Diagnostics: Connection refused by target machine. Ensure `npm run repro:interceptor` is active.</p>
+</div>
+</div>
+</div>
+<!-- State 4: Loading Skeleton State (Hidden by default) -->
+<div class="hidden px-space-md lg:px-margin-desktop py-space-sm" id="state-loading-container">
+<div class="bg-surface-container-lowest rounded-xl shadow-sm p-space-md space-y-space-md animate-pulse">
+<div class="h-10 bg-surface-container-low rounded-xl w-full"></div>
+<div class="space-y-space-sm">
+<div class="h-14 bg-surface-container-low rounded-lg w-full"></div>
+<div class="h-14 bg-surface-container-low rounded-lg w-full"></div>
+<div class="h-14 bg-surface-container-low rounded-lg w-full"></div>
+<div class="h-14 bg-surface-container-low rounded-lg w-full"></div>
+</div>
+<div class="h-8 bg-surface-container-low rounded-lg w-1/3"></div>
+</div>
+</div>
+<!-- Supporting Visual & Contextual Proof Dock -->
+<div class="px-space-md lg:px-margin-desktop py-space-lg">
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-space-md"><div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex flex-col justify-between"><div class="space-y-space-xs"><div class="flex items-center gap-2 text-primary font-code-sm text-code-sm font-bold"><span class="material-symbols-outlined text-[18px]">auto_fix_high</span>Deterministic Replay Coverage</div><h4 class="font-headline-sm text-headline-sm text-on-surface">50.0% Proof Certainty <span class="text-body-sm font-normal text-on-surface-variant">(Mock)</span></h4><p class="font-body-sm text-body-sm text-on-surface-variant">14 of 28 reports yielded byte-exact memory state transitions under synthetic headless Chromium microVMs.</p></div><div class="mt-space-md pt-space-xs"><a class="inline-flex items-center gap-1 font-label-sm text-label-sm text-primary font-semibold hover:underline" data-path="qa-test-cases" href="#"><span class="">View Reproduction Verification Spec</span><span class="material-symbols-outlined text-[16px]">arrow_forward</span></a></div></div><div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex flex-col justify-between"><div class="space-y-space-xs"><div class="flex items-center gap-2 text-error font-code-sm text-code-sm font-bold"><span class="material-symbols-outlined text-[18px]">shield</span>Interlock Gate Guard</div><h4 class="font-headline-sm text-headline-sm text-on-surface">RUN-8822 Requires Approval</h4><p class="font-body-sm text-body-sm text-on-surface-variant">Safety rule triggered: Cascade SQL wipe on null organization id. Restricted to mock sandbox; plan approval required.</p></div><div class="mt-space-md pt-space-xs"><a class="inline-flex items-center gap-1 font-label-sm text-label-sm text-error font-semibold hover:underline" data-path="run-details-plan-approval" href="#"><span class="">Review Blocked Test Plan</span><span class="material-symbols-outlined text-[16px]">arrow_forward</span></a></div></div><div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex flex-col justify-between"><div class="space-y-space-xs"><div class="flex items-center gap-2 text-primary font-code-sm text-code-sm font-bold"><span class="material-symbols-outlined text-[18px]">fingerprint</span>Cryptographic Passports</div><h4 class="font-headline-sm text-headline-sm text-on-surface">EP-8821 Ready for Export</h4><p class="font-body-sm text-body-sm text-on-surface-variant">Full DOM tree snapshot, Har trace, and MSW network mock payload packaged with SHA-256 integrity seal.</p></div><div class="mt-space-md pt-space-xs"><a class="inline-flex items-center gap-1 font-label-sm text-label-sm text-primary font-semibold hover:underline" data-path="evidence-passports" href="#"><span class="">Inspect Evidence Passport</span><span class="material-symbols-outlined text-[16px]">arrow_forward</span></a></div></div></div>
+</div>
+<script>
+    function switchState(stateName) {
+      // Hide all states
+      const states = ['active', 'empty', 'error', 'loading'];
+      states.forEach(s => {
+        const el = document.getElementById('state-' + s + '-container');
+        if (el) el.classList.add('hidden');
+        
+        const btn = document.getElementById('btn-state-' + s);
+        if (btn) {
+          btn.className = 'px-3 py-1 rounded-lg text-label-sm font-label-sm transition-all text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface';
+        }
+      });
+
+      // Show selected state
+      const targetContainer = document.getElementById('state-' + stateName + '-container');
+      if (targetContainer) {
+        targetContainer.classList.remove('hidden');
+      }
+
+      // Highlight active button
+      const activeBtn = document.getElementById('btn-state-' + stateName);
+      if (activeBtn) {
+        activeBtn.className = 'px-3 py-1 rounded-lg text-label-sm font-label-sm transition-all bg-primary-container text-on-primary font-semibold shadow-sm';
+      }
+    }
+  </script>
+</div></main></div>
+
+</body></html>

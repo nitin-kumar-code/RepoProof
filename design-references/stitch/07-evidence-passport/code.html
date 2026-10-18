@@ -1,0 +1,642 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0" name="viewport"><meta content="web_dashboard" name="shell-type"><link href="https://fonts.googleapis.com" rel="preconnect"><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{"colors":{"secondary-container":"#2170e4","surface-container-highest":"#dae2fd","on-background":"#131b2e","on-surface":"#131b2e","on-primary-container":"#eeefff","on-tertiary-container":"#eaf1fa","inverse-on-surface":"#eef0ff","surface-dim":"#d2d9f4","inverse-primary":"#b4c5ff","primary-container":"#2563eb","surface-container-lowest":"#ffffff","on-tertiary-fixed":"#151c23","on-surface-variant":"#434655","on-primary":"#ffffff","primary-fixed":"#dbe1ff","on-tertiary":"#ffffff","on-secondary":"#ffffff","surface":"#faf8ff","on-error":"#ffffff","secondary-fixed-dim":"#adc6ff","tertiary-fixed":"#dce3ec","surface-bright":"#faf8ff","error":"#ba1a1a","secondary":"#0058be","error-container":"#ffdad6","surface-tint":"#0053db","background":"#faf8ff","primary":"#004ac6","outline-variant":"#c3c6d7","tertiary":"#4e565d","outline":"#737686","tertiary-container":"#676e76","on-primary-fixed":"#00174b","inverse-surface":"#283044","on-secondary-fixed-variant":"#004395","secondary-fixed":"#d8e2ff","tertiary-fixed-dim":"#c0c7d0","on-tertiary-fixed-variant":"#40484f","surface-container-high":"#e2e7ff","surface-container":"#eaedff","surface-variant":"#dae2fd","surface-container-low":"#f2f3ff","on-primary-fixed-variant":"#003ea8","on-secondary-container":"#fefcff","on-secondary-fixed":"#001a42","primary-fixed-dim":"#b4c5ff","on-error-container":"#93000a"},"borderRadius":{"DEFAULT":"0.125rem","lg":"0.25rem","xl":"0.5rem","full":"0.75rem"},"spacing":{"margin":"1rem","space-sm":"0.5rem","gutter-desktop":"1.5rem","space-md":"1rem","space-xs":"0.25rem","space-xl":"2rem","space-lg":"1.5rem","margin-desktop":"2rem","gutter":"1rem"},"fontFamily":{"label-sm":["Inter"],"headline-lg":["Inter"],"headline-md":["Inter"],"headline-sm":["Inter"],"code-sm":["JetBrains Mono"],"body-md":["Inter"],"body-lg":["Inter"],"headline-xl":["Inter"],"code-md":["JetBrains Mono"],"body-sm":["Inter"],"headline-xl-mobile":["Inter"],"label-md":["Inter"]},"fontSize":{"label-sm":["0.75rem",{"lineHeight":"1rem","letterSpacing":"0.02em","fontWeight":"500"}],"headline-lg":["1.5rem",{"lineHeight":"2rem","letterSpacing":"-0.02em","fontWeight":"600"}],"headline-md":["1.25rem",{"lineHeight":"1.75rem","letterSpacing":"-0.015em","fontWeight":"600"}],"headline-sm":["1.125rem",{"lineHeight":"1.5rem","letterSpacing":"-0.01em","fontWeight":"600"}],"code-sm":["0.75rem",{"lineHeight":"1rem","letterSpacing":"0em","fontWeight":"400"}],"body-md":["0.875rem",{"lineHeight":"1.25rem","letterSpacing":"0em","fontWeight":"400"}],"body-lg":["1rem",{"lineHeight":"1.5rem","letterSpacing":"0em","fontWeight":"400"}],"headline-xl":["2rem",{"lineHeight":"2.5rem","letterSpacing":"-0.025em","fontWeight":"700"}],"code-md":["0.875rem",{"lineHeight":"1.25rem","letterSpacing":"0em","fontWeight":"400"}],"body-sm":["0.75rem",{"lineHeight":"1rem","letterSpacing":"0.01em","fontWeight":"400"}],"headline-xl-mobile":["1.75rem",{"lineHeight":"2.25rem","letterSpacing":"-0.02em","fontWeight":"700"}],"label-md":["0.875rem",{"lineHeight":"1.25rem","letterSpacing":"0em","fontWeight":"500"}]}}}}</script><style id="theme-neutral-override">
+  body, main { background-color: #F3F4F6 !important; color: #111827 !important; }
+  aside, header { background-color: #FFFFFF !important; border-color: #E5E7EB !important; color: #111827 !important; }
+  aside span, aside a { color: #4B5563 !important; }
+  aside nav a[data-path="evidence-passports"] { background-color: #EFF6FF !important; color: #2563EB !important; }
+  .bg-surface-container-lowest, section.bg-surface-container-lowest { background-color: #FFFFFF !important; border: 1px solid #E5E7EB !important; }
+  .border-outline-variant, .border-b, .border-r, .border-t { border-color: #E5E7EB !important; }
+  .text-on-surface { color: #111827 !important; }
+  .text-on-surface-variant { color: #4B5563 !important; }
+  .bg-primary, .bg-primary-container { background-color: #2563EB !important; color: #FFFFFF !important; }
+  .text-primary { color: #2563EB !important; }
+  .bg-primary-fixed { background-color: #EFF6FF !important; color: #2563EB !important; }
+  .bg-surface-container-high, .bg-surface-container { background-color: #F9FAFB !important; }
+  .bg-surface-variant { background-color: #F3F4F6 !important; }
+</style></head><body class="bg-surface font-body-md text-on-surface antialiased"><aside class="fixed left-0 top-0 h-screen w-64 bg-surface-container-lowest border-r border-outline-variant z-50 flex flex-col justify-between select-none"><div class="flex flex-col flex-1 min-h-0"><div class="h-16 px-space-md border-b border-outline-variant flex items-center justify-between"><div class="flex items-center gap-space-sm"><div class="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-on-primary shadow-sm"><span class="material-symbols-outlined text-[20px]">bug_report</span></div><div class="flex flex-col"><span class="font-headline-sm text-headline-sm text-on-surface leading-none font-bold tracking-tight">ReproProof</span><span class="font-code-sm text-code-sm text-on-surface-variant font-medium mt-space-xs">DIAGNOSTICS</span></div></div><span class="font-code-sm text-code-sm px-space-xs py-0.5 rounded bg-surface-container text-on-surface-variant font-medium border border-outline-variant">v1.4.2</span></div><div class="p-space-md"><button class="w-full flex items-center justify-center gap-space-sm py-space-sm px-space-md bg-primary-container hover:bg-primary text-on-primary font-label-md text-label-md rounded-xl transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-primary" type="button"><span class="material-symbols-outlined text-[18px]">add</span><span class="">New Bug Report</span></button></div><nav class="flex-1 px-space-sm space-y-0.5 overflow-y-auto" data-active-classes="bg-primary-fixed text-primary font-semibold relative before:absolute before:left-0 before:top-1.5 before:bottom-1.5 before:w-1 before:bg-primary before:rounded-r"><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors font-label-md text-label-md" data-path="overview-dashboard" href="#"><span class="material-symbols-outlined text-[20px]">grid_view</span><span class="">Overview / Dashboard</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors font-label-md text-label-md" data-path="investigations-bug-reports" href="#"><span class="material-symbols-outlined text-[20px]">troubleshoot</span><span class="">Investigations / Bug Reports</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors font-label-md text-label-md" data-path="test-runs" href="#"><span class="material-symbols-outlined text-[20px]">play_circle</span><span class="">Test Runs</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors font-label-md text-label-md" data-path="run-details-plan-approval" href="#"><span class="material-symbols-outlined text-[20px]">task_alt</span><span class="">Run Details &amp; Plan Approval</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors font-label-md text-label-md" data-path="live-execution" href="#"><span class="material-symbols-outlined text-[20px]">terminal</span><span class="">Live Execution</span></a><a aria-current="page" class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg transition-colors bg-primary-fixed text-primary font-semibold relative before:absolute before:left-0 before:top-1.5 before:bottom-1.5 before:w-1 before:bg-primary before:rounded-r" data-path="evidence-passports" href="#"><span class="material-symbols-outlined text-[20px]">verified</span><span class="">Evidence Passports</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors font-label-md text-label-md" data-path="qa-test-cases" href="#"><span class="material-symbols-outlined text-[20px]">checklist</span><span class="">QA Test Cases</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors font-label-md text-label-md" data-path="settings-diagnostics" href="#"><span class="material-symbols-outlined text-[20px]">tune</span><span class="">Settings &amp; Diagnostics</span></a></nav></div><div class="p-space-md border-t border-outline-variant bg-surface-container-low/50 space-y-space-sm"><div class="flex items-center justify-between text-code-sm font-code-sm px-space-xs"><div class="flex items-center gap-1.5 text-on-surface"><span class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span><span class="font-medium">MSW (MOCK)</span></div><span class="font-code-sm text-code-sm px-1.5 py-0.5 rounded bg-surface-container-high text-on-surface-variant">ACTIVE</span></div><div class="flex items-center justify-between text-code-sm font-code-sm px-space-xs text-on-surface-variant"><span class="">ENV</span><span class="font-medium text-on-surface">STAGING: SAFE</span></div><div class="flex items-center justify-between p-space-xs rounded-lg bg-surface-container-lowest border border-outline-variant hover:border-outline cursor-pointer transition-colors"><div class="flex items-center gap-space-sm truncate"><span class="material-symbols-outlined text-primary text-[18px]">corporate_fare</span><div class="flex flex-col truncate"><span class="font-label-sm text-label-sm text-on-surface font-medium truncate">workspace-01</span><span class="font-code-sm text-code-sm text-on-surface-variant truncate">Eng Team</span></div></div><span class="material-symbols-outlined text-on-surface-variant text-[18px]">unfold_more</span></div></div></aside><div class="pl-64 flex flex-col min-h-screen"><header class="fixed top-0 left-64 right-0 h-16 bg-surface-container-lowest border-b border-outline-variant z-40 flex items-center justify-between px-space-lg"><div class="flex items-center gap-space-md"><div class="flex items-center gap-space-xs font-body-sm text-body-sm text-on-surface-variant"><span class="hover:text-on-surface cursor-pointer font-medium">ReproProof</span><span class="text-outline-variant">/</span><span class="hover:text-on-surface cursor-pointer font-medium">Investigations</span><span class="text-outline-variant">/</span><span class="font-code-sm text-code-sm text-primary font-semibold bg-surface-container-high px-1.5 py-0.5 rounded border border-outline-variant">BUG-8492</span></div><div class="hidden xl:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-code-sm text-code-sm"><span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span><span class="font-medium">FIXTURES ACTIVE (READ-ONLY)</span></div></div><div class="flex items-center gap-space-md"><div class="relative flex items-center w-64"><span class="material-symbols-outlined absolute left-2.5 text-on-surface-variant text-[18px]">search</span><input class="w-full h-9 pl-9 pr-8 bg-surface-container-lowest border border-outline-variant rounded-xl font-body-sm text-body-sm text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all" placeholder="Search tests, traces..." type="text"><kbd class="absolute right-2 px-1.5 py-0.5 rounded bg-surface-container font-code-sm text-code-sm text-on-surface-variant border border-outline-variant">⌘K</kbd></div><button class="flex items-center gap-1.5 h-9 px-3 bg-primary-container hover:bg-primary text-on-primary font-label-sm text-label-sm rounded-xl transition-colors shadow-sm focus:outline-none" type="button"><span class="material-symbols-outlined text-[16px]">add</span><span class="">New Bug</span></button><button class="relative p-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded-xl transition-colors" type="button"><span class="material-symbols-outlined text-[20px]">notifications</span><span class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-error ring-2 ring-surface-container-lowest"></span></button><div class="h-6 w-px bg-outline-variant"></div><div class="flex items-center gap-space-sm pl-space-xs"><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div><div class="hidden md:flex flex-col text-left"><span class="font-label-sm text-label-sm text-on-surface font-semibold leading-tight">Alex Chen</span><span class="font-code-sm text-code-sm text-on-surface-variant leading-tight">QA Lead</span></div></div></div></header><main class="w-full pt-16 bg-surface min-h-screen"><div class="flex flex-col w-full">
+<div class="px-space-md lg:px-space-xl py-space-lg space-y-space-lg max-w-[1600px] mx-auto w-full">
+<!-- Top Navigation Breadcrumb & Adjudication Header -->
+<div class="flex flex-col gap-space-md lg:flex-row lg:items-start lg:justify-between bg-surface-container-lowest p-space-lg rounded-xl shadow-sm">
+<div class="space-y-space-xs max-w-4xl">
+<div class="flex items-center gap-space-sm text-on-surface-variant font-code-sm text-code-sm">
+<span class="px-2 py-0.5 rounded bg-surface-container-high text-primary font-medium tracking-wider">EVIDENCE DOSSIER</span>
+<span class="text-outline-variant font-bold">//</span>
+<span class="tracking-wide">ADJUDICATION REPORT</span>
+<span class="text-outline-variant font-bold">//</span>
+<span class="text-on-surface font-semibold">IMMUTABLE RUNNER V2</span>
+</div>
+<div class="flex flex-wrap items-baseline gap-space-md pt-space-xs">
+<h1 class="font-headline-xl text-headline-xl text-on-surface tracking-tight">Evidence Passport #EP-8821</h1>
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-secondary-fixed text-on-secondary-fixed-variant font-code-sm text-code-sm font-semibold">
+<span class="w-2 h-2 rounded-full bg-secondary animate-pulse"></span>
+            FORMAL PROOF LOCKED
+          </span>
+</div>
+<div class="flex flex-wrap items-center gap-y-1.5 gap-x-space-md text-on-surface-variant font-body-sm text-body-sm pt-space-xs">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-primary text-[18px]">dns</span>
+<span class="font-code-sm text-code-sm text-on-surface font-medium">checkout.staging.reproproof.dev</span>
+<span class="px-1.5 py-0.5 rounded bg-surface-container font-code-sm text-code-sm text-on-surface-variant">v2.8.4-build.921</span>
+</div>
+<span class="text-outline-variant">•</span>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-error text-[18px]">bug_report</span>
+<span class="font-code-sm text-code-sm text-error font-semibold">BUG-1042</span>
+<span class="text-on-surface font-medium italic">"Checkout cart state corrupts on rapid coupon double-click"</span>
+</div>
+<span class="text-outline-variant">•</span>
+<div class="flex items-center gap-1.5 font-code-sm text-code-sm">
+<span class="material-symbols-outlined text-[18px]">timer</span>
+<span class="">Duration: <strong class="text-on-surface font-semibold">3m 48s</strong></span>
+</div>
+</div>
+</div>
+<!-- Action Group -->
+<div class="flex flex-wrap items-center gap-space-xs sm:gap-space-sm pt-space-xs">
+<button class="flex items-center gap-1.5 h-9 px-3 bg-surface-container-low hover:bg-surface-container text-on-surface font-label-sm text-label-sm rounded-xl transition-colors shadow-sm focus:outline-none focus:ring-1 focus:ring-primary" type="button">
+<span class="material-symbols-outlined text-primary text-[16px]">verified_user</span>
+<span class="">Verify Chain Integrity</span>
+</button>
+<button class="flex items-center gap-1.5 h-9 px-3 bg-surface-container-low hover:bg-surface-container text-on-surface font-label-sm text-label-sm rounded-xl transition-colors shadow-sm" type="button">
+<span class="material-symbols-outlined text-[16px]">gavel</span>
+<span class="">Adjudicator View</span>
+</button>
+<button class="flex items-center gap-1.5 h-9 px-2.5 bg-surface-container-lowest hover:bg-surface-container-low text-on-surface-variant hover:text-on-surface font-code-sm text-code-sm rounded-xl transition-colors shadow-sm" type="button">
+<span class="material-symbols-outlined text-[16px]">markdown</span>
+<span class="">MD</span>
+</button>
+<button class="flex items-center gap-1.5 h-9 px-2.5 bg-surface-container-lowest hover:bg-surface-container-low text-on-surface-variant hover:text-on-surface font-code-sm text-code-sm rounded-xl transition-colors shadow-sm" type="button">
+<span class="material-symbols-outlined text-[16px]">data_object</span>
+<span class="">JSON</span>
+</button>
+<button class="flex items-center gap-1.5 h-9 px-4 bg-primary-container hover:bg-primary text-on-primary font-label-md text-label-md rounded-xl transition-all shadow-sm focus:ring-2 focus:ring-primary" type="button">
+<span class="material-symbols-outlined text-[18px]">archive</span>
+<span class="font-semibold">Full ZIP Bundle</span>
+</button>
+</div>
+</div>
+<!-- Cryptographic Proof Banner -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm bg-surface-container-lowest px-space-md py-space-sm rounded-xl shadow-sm relative overflow-hidden">
+<div class="absolute inset-y-0 left-0 w-1.5 bg-secondary"></div>
+<div class="flex items-center gap-space-sm pl-2">
+<span class="material-symbols-outlined text-secondary text-[20px]">enhanced_encryption</span>
+<div class="flex flex-wrap items-center gap-x-space-sm font-code-sm text-code-sm">
+<span class="font-bold text-on-surface tracking-wide">CRYPTOGRAPHIC EVIDENCE CHAIN #EP-8821</span>
+<span class="text-outline-variant hidden md:inline">|</span>
+<span class="text-on-surface-variant font-medium">SHA256: <code class="text-primary font-semibold bg-surface-container px-1 py-0.5 rounded">9a4f7e2c918bb1d8a3014e44...61f8</code></span>
+<span class="text-outline-variant hidden md:inline">|</span>
+<span class="px-2 py-0.5 rounded-full bg-surface-container text-on-surface-variant font-bold">STAGING-ENV: SAFE_MODE</span>
+</div>
+</div>
+<div class="flex items-center gap-2 font-code-sm text-code-sm text-on-surface-variant self-end sm:self-auto pl-2">
+<span class="material-symbols-outlined text-[16px] text-secondary">lock</span>
+<span class="">Merkle Leaf Block: #491,092</span>
+</div>
+</div>
+<!-- Deterministic Verdict Banner -->
+<div class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden relative">
+<div class="absolute inset-y-0 left-0 w-2.5 bg-secondary-container"></div>
+<div class="p-space-lg lg:p-space-xl flex flex-col gap-space-lg">
+<!-- Main verdict info row -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-center">
+<!-- Shield and verdict status -->
+<div class="lg:col-span-4 flex items-center gap-space-md">
+<div class="w-16 h-16 rounded-xl bg-secondary-fixed flex items-center justify-center text-secondary shadow-sm flex-shrink-0">
+<span class="material-symbols-outlined text-[36px]" style="font-variation-settings: 'FILL' 1;">verified</span>
+</div>
+<div class="space-y-0.5">
+<span class="font-code-sm text-code-sm text-secondary font-bold tracking-wider">STATE ATTESTED</span>
+<h2 class="font-headline-md text-headline-md text-on-surface font-extrabold leading-tight">DETERMINISTIC VERDICT: REPRODUCED</h2>
+<div class="flex items-center gap-1.5 font-label-sm text-label-sm text-on-surface-variant">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+<span class="">Dual Container Confirmation</span>
+</div>
+</div>
+</div>
+<!-- Middle description -->
+<div class="lg:col-span-5 space-y-space-xs">
+<div class="flex items-center gap-space-xs font-label-md text-label-md text-error font-semibold">
+<span class="material-symbols-outlined text-[18px]">emergency_home</span>
+<span class="">High Severity: Double-Execution State Invalidation</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface leading-relaxed">
+              Target race condition achieved consistently under concurrency injection. Verified by automated orchestrator across 2 independent isolation containers with isolated clean redis/postgres state resets.
+            </p>
+<div class="flex items-center gap-2 pt-1 font-code-sm text-code-sm">
+<span class="px-2 py-0.5 rounded bg-surface-container font-semibold text-on-surface">Fingerprint Match:</span>
+<span class="px-2 py-0.5 rounded bg-secondary-fixed text-on-secondary-fixed-variant font-bold">100% ERR_PROMO_RACE_DUPLICATE</span>
+</div>
+</div>
+<!-- Key stats columns -->
+<div class="lg:col-span-3 grid grid-cols-3 lg:grid-cols-1 gap-2 bg-surface-container-low p-space-md rounded-xl">
+<div class="flex flex-col">
+<span class="font-code-sm text-code-sm text-on-surface-variant font-medium">ATTEMPTS</span>
+<span class="font-headline-md text-headline-md text-on-surface font-bold">2 / 2 <span class="font-body-sm text-body-sm text-secondary font-medium">(100%)</span></span>
+</div>
+<div class="flex flex-col">
+<span class="font-code-sm text-code-sm text-on-surface-variant font-medium">RACE WINDOW</span>
+<span class="font-headline-md text-headline-md text-on-surface font-bold font-code-md">79.2 ms <span class="font-code-sm text-code-sm text-on-surface-variant font-normal">burst</span></span>
+</div>
+<div class="flex flex-col">
+<span class="font-code-sm text-code-sm text-on-surface-variant font-medium">CORRUPTED STATE</span>
+<span class="font-headline-md text-headline-md text-error font-bold font-code-md">-$24.50 <span class="font-code-sm text-code-sm text-error font-normal">underflow</span></span>
+</div>
+</div>
+</div>
+<!-- Adjudicator Rationale Box -->
+<div class="bg-surface-container p-space-md rounded-xl flex items-start gap-space-md shadow-sm">
+<div class="p-2 rounded-lg bg-surface-container-lowest text-primary mt-0.5 flex-shrink-0">
+<span class="material-symbols-outlined text-[20px]">psychology</span>
+</div>
+<div class="space-y-1">
+<div class="flex items-center gap-2">
+<span class="font-label-md text-label-md text-on-surface font-bold">Adjudication Engine Synthesized Rationale</span>
+<span class="font-code-sm text-code-sm px-1.5 py-0.2 rounded bg-surface-container-lowest text-on-surface-variant">Deterministic Proof Engine #4.2</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface leading-relaxed">
+              Both Attempt 1 and Attempt 2 satisfied reproduction criteria: rapid successive <code class="font-code-sm text-code-sm px-1.5 py-0.5 rounded bg-surface-container-lowest text-primary font-semibold">POST /api/cart/coupon</code> dispatched within 80ms resulted in HTTP 200 with duplicate discount IDs applied, corrupting cart total to <span class="font-code-md text-code-md text-error font-bold">-$24.50</span>. Fingerprint match: 100% (<code class="font-code-sm text-code-sm text-on-surface font-medium">ERR_PROMO_RACE_DUPLICATE</code>). Zero non-deterministic entropy observed.
+            </p>
+</div>
+</div>
+</div>
+</div>
+<!-- Navigation Tabs -->
+<div class="bg-surface-container-lowest px-space-md rounded-xl shadow-sm flex items-center justify-between overflow-x-auto">
+<div class="flex items-center gap-space-xs font-label-md text-label-md whitespace-nowrap">
+<button class="px-space-md py-3.5 text-on-surface-variant hover:text-on-surface font-medium transition-colors flex items-center gap-2" type="button">
+<span class="material-symbols-outlined text-[18px]">verified</span>
+<span class="">Overview &amp; Attestation</span>
+</button>
+<button class="px-space-md py-3.5 text-primary font-bold transition-colors flex items-center gap-2 shadow-sm bg-surface-container-high rounded-lg my-1.5" type="button">
+<span class="material-symbols-outlined text-[18px]">compare_arrows</span>
+<span class="">Attempt Comparison (Side-by-Side Diff)</span>
+<span class="px-1.5 py-0.5 rounded-full bg-primary text-on-primary font-code-sm text-code-sm">2 Runs</span>
+</button>
+<button class="px-space-md py-3.5 text-on-surface-variant hover:text-on-surface font-medium transition-colors flex items-center gap-2" type="button">
+<span class="material-symbols-outlined text-[18px]">screenshot_monitor</span>
+<span class="">Screenshots &amp; Viewport Records</span>
+<span class="px-1.5 py-0.5 rounded bg-surface-container font-code-sm text-code-sm text-on-surface-variant">3</span>
+</button>
+<button class="px-space-md py-3.5 text-on-surface-variant hover:text-on-surface font-medium transition-colors flex items-center gap-2" type="button">
+<span class="material-symbols-outlined text-[18px]">code</span>
+<span class="">Redacted Console Logs</span>
+<span class="px-1.5 py-0.5 rounded bg-surface-container font-code-sm text-code-sm text-on-surface-variant">144 L</span>
+</button>
+<button class="px-space-md py-3.5 text-on-surface-variant hover:text-on-surface font-medium transition-colors flex items-center gap-2" type="button">
+<span class="material-symbols-outlined text-[18px]">hub</span>
+<span class="">Network Traces (HAR)</span>
+<span class="px-1.5 py-0.5 rounded bg-surface-container font-code-sm text-code-sm text-on-surface-variant">24 reqs</span>
+</button>
+</div>
+<div class="hidden xl:flex items-center gap-2 font-code-sm text-code-sm text-on-surface-variant pl-4">
+<span class="">DIFF ENGINE:</span>
+<span class="px-2 py-0.5 rounded bg-surface-container font-semibold text-primary">SEMANTIC_AST_V3</span>
+</div>
+</div>
+<!-- Side-by-Side Attempt Comparison Cards -->
+<div class="space-y-space-md">
+<!-- Identical Fingerprint Global Sub-banner -->
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-space-sm">
+<div class="flex items-center gap-space-sm">
+<div class="w-8 h-8 rounded-lg bg-surface-container-high text-primary flex items-center justify-center font-bold">
+<span class="material-symbols-outlined text-[20px]">fingerprint</span>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Deterministic Repro Matrix</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Comparison between cold boot invocation #1 and sanitized rerun #2 with full database flush.</p>
+</div>
+</div>
+<div class="flex items-center gap-2 bg-surface-container px-3 py-1.5 rounded-xl font-code-sm text-code-sm text-secondary font-bold">
+<span class="material-symbols-outlined text-[18px]">check_circle</span>
+<span class="">100% IDENTICAL FAILURE FINGERPRINT [FP-RACE-01-A]</span>
+</div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-space-lg">
+<!-- Column 1: Attempt 1 -->
+<div class="bg-surface-container-lowest rounded-xl shadow-sm flex flex-col overflow-hidden">
+<div class="p-space-md bg-surface-container-low flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="font-code-sm text-code-sm px-2 py-0.5 rounded bg-surface-container-lowest text-on-surface font-semibold">RUN 01</span>
+<span class="font-label-md text-label-md text-on-surface font-bold">Attempt 1</span>
+<span class="font-code-sm text-code-sm text-on-surface-variant">(14:22:10.420 UTC)</span>
+</div>
+<span class="px-2 py-1 rounded bg-secondary-fixed text-on-secondary-fixed-variant font-code-sm text-code-sm font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">check</span> REPRODUCED
+            </span>
+</div>
+<div class="p-space-lg space-y-space-md flex-1">
+<div class="grid grid-cols-2 gap-space-sm font-body-sm text-body-sm">
+<div class="p-space-sm rounded-xl bg-surface-container-low space-y-0.5">
+<span class="font-code-sm text-code-sm text-on-surface-variant">HTTP STATUS</span>
+<div class="font-code-md text-code-md text-on-surface font-semibold flex items-center gap-1">
+<span class="">200 OK</span>
+<span class="text-error font-code-sm text-code-sm">(Dual 200)</span>
+</div>
+</div>
+<div class="p-space-sm rounded-xl bg-surface-container-low space-y-0.5">
+<span class="font-code-sm text-code-sm text-on-surface-variant">RESULTING BALANCE</span>
+<div class="font-code-md text-code-md text-error font-bold">
+                  -$24.50 <span class="font-body-sm text-body-sm font-normal text-on-surface-variant">(Corrupted)</span>
+</div>
+</div>
+<div class="p-space-sm rounded-xl bg-surface-container-low space-y-0.5">
+<span class="font-code-sm text-code-sm text-on-surface-variant">DISCOUNT COUPON</span>
+<div class="font-code-md text-code-md text-on-surface font-semibold">
+                  #SUMMER50 <span class="text-error font-medium">(applied 2x)</span>
+</div>
+</div>
+<div class="p-space-sm rounded-xl bg-surface-container-low space-y-0.5">
+<span class="font-code-sm text-code-sm text-on-surface-variant">FAIL FINGERPRINT</span>
+<div class="font-code-md text-code-md text-primary font-bold">
+                  FP-RACE-01-A
+                </div>
+</div>
+</div>
+<div class="space-y-space-xs">
+<div class="flex items-center justify-between font-code-sm text-code-sm text-on-surface-variant">
+<span class="">SNAPSHOT RUN STATE (JSON)</span>
+<span class="">UUID: c4a1...9b2</span>
+</div>
+<div class="p-space-md rounded-xl bg-surface-container font-code-sm text-code-sm text-on-surface overflow-x-auto space-y-1">
+<div class="text-on-surface-variant">1  {</div>
+<div class="">2    "cart_id": <span class="text-primary">"crt_9921_exp"</span>,</div>
+<div class="">3    "applied_discounts": [</div>
+<div class="bg-surface-container-high px-1 -mx-1 text-on-surface font-semibold">4      { "code": "SUMMER50", "amount_cents": 2500, "txn": "0x11a" },</div>
+<div class="bg-surface-container-high px-1 -mx-1 text-on-surface font-semibold">5      { "code": "SUMMER50", "amount_cents": 2500, "txn": "0x11b" }</div>
+<div class="">6    ],</div>
+<div class="bg-error-container text-on-error-container px-1 -mx-1 font-bold">7    "total_cents": -2450, <span class="text-error font-normal">// UNDERFLOW ERROR</span></div>
+<div class="">8    "state_hash": <span class="text-primary">"sha256:772ab1..."</span></div>
+<div class="text-on-surface-variant">9  }</div>
+</div>
+</div>
+</div>
+<div class="px-space-md py-space-sm bg-surface-container-low font-code-sm text-code-sm text-on-surface-variant flex items-center justify-between">
+<span class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-secondary">memory</span>
+              Worker pod: k8s-runner-node-09b
+            </span>
+<span class="">Elapsed: 42.1s</span>
+</div>
+</div>
+<!-- Column 2: Attempt 2 -->
+<div class="bg-surface-container-lowest rounded-xl shadow-sm flex flex-col overflow-hidden">
+<div class="p-space-md bg-surface-container-low flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="font-code-sm text-code-sm px-2 py-0.5 rounded bg-surface-container-lowest text-on-surface font-semibold">RUN 02</span>
+<span class="font-label-md text-label-md text-on-surface font-bold">Attempt 2</span>
+<span class="font-code-sm text-code-sm text-on-surface-variant">(14:24:45.118 UTC - CLEAN RESET)</span>
+</div>
+<span class="px-2 py-1 rounded bg-secondary-fixed text-on-secondary-fixed-variant font-code-sm text-code-sm font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">check</span> REPRODUCED
+            </span>
+</div>
+<div class="p-space-lg space-y-space-md flex-1">
+<div class="grid grid-cols-2 gap-space-sm font-body-sm text-body-sm">
+<div class="p-space-sm rounded-xl bg-surface-container-low space-y-0.5">
+<span class="font-code-sm text-code-sm text-on-surface-variant">HTTP STATUS</span>
+<div class="font-code-md text-code-md text-on-surface font-semibold flex items-center gap-1">
+<span class="">200 OK</span>
+<span class="text-error font-code-sm text-code-sm">(Dual 200)</span>
+</div>
+</div>
+<div class="p-space-sm rounded-xl bg-surface-container-low space-y-0.5">
+<span class="font-code-sm text-code-sm text-on-surface-variant">RESULTING BALANCE</span>
+<div class="font-code-md text-code-md text-error font-bold">
+                  -$24.50 <span class="font-body-sm text-body-sm font-normal text-on-surface-variant">(Corrupted)</span>
+</div>
+</div>
+<div class="p-space-sm rounded-xl bg-surface-container-low space-y-0.5">
+<span class="font-code-sm text-code-sm text-on-surface-variant">DISCOUNT COUPON</span>
+<div class="font-code-md text-code-md text-on-surface font-semibold">
+                  #SUMMER50 <span class="text-error font-medium">(applied 2x)</span>
+</div>
+</div>
+<div class="p-space-sm rounded-xl bg-surface-container-low space-y-0.5">
+<span class="font-code-sm text-code-sm text-on-surface-variant">FAIL FINGERPRINT</span>
+<div class="font-code-md text-code-md text-primary font-bold">
+                  FP-RACE-01-A
+                </div>
+</div>
+</div>
+<div class="space-y-space-xs">
+<div class="flex items-center justify-between font-code-sm text-code-sm text-on-surface-variant">
+<span class="">SNAPSHOT RUN STATE (JSON)</span>
+<span class="">UUID: f18c...02e</span>
+</div>
+<div class="p-space-md rounded-xl bg-surface-container font-code-sm text-code-sm text-on-surface overflow-x-auto space-y-1">
+<div class="text-on-surface-variant">1  {</div>
+<div class="">2    "cart_id": <span class="text-primary">"crt_9922_exp"</span>,</div>
+<div class="">3    "applied_discounts": [</div>
+<div class="bg-surface-container-high px-1 -mx-1 text-on-surface font-semibold">4      { "code": "SUMMER50", "amount_cents": 2500, "txn": "0x44c" },</div>
+<div class="bg-surface-container-high px-1 -mx-1 text-on-surface font-semibold">5      { "code": "SUMMER50", "amount_cents": 2500, "txn": "0x44d" }</div>
+<div class="">6    ],</div>
+<div class="bg-error-container text-on-error-container px-1 -mx-1 font-bold">7    "total_cents": -2450, <span class="text-error font-normal">// UNDERFLOW ERROR</span></div>
+<div class="">8    "state_hash": <span class="text-primary">"sha256:772ab1..."</span></div>
+<div class="text-on-surface-variant">9  }</div>
+</div>
+</div>
+</div>
+<div class="px-space-md py-space-sm bg-surface-container-low font-code-sm text-code-sm text-on-surface-variant flex items-center justify-between">
+<span class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-secondary">memory</span>
+              Worker pod: k8s-runner-node-14f
+            </span>
+<span class="">Elapsed: 41.8s</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Evidence Artifact Grid (3 Immutable Assets Recorded) -->
+<div class="space-y-space-md">
+<div class="flex items-center justify-between">
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-bold">Immutable Evidence Artifacts</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">3 cryptographic recordings captured during headless trace execution.</p>
+</div>
+<div class="flex items-center gap-1.5 font-code-sm text-code-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-secondary text-[16px]">verified</span>
+<span class="">Read-only S3 Vault: <code class="font-semibold text-on-surface">repro-artifacts-us-east-1</code></span>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-space-lg">
+<!-- Artifact 1: Viewport Capture -->
+<div class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden flex flex-col group">
+<div class="relative h-48 bg-surface-container overflow-hidden">
+<img class="w-full h-full object-cover object-top transition-transform duration-300 group-hover:scale-105" data-alt="High fidelity crisp web screenshot showing an ecommerce checkout order summary page with corrupted cart total reading negative twenty-four dollars and fifty cents, clean modern light theme UI, red highlight on the negative balance" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC_AQYJ2kWArsN5iGg9NgcpZfpL2gk-o8Y7I7H_gaQ_pKPPSQVBwnvWKe30m8NuzVl04vP4gKQwzPHHzV_9T1hsvKDT7D_EvfQoTYBsDZieQG191vknQ8j63Dvpyi8brhb_kXmeCLIN6ufTqacEc6MhYKvwkgarD6u7AEfogJj68NzskAiH9zDM3Z3QapEKsvweQOUAwCGrnuNAK6EF5oY2fzb9uxNgnK2sk1mRC2BJ-KVvmYQrVFB9">
+<div class="absolute inset-0 bg-gradient-to-t from-on-surface/60 via-transparent to-transparent flex items-end p-space-md">
+<span class="px-2 py-0.5 rounded bg-error text-on-error font-code-sm text-code-sm font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">report_problem</span> Cart Total: -$24.50
+              </span>
+</div>
+</div>
+<div class="p-space-md space-y-space-xs flex-1 flex flex-col justify-between">
+<div class="space-y-1">
+<div class="flex items-center justify-between">
+<span class="font-code-sm text-code-sm px-1.5 py-0.5 rounded bg-surface-container text-on-surface-variant font-medium">ARTIFACT_01 // PNG</span>
+<span class="font-code-sm text-code-sm text-on-surface-variant">1920 × 1080</span>
+</div>
+<h4 class="font-headline-sm text-headline-sm text-on-surface font-semibold">Viewport Capture</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-2">
+                DOM rendering showing corrupted order summary right after race condition payload resolves.
+              </p>
+</div>
+<div class="pt-space-md flex items-center justify-between">
+<span class="font-code-sm text-code-sm text-on-surface-variant">1.42 MB</span>
+<button class="text-primary hover:text-secondary font-label-md text-label-md font-semibold flex items-center gap-1" type="button">
+<span class="">View Full Res</span>
+<span class="material-symbols-outlined text-[16px]">open_in_new</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Artifact 2: Session Replay -->
+<div class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden flex flex-col group">
+<div class="relative h-48 bg-surface-container overflow-hidden">
+<img class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" data-alt="Technical playback viewer interface showing a web testing automation video replay with timeline scrubber, action markers, and browser frame displaying button double click events" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCy4B6JDS8OCjc2dWrfZktx2YX7qc0ufUJsXeLb9XGE9ho_x8kJIsLeIproi1-HrF4Cnzb3FgIn6wQdroy_C5Hi8lYcy13ENzeyXkl3coOc-78WntneqlTBCNodvUG1bGWdepXJpmSByUwDMyatX95S60GNs27oTEB7Yn48T9mw07ebnyYDUcKu0bO9u2J1Lcmi7KANZcM9Tyl4xqZ7U3HgCSjWIq8TaPwvAC06IcgXu5R78HuVZDqn">
+<div class="absolute inset-0 bg-on-surface/30 flex items-center justify-center">
+<div class="w-12 h-12 rounded-full bg-surface-container-lowest/90 text-primary flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-[28px]" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+</div>
+</div>
+<div class="absolute bottom-2 right-2 px-2 py-0.5 rounded bg-on-surface/80 text-on-primary font-code-sm text-code-sm">
+              00:24.0s
+            </div>
+</div>
+<div class="p-space-md space-y-space-xs flex-1 flex flex-col justify-between">
+<div class="space-y-1">
+<div class="flex items-center justify-between">
+<span class="font-code-sm text-code-sm px-1.5 py-0.5 rounded bg-surface-container text-on-surface-variant font-medium">ARTIFACT_02 // WEBM</span>
+<span class="font-code-sm text-code-sm text-on-surface-variant">60 FPS RRWEB</span>
+</div>
+<h4 class="font-headline-sm text-headline-sm text-on-surface font-semibold">Session Replay Video</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-2">
+                Frame-by-frame user event synthesis showing cursor velocity and rapid double invocation.
+              </p>
+</div>
+<div class="pt-space-md flex items-center justify-between">
+<span class="font-code-sm text-code-sm text-on-surface-variant">4.88 MB</span>
+<button class="text-primary hover:text-secondary font-label-md text-label-md font-semibold flex items-center gap-1" type="button">
+<span class="">Open Player</span>
+<span class="material-symbols-outlined text-[16px]">play_circle</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Artifact 3: Network Trace Waterfall -->
+<div class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden flex flex-col group">
+<div class="h-48 bg-surface-container p-space-md flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-code-sm text-code-sm text-on-surface font-bold">BURST TIMING WATERFALL</span>
+<span class="font-code-sm text-code-sm px-1.5 py-0.5 rounded bg-error-container text-on-error-container font-semibold">Δt = 79.2ms</span>
+</div>
+<!-- Mini SVG Waterfall Visual -->
+<div class="space-y-2 py-2">
+<div class="space-y-1">
+<div class="flex items-center justify-between font-code-sm text-[10px] text-on-surface-variant">
+<span class="">POST /api/cart/coupon #1</span>
+<span class="">142ms</span>
+</div>
+<div class="w-full bg-surface-container-high h-2.5 rounded-full overflow-hidden flex">
+<div class="bg-primary h-full rounded-full" style="width: 65%;"></div>
+</div>
+</div>
+<div class="space-y-1">
+<div class="flex items-center justify-between font-code-sm text-[10px] text-on-surface-variant">
+<span class="">POST /api/cart/coupon #2 [RACE]</span>
+<span class="">138ms</span>
+</div>
+<div class="w-full bg-surface-container-high h-2.5 rounded-full overflow-hidden flex">
+<div class="h-full" style="width: 25%;"></div>
+<div class="bg-error h-full rounded-full" style="width: 62%;"></div>
+</div>
+</div>
+<div class="flex justify-between font-code-sm text-[10px] text-on-surface-variant pt-1 border-t-0">
+<span class="">0ms</span>
+<span class="">79.2ms offset</span>
+<span class="">280ms total</span>
+</div>
+</div>
+<div class="flex items-center justify-between font-code-sm text-code-sm text-on-surface-variant">
+<span class="">Status: Dual 200 HTTP OK</span>
+<span class="text-error font-semibold">State Mutation Conflict</span>
+</div>
+</div>
+<div class="p-space-md space-y-space-xs flex-1 flex flex-col justify-between">
+<div class="space-y-1">
+<div class="flex items-center justify-between">
+<span class="font-code-sm text-code-sm px-1.5 py-0.5 rounded bg-surface-container text-on-surface-variant font-medium">ARTIFACT_03 // HAR SPEC</span>
+<span class="font-code-sm text-code-sm text-on-surface-variant">24 HTTP Events</span>
+</div>
+<h4 class="font-headline-sm text-headline-sm text-on-surface font-semibold">Network Trace HAR Spec</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-2">
+                Complete TLS handshakes, request headers, timing micro-intervals, and raw responses.
+              </p>
+</div>
+<div class="pt-space-md flex items-center justify-between">
+<span class="font-code-sm text-code-sm text-on-surface-variant">860 KB</span>
+<button class="text-primary hover:text-secondary font-label-md text-label-md font-semibold flex items-center gap-1" type="button">
+<span class="">Inspect HAR</span>
+<span class="material-symbols-outlined text-[16px]">query_stats</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Sanitized Log Stream & Payload Telemetry -->
+<div class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden">
+<div class="p-space-md bg-surface-container-low flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-primary text-[20px]">terminal</span>
+<span class="font-label-md text-label-md text-on-surface font-bold">Sanitized Log Stream &amp; Payload Telemetry</span>
+<span class="px-2 py-0.5 rounded bg-surface-container text-on-surface font-code-sm text-code-sm">Attempt #1 Sync</span>
+</div>
+<div class="flex items-center gap-space-sm font-code-sm text-code-sm">
+<span class="px-2 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed-variant font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">shield</span> ZERO SECRET LEAKAGE
+          </span>
+<span class="text-on-surface-variant font-medium">Automatic DLP Engine: 3 Token Redactions</span>
+</div>
+</div>
+<div class="p-space-md bg-surface-container font-code-sm text-code-sm text-on-surface overflow-x-auto space-y-1">
+<div class="flex items-center gap-3 py-0.5 hover:bg-surface-container-high px-2 rounded">
+<span class="text-on-surface-variant select-none w-10 text-right">01</span>
+<span class="text-primary font-semibold">14:22:11.904</span>
+<span class="px-1.5 py-0.2 rounded bg-surface-container-high text-on-surface-variant text-[11px] font-bold">[INFO]</span>
+<span class="text-on-surface">Dispatched navigation: <code class="text-primary">https://checkout.staging.reproproof.dev/cart/review</code></span>
+</div>
+<div class="flex items-center gap-3 py-0.5 hover:bg-surface-container-high px-2 rounded">
+<span class="text-on-surface-variant select-none w-10 text-right">02</span>
+<span class="text-primary font-semibold">14:22:12.010</span>
+<span class="px-1.5 py-0.2 rounded bg-surface-container-high text-on-surface-variant text-[11px] font-bold">[AUTH]</span>
+<span class="text-on-surface">Headers injected: Authorization: Bearer <span class="bg-surface-container-lowest px-1.5 py-0.5 rounded text-error font-bold font-mono">[REDACTED_API_KEY_0x99f...]</span></span>
+</div>
+<div class="flex items-center gap-3 py-0.5 hover:bg-surface-container-high px-2 rounded">
+<span class="text-on-surface-variant select-none w-10 text-right">03</span>
+<span class="text-primary font-semibold">14:22:12.102</span>
+<span class="px-1.5 py-0.2 rounded bg-primary-container text-on-primary text-[11px] font-bold">[NET1]</span>
+<span class="text-on-surface">POST /api/cart/coupon {"code": "SUMMER50"} -&gt; Dispatched (Thread 01)</span>
+</div>
+<div class="flex items-center gap-3 py-0.5 bg-surface-container-high px-2 rounded shadow-sm">
+<span class="text-error select-none w-10 text-right font-bold">04</span>
+<span class="text-primary font-semibold">14:22:12.181</span>
+<span class="px-1.5 py-0.2 rounded bg-secondary-container text-on-secondary-container text-[11px] font-bold">[NET2]</span>
+<span class="text-on-surface font-semibold">[RACE TRIGGER +79ms] POST /api/cart/coupon + Header Stripe-Secret: <span class="bg-surface-container-lowest px-1.5 py-0.5 rounded text-error font-bold font-mono">[REDACTED_SECRET_STRIPE_LIVE]</span></span>
+</div>
+<div class="flex items-center gap-3 py-0.5 hover:bg-surface-container-high px-2 rounded">
+<span class="text-on-surface-variant select-none w-10 text-right">05</span>
+<span class="text-primary font-semibold">14:22:12.380</span>
+<span class="px-1.5 py-0.2 rounded bg-surface-container-high text-on-surface-variant text-[11px] font-bold">[RESP]</span>
+<span class="text-on-surface">RES #1 HTTP 200 OK -&gt; Cart subtotal updated to $25.50 (Discount applied -$25.00)</span>
+</div>
+<div class="flex items-center gap-3 py-1 bg-error-container text-on-error-container px-2 rounded font-semibold shadow-sm">
+<span class="text-error select-none w-10 text-right font-bold">06</span>
+<span class="text-error font-bold">14:22:12.448</span>
+<span class="px-1.5 py-0.2 rounded bg-error text-on-error text-[11px] font-bold">[CORRUPT]</span>
+<span class="">RES #2 HTTP 200 * Duplicate Applied: "SUMMER50" (-$25.00) * Final Cart Total: -$24.50</span>
+</div>
+<div class="flex items-center gap-3 py-0.5 hover:bg-surface-container-high px-2 rounded">
+<span class="text-on-surface-variant select-none w-10 text-right">07</span>
+<span class="text-primary font-semibold">14:22:12.490</span>
+<span class="px-1.5 py-0.2 rounded bg-surface-container-high text-on-surface-variant text-[11px] font-bold">[ASSERT]</span>
+<span class="text-on-surface">Assertion failed: Expected total_cents &gt;= 0, received -2450 (Reproduction Confirmed)</span>
+</div>
+</div>
+</div>
+<!-- Deterministic Reproduction Sequence Recipe -->
+<div class="bg-surface-container-lowest rounded-xl shadow-sm p-space-lg space-y-space-md">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+<div class="space-y-0.5">
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-bold">Deterministic Reproduction Recipe</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Synthesized Playwright &amp; cURL automation steps certified to trigger BUG-1042.</p>
+</div>
+<div class="flex items-center gap-2">
+<button class="px-2.5 py-1 rounded-lg bg-surface-container-low hover:bg-surface-container font-code-sm text-code-sm text-on-surface font-medium flex items-center gap-1.5" type="button">
+<span class="material-symbols-outlined text-[16px]">content_copy</span>
+<span class="">Copy Playwright Spec</span>
+</button>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-4 gap-space-md">
+<!-- Step 1 -->
+<div class="bg-surface-container-low p-space-md rounded-xl space-y-space-xs flex flex-col justify-between">
+<div class="space-y-space-xs">
+<div class="flex items-center justify-between">
+<span class="font-code-sm text-code-sm px-2 py-0.5 rounded bg-surface-container text-primary font-bold">STEP 01</span>
+<span class="material-symbols-outlined text-primary text-[18px]">shopping_cart</span>
+</div>
+<h4 class="font-label-md text-label-md text-on-surface font-bold">Seed Cart Session</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Initialize sandbox session with 1 item SKU-902 valued at $50.50.</p>
+</div>
+<code class="font-code-sm text-code-sm bg-surface-container p-1.5 rounded text-on-surface block truncate">POST /api/cart/items {sku: 902}</code>
+</div>
+<!-- Step 2 -->
+<div class="bg-surface-container-low p-space-md rounded-xl space-y-space-xs flex flex-col justify-between">
+<div class="space-y-space-xs">
+<div class="flex items-center justify-between">
+<span class="font-code-sm text-code-sm px-2 py-0.5 rounded bg-surface-container text-primary font-bold">STEP 02</span>
+<span class="material-symbols-outlined text-primary text-[18px]">edit_note</span>
+</div>
+<h4 class="font-label-md text-label-md text-on-surface font-bold">Fill Coupon Input</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Focus #promo-input and type promotional voucher string 'SUMMER50'.</p>
+</div>
+<code class="font-code-sm text-code-sm bg-surface-container p-1.5 rounded text-on-surface block truncate">input.fill('#SUMMER50')</code>
+</div>
+<!-- Step 3 -->
+<div class="bg-surface-container-low p-space-md rounded-xl space-y-space-xs flex flex-col justify-between border-l-2 border-primary">
+<div class="space-y-space-xs">
+<div class="flex items-center justify-between">
+<span class="font-code-sm text-code-sm px-2 py-0.5 rounded bg-primary-fixed text-primary font-bold">STEP 03 [RACE]</span>
+<span class="material-symbols-outlined text-error text-[18px]">bolt</span>
+</div>
+<h4 class="font-label-md text-label-md text-on-surface font-bold">Dual Trigger Race</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Dispatch consecutive click dispatches with Promise.all within 80ms window.</p>
+</div>
+<code class="font-code-sm text-code-sm bg-surface-container p-1.5 rounded text-error font-semibold block truncate">Promise.all([click(), click()])</code>
+</div>
+<!-- Step 4 -->
+<div class="bg-surface-container-low p-space-md rounded-xl space-y-space-xs flex flex-col justify-between">
+<div class="space-y-space-xs">
+<div class="flex items-center justify-between">
+<span class="font-code-sm text-code-sm px-2 py-0.5 rounded bg-surface-container text-secondary font-bold">STEP 04</span>
+<span class="material-symbols-outlined text-secondary text-[18px]">fact_check</span>
+</div>
+<h4 class="font-label-md text-label-md text-on-surface font-bold">Verify Corrupted State</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Assert cart summary displays negative float total balance -$24.50.</p>
+</div>
+<code class="font-code-sm text-code-sm bg-surface-container p-1.5 rounded text-secondary font-semibold block truncate">expect(total).toBe(-24.50)</code>
+</div>
+</div>
+</div>
+<!-- Bottom Action Footer -->
+<div class="bg-surface-container-lowest p-space-lg rounded-xl shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-space-md">
+<div class="flex items-center gap-space-md">
+<div class="w-12 h-12 rounded-xl bg-secondary-fixed flex items-center justify-center text-secondary shadow-sm flex-shrink-0">
+<span class="material-symbols-outlined text-[28px]">verified</span>
+</div>
+<div class="space-y-0.5">
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-bold">Certified Reproduction Package Ready</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+            Contains HAR network traces, Playwright automation script, DOM mutations, and cryptographic attestation signature.
+          </p>
+</div>
+</div>
+<div class="flex flex-wrap items-center gap-space-sm">
+<button class="flex items-center gap-1.5 h-10 px-4 bg-surface-container-low hover:bg-surface-container text-on-surface font-label-md text-label-md rounded-xl transition-colors shadow-sm" type="button">
+<span class="material-symbols-outlined text-[18px]">description</span>
+<span class="">Download Markdown Report</span>
+</button>
+<button class="flex items-center gap-1.5 h-10 px-4 bg-surface-container-low hover:bg-surface-container text-primary font-label-md text-label-md rounded-xl transition-colors shadow-sm" type="button">
+<span class="material-symbols-outlined text-[18px]">link</span>
+<span class="">Attach to Jira / GitHub #BUG-1042</span>
+</button>
+<button class="flex items-center gap-2 h-10 px-5 bg-primary-container hover:bg-primary text-on-primary font-label-md text-label-md rounded-xl transition-all shadow-sm" type="button">
+<span class="material-symbols-outlined text-[20px]">download</span>
+<span class="font-semibold">Download Package (ZIP + SHA-256)</span>
+</button>
+</div>
+</div>
+</div>
+</div></main></div>
+
+</body></html>

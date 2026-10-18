@@ -1,0 +1,511 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0" name="viewport"><meta content="web_dashboard" name="shell-type"><link href="https://fonts.googleapis.com" rel="preconnect"><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400..700;1,6..72,400..700&amp;display=swap" rel="stylesheet" class=""><style id="theme-overrides">body, main { background-color: #F3F0E8 !important; color: #202923 !important; } aside { background-color: #183D33 !important; border-color: rgba(255,255,255,0.12) !important; color: #E7F4EB !important; } aside span, aside a { color: #D1E5DB !important; } aside a:hover { background-color: rgba(255,255,255,0.08) !important; color: #FFFFFF !important; } aside [data-path="new-bug-report"], aside .bg-surface-container-high { background-color: #C04B2B !important; color: #FFFFFF !important; } header { background-color: #FFFEFA !important; border-color: #D9D7CC !important; } .bg-surface-container-lowest { background-color: #FFFEFA !important; border: 1px solid #D9D7CC !important; } .bg-primary-container, .bg-primary { background-color: #C04B2B !important; color: #FFFFFF !important; } .text-primary { color: #C04B2B !important; } .border-primary { border-color: #C04B2B !important; } h1 { font-family: 'Newsreader', Georgia, serif !important; color: #202923 !important; } input:focus, select:focus, textarea:focus { border-color: #C04B2B !important; outline: 2px solid #C04B2B !important; }</style><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{"colors":{"secondary-container":"#2170e4","surface-container-highest":"#dae2fd","on-background":"#131b2e","on-surface":"#131b2e","on-primary-container":"#eeefff","on-tertiary-container":"#eaf1fa","inverse-on-surface":"#eef0ff","surface-dim":"#d2d9f4","inverse-primary":"#b4c5ff","primary-container":"#2563eb","surface-container-lowest":"#ffffff","on-tertiary-fixed":"#151c23","on-surface-variant":"#434655","on-primary":"#ffffff","primary-fixed":"#dbe1ff","on-tertiary":"#ffffff","on-secondary":"#ffffff","surface":"#faf8ff","on-error":"#ffffff","secondary-fixed-dim":"#adc6ff","tertiary-fixed":"#dce3ec","surface-bright":"#faf8ff","error":"#ba1a1a","secondary":"#0058be","error-container":"#ffdad6","surface-tint":"#0053db","background":"#faf8ff","primary":"#004ac6","outline-variant":"#c3c6d7","tertiary":"#4e565d","outline":"#737686","tertiary-container":"#676e76","on-primary-fixed":"#00174b","inverse-surface":"#283044","on-secondary-fixed-variant":"#004395","secondary-fixed":"#d8e2ff","tertiary-fixed-dim":"#c0c7d0","on-tertiary-fixed-variant":"#40484f","surface-container-high":"#e2e7ff","surface-container":"#eaedff","surface-variant":"#dae2fd","surface-container-low":"#f2f3ff","on-primary-fixed-variant":"#003ea8","on-secondary-container":"#fefcff","on-secondary-fixed":"#001a42","primary-fixed-dim":"#b4c5ff","on-error-container":"#93000a"},"borderRadius":{"DEFAULT":"0.125rem","lg":"0.25rem","xl":"0.5rem","full":"0.75rem"},"spacing":{"margin":"1rem","space-sm":"0.5rem","gutter-desktop":"1.5rem","space-md":"1rem","space-xs":"0.25rem","space-xl":"2rem","space-lg":"1.5rem","margin-desktop":"2rem","gutter":"1rem"},"fontFamily":{"label-sm":["Inter"],"headline-lg":["Inter"],"headline-md":["Inter"],"headline-sm":["Inter"],"code-sm":["JetBrains Mono"],"body-md":["Inter"],"body-lg":["Inter"],"headline-xl":["Inter"],"code-md":["JetBrains Mono"],"body-sm":["Inter"],"headline-xl-mobile":["Inter"],"label-md":["Inter"]},"fontSize":{"label-sm":["0.75rem",{"lineHeight":"1rem","letterSpacing":"0.02em","fontWeight":"500"}],"headline-lg":["1.5rem",{"lineHeight":"2rem","letterSpacing":"-0.02em","fontWeight":"600"}],"headline-md":["1.25rem",{"lineHeight":"1.75rem","letterSpacing":"-0.015em","fontWeight":"600"}],"headline-sm":["1.125rem",{"lineHeight":"1.5rem","letterSpacing":"-0.01em","fontWeight":"600"}],"code-sm":["0.75rem",{"lineHeight":"1rem","letterSpacing":"0em","fontWeight":"400"}],"body-md":["0.875rem",{"lineHeight":"1.25rem","letterSpacing":"0em","fontWeight":"400"}],"body-lg":["1rem",{"lineHeight":"1.5rem","letterSpacing":"0em","fontWeight":"400"}],"headline-xl":["2rem",{"lineHeight":"2.5rem","letterSpacing":"-0.025em","fontWeight":"700"}],"code-md":["0.875rem",{"lineHeight":"1.25rem","letterSpacing":"0em","fontWeight":"400"}],"body-sm":["0.75rem",{"lineHeight":"1rem","letterSpacing":"0.01em","fontWeight":"400"}],"headline-xl-mobile":["1.75rem",{"lineHeight":"2.25rem","letterSpacing":"-0.02em","fontWeight":"700"}],"label-md":["0.875rem",{"lineHeight":"1.25rem","letterSpacing":"0em","fontWeight":"500"}]}}}}</script><style id="neutral-theme-overrides">
+  :root {
+    --bg-page: #f3f4f6;
+    --surface-white: #ffffff;
+    --border-neutral: #e5e7eb;
+    --text-primary: #111827;
+    --text-secondary: #4b5563;
+    --accent-blue: #2563eb;
+  }
+  body, main, .bg-surface {
+    background-color: var(--bg-page) !important;
+    color: var(--text-primary) !important;
+  }
+  aside, header, .bg-surface-container-lowest, section.bg-surface-container-lowest, aside .bg-surface-container-lowest {
+    background-color: var(--surface-white) !important;
+  }
+  .border-outline-variant, .border-b, .border-t, .border-r {
+    border-color: var(--border-neutral) !important;
+  }
+  .text-on-surface, h1, h2, h3, h4 {
+    color: var(--text-primary) !important;
+  }
+  .text-on-surface-variant {
+    color: var(--text-secondary) !important;
+  }
+  input[type="text"], select, textarea, .bg-surface-container-low {
+    background-color: #ffffff !important;
+    border: 1px solid var(--border-neutral) !important;
+    color: var(--text-primary) !important;
+  }
+  input[type="text"]:focus, select:focus, textarea:focus {
+    border-color: var(--accent-blue) !important;
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2) !important;
+    outline: none !important;
+  }
+  /* Primary CTA and active buttons */
+  .bg-primary, .bg-primary-container {
+    background-color: var(--accent-blue) !important;
+    color: #ffffff !important;
+  }
+  .text-primary, .text-secondary, .text-secondary-container {
+    color: var(--accent-blue) !important;
+  }
+  .accent-primary {
+    accent-color: var(--accent-blue) !important;
+  }
+  /* Remove purple/lavender tints from cards, badges, and code blocks */
+  .bg-surface-container, .bg-surface-container-high, .bg-surface-container-highest, .bg-primary-fixed, .bg-primary-fixed\/30, .bg-primary-fixed\/40 {
+    background-color: #f3f4f6 !important;
+    border-color: var(--border-neutral) !important;
+    color: var(--text-primary) !important;
+  }
+  .bg-surface-container-low\/50 {
+    background-color: #f9fafb !important;
+  }
+  .text-on-primary-fixed {
+    color: var(--text-secondary) !important;
+  }
+  /* Selected sandbox card highlight */
+  .bg-primary-fixed\/40 {
+    background-color: #eff6ff !important;
+    border: 1.5px solid var(--accent-blue) !important;
+  }
+</style></head><body class="bg-surface font-body-md text-on-surface antialiased"><aside class="fixed left-0 top-0 h-screen w-64 bg-surface-container-lowest border-r border-outline-variant z-50 flex flex-col justify-between select-none"><div class="flex flex-col flex-1 min-h-0"><div class="h-16 px-space-md border-b border-outline-variant flex items-center justify-between"><div class="flex items-center gap-space-sm"><div class="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-on-primary shadow-sm"><span class="material-symbols-outlined text-[20px]">bug_report</span></div><div class="flex flex-col"><span class="font-headline-sm text-headline-sm text-on-surface leading-none font-bold tracking-tight">ReproProof</span><span class="font-code-sm text-code-sm text-on-surface-variant font-medium mt-space-xs">DIAGNOSTICS</span></div></div><span class="font-code-sm text-code-sm px-space-xs py-0.5 rounded bg-surface-container text-on-surface-variant font-medium border border-outline-variant">v1.4.2</span></div><div class="p-space-md"><button class="w-full flex items-center justify-center gap-space-sm py-space-sm px-space-md bg-primary-container hover:bg-primary text-on-primary font-label-md text-label-md rounded-xl transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-primary" type="button"><span class="material-symbols-outlined text-[18px]">add</span><span class="">New Bug Report</span></button></div><nav class="flex-1 px-space-sm space-y-0.5 overflow-y-auto" data-active-classes="bg-primary-fixed text-primary font-semibold relative before:absolute before:left-0 before:top-1.5 before:bottom-1.5 before:w-1 before:bg-primary before:rounded-r"><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors font-label-md text-label-md" data-path="overview-dashboard" href="#"><span class="material-symbols-outlined text-[20px]">grid_view</span><span class="">Overview / Dashboard</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors font-label-md text-label-md" data-path="investigations-bug-reports" href="#"><span class="material-symbols-outlined text-[20px]">troubleshoot</span><span class="">Investigations / Bug Reports</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors font-label-md text-label-md" data-path="test-runs" href="#"><span class="material-symbols-outlined text-[20px]">play_circle</span><span class="">Test Runs</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors font-label-md text-label-md" data-path="run-details-plan-approval" href="#"><span class="material-symbols-outlined text-[20px]">task_alt</span><span class="">Run Details &amp; Plan Approval</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors font-label-md text-label-md" data-path="live-execution" href="#"><span class="material-symbols-outlined text-[20px]">terminal</span><span class="">Live Execution</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors font-label-md text-label-md" data-path="evidence-passports" href="#"><span class="material-symbols-outlined text-[20px]">verified</span><span class="">Evidence Passports</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors font-label-md text-label-md" data-path="qa-test-cases" href="#"><span class="material-symbols-outlined text-[20px]">checklist</span><span class="">QA Test Cases</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors font-label-md text-label-md" data-path="settings-diagnostics" href="#"><span class="material-symbols-outlined text-[20px]">tune</span><span class="">Settings &amp; Diagnostics</span></a></nav></div><div class="p-space-md border-t border-outline-variant bg-surface-container-low/50 space-y-space-sm"><div class="flex items-center justify-between text-code-sm font-code-sm px-space-xs"><div class="flex items-center gap-1.5 text-on-surface"><span class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span><span class="font-medium">MSW (MOCK)</span></div><span class="font-code-sm text-code-sm px-1.5 py-0.5 rounded bg-surface-container-high text-on-surface-variant">ACTIVE</span></div><div class="flex items-center justify-between text-code-sm font-code-sm px-space-xs text-on-surface-variant"><span class="">ENV</span><span class="font-medium text-on-surface">STAGING: SAFE</span></div><div class="flex items-center justify-between p-space-xs rounded-lg bg-surface-container-lowest border border-outline-variant hover:border-outline cursor-pointer transition-colors"><div class="flex items-center gap-space-sm truncate"><span class="material-symbols-outlined text-primary text-[18px]">corporate_fare</span><div class="flex flex-col truncate"><span class="font-label-sm text-label-sm text-on-surface font-medium truncate">workspace-01</span><span class="font-code-sm text-code-sm text-on-surface-variant truncate">Eng Team</span></div></div><span class="material-symbols-outlined text-on-surface-variant text-[18px]">unfold_more</span></div></div></aside><div class="pl-64 flex flex-col min-h-screen"><header class="fixed top-0 left-64 right-0 h-16 bg-surface-container-lowest border-b border-outline-variant z-40 flex items-center justify-between px-space-lg"><div class="flex items-center gap-space-md"><div class="flex items-center gap-space-xs font-body-sm text-body-sm text-on-surface-variant"><span class="hover:text-on-surface cursor-pointer font-medium">ReproProof</span><span class="text-outline-variant">/</span><span class="hover:text-on-surface cursor-pointer font-medium">Investigations</span><span class="text-outline-variant">/</span><span class="font-code-sm text-code-sm text-primary font-semibold bg-surface-container-high px-1.5 py-0.5 rounded border border-outline-variant">BUG-8492</span></div><div class="hidden xl:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-code-sm text-code-sm"><span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span><span class="font-medium">FIXTURES ACTIVE (READ-ONLY)</span></div></div><div class="flex items-center gap-space-md"><div class="relative flex items-center w-64"><span class="material-symbols-outlined absolute left-2.5 text-on-surface-variant text-[18px]">search</span><input class="w-full h-9 pl-9 pr-8 bg-surface-container-lowest border border-outline-variant rounded-xl font-body-sm text-body-sm text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all" placeholder="Search tests, traces..." type="text"><kbd class="absolute right-2 px-1.5 py-0.5 rounded bg-surface-container font-code-sm text-code-sm text-on-surface-variant border border-outline-variant">⌘K</kbd></div><button class="flex items-center gap-1.5 h-9 px-3 bg-primary-container hover:bg-primary text-on-primary font-label-sm text-label-sm rounded-xl transition-colors shadow-sm focus:outline-none" type="button"><span class="material-symbols-outlined text-[16px]">add</span><span class="">New Bug</span></button><button class="relative p-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded-xl transition-colors" type="button"><span class="material-symbols-outlined text-[20px]">notifications</span><span class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-error ring-2 ring-surface-container-lowest"></span></button><div class="h-6 w-px bg-outline-variant"></div><div class="flex items-center gap-space-sm pl-space-xs"><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div><div class="hidden md:flex flex-col text-left"><span class="font-label-sm text-label-sm text-on-surface font-semibold leading-tight">Alex Chen</span><span class="font-code-sm text-code-sm text-on-surface-variant leading-tight">QA Lead</span></div></div></div></header><main class="w-full pt-16 bg-surface min-h-screen"><div class="flex flex-col w-full">
+<div class="px-space-md lg:px-margin-desktop py-space-lg max-w-[1560px] mx-auto w-full space-y-space-lg">
+<!-- Top Breadcrumb & Page Descriptor Header -->
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center gap-space-xs font-code-sm text-code-sm text-primary font-medium tracking-wide uppercase">
+<span class="inline-block w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+<span class="">INTAKE PIPELINE // NODE-09</span>
+<span class="text-on-surface-variant font-normal">|</span>
+<span class="text-on-surface-variant">Drafting Mode (Local Validation Active)</span>
+</div>
+<div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-space-sm pt-space-xs">
+<div>
+<h1 class="font-headline-xl text-headline-xl text-on-surface tracking-tight font-bold">New Bug Report</h1>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-4xl mt-space-xs leading-relaxed">
+            Describe the deterministic failure criteria so the reproduction agent can synthesize an isolated execution plan, compile test harnesses, and prepare containerized verification.
+          </p>
+</div>
+<div class="flex items-center gap-2 self-start lg:self-auto shrink-0">
+<span class="px-2.5 py-1 rounded bg-surface-container font-code-sm text-code-sm text-on-surface-variant font-medium">REPRO-ID: PENDING_SYNTHESIS</span>
+</div>
+</div>
+</div>
+<!-- Main 2-Column Content Layout (2/3 + 1/3) -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter-desktop items-start">
+<!-- LEFT 8 COLUMNS: MAIN FORM SECTIONS -->
+<form class="lg:col-span-8 space-y-space-lg" onsubmit="event.preventDefault();">
+<!-- SECTION 01: TARGET ENVIRONMENT & BUG TOPOLOGY -->
+<section class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm space-y-space-md">
+<div class="flex items-center justify-between pb-space-xs">
+<div class="flex items-center gap-space-sm">
+<span class="w-6 h-6 rounded-md bg-primary-fixed text-primary font-code-sm text-code-sm font-bold flex items-center justify-center">01</span>
+<h2 class="font-headline-md text-headline-md text-on-surface font-semibold tracking-tight">Target Environment &amp; Bug Topology</h2>
+</div>
+<span class="px-2.5 py-0.5 rounded-full bg-error-container text-on-error-container font-label-sm text-label-sm font-semibold tracking-wider">REQUIRED</span>
+</div>
+<!-- Bug Title Input -->
+<div class="space-y-1.5">
+<div class="flex justify-between items-center">
+<label class="font-label-sm text-label-sm text-on-surface font-medium flex items-center gap-1.5">
+<span class="">Deterministic Bug Title / Summary</span>
+<span class="text-error font-bold">*</span>
+</label>
+<span class="font-code-sm text-code-sm text-on-surface-variant">62 / 120 chars</span>
+</div>
+<div class="relative flex items-center">
+<input class="w-full h-11 px-3.5 pr-10 bg-surface-container-low rounded-lg font-body-md text-body-md text-on-surface focus:outline-none focus:bg-surface-container-lowest transition-all" type="text" value="Stripe webhook idempotency key causes duplicate ledger charges">
+<span class="material-symbols-outlined text-[20px] text-primary absolute right-3" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+</div>
+<!-- Project & Severity Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-space-md">
+<!-- Target Core -->
+<div class="space-y-1.5">
+<label class="font-label-sm text-label-sm text-on-surface font-medium">Target Core Service / Repository</label>
+<div class="relative">
+<select class="w-full h-10 px-3.5 bg-surface-container-low rounded-lg font-body-md text-body-md text-on-surface appearance-none focus:outline-none focus:bg-surface-container-lowest transition-all">
+<option selected="">payments-service (v3.19.0-rc4)</option>
+<option>identity-auth-service (v2.8.1)</option>
+<option>ledger-reconciliation (v1.14.2)</option>
+<option>notification-dispatcher (v4.0.2)</option>
+</select>
+<span class="material-symbols-outlined text-on-surface-variant absolute right-3 top-2.5 pointer-events-none text-[20px]">expand_more</span>
+</div>
+</div>
+<!-- Severity Pills -->
+<div class="space-y-1.5">
+<label class="font-label-sm text-label-sm text-on-surface font-medium">Reproduction Severity</label>
+<div class="grid grid-cols-4 gap-1.5 p-1 bg-surface-container rounded-lg">
+<button class="py-1.5 px-2 rounded-md bg-error-container text-on-error-container font-label-sm text-label-sm font-bold flex items-center justify-center gap-1 shadow-sm" type="button">
+<span class="w-1.5 h-1.5 rounded-full bg-error"></span>
+                  CRIT
+                </button>
+<button class="py-1.5 px-2 rounded-md text-on-surface-variant hover:bg-surface-container-lowest font-label-sm text-label-sm transition-colors text-center" type="button">
+                  HIGH
+                </button>
+<button class="py-1.5 px-2 rounded-md text-on-surface-variant hover:bg-surface-container-lowest font-label-sm text-label-sm transition-colors text-center" type="button">
+                  MED
+                </button>
+<button class="py-1.5 px-2 rounded-md text-on-surface-variant hover:bg-surface-container-lowest font-label-sm text-label-sm transition-colors text-center" type="button">
+                  LOW
+                </button>
+</div>
+</div>
+</div>
+<!-- Target Endpoint URL -->
+<div class="space-y-1.5">
+<div class="flex items-center justify-between">
+<label class="font-label-sm text-label-sm text-on-surface font-medium">Target Route / API Ingress Endpoint</label>
+<span class="px-2 py-0.5 rounded bg-primary-fixed text-primary font-code-sm text-code-sm font-semibold">STAGE PERMITTED</span>
+</div>
+<div class="flex items-center bg-surface-container-low rounded-lg px-3 py-2">
+<span class="font-code-md text-code-md font-bold text-secondary-container mr-2 shrink-0">POST</span>
+<input class="w-full bg-transparent font-code-sm text-code-sm text-on-surface focus:outline-none" type="text" value="https://staging-pay.internal.reproproof.dev/api/v2/checkout/charge">
+</div>
+</div>
+<!-- Target Execution Environment Selector -->
+<div class="space-y-space-sm pt-space-xs">
+<label class="font-label-sm text-label-sm text-on-surface font-medium block">Target Sandbox Sandbox Environment</label>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-space-sm">
+<!-- Card 1: Local Docker -->
+<div class="p-space-md rounded-xl bg-surface-container-low hover:bg-surface-container transition-all cursor-pointer flex flex-col justify-between">
+<div class="space-y-1.5">
+<div class="flex items-center justify-between">
+<span class="font-headline-sm text-headline-sm font-semibold text-on-surface">Local Docker</span>
+<input class="accent-primary" name="exec_env" type="radio">
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Isolated workstation instance</p>
+</div>
+<div class="pt-space-md mt-space-md">
+<span class="font-code-sm text-code-sm text-on-surface-variant bg-surface-container-highest px-2 py-0.5 rounded">port: 8089-mock</span>
+</div>
+</div>
+<!-- Card 2: Staging Sandbox (Recommended Selected) -->
+<div class="p-space-md rounded-xl bg-primary-fixed/40 transition-all cursor-pointer flex flex-col justify-between relative shadow-sm border">
+<div class="space-y-1.5">
+<div class="flex items-center justify-between">
+<span class="font-headline-sm text-headline-sm font-bold text-primary">Staging Sandbox</span>
+<span class="w-5 h-5 rounded-full bg-primary text-on-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-[16px]">check</span>
+</span>
+</div>
+<span class="inline-block px-1.5 py-0.5 rounded bg-primary text-on-primary font-code-sm text-code-sm font-bold">RECOMMENDED</span>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">repro-k8s-pod: safe-04 with synthetic bank rails</p>
+</div>
+<div class="pt-space-md mt-space-md">
+<span class="font-code-sm text-code-sm text-primary font-medium bg-surface-container-lowest px-2 py-0.5 rounded">isolated replicas: healthy</span>
+</div>
+</div>
+<!-- Card 3: Ephemeral VM -->
+<div class="p-space-md rounded-xl bg-surface-container-low hover:bg-surface-container transition-all cursor-pointer flex flex-col justify-between">
+<div class="space-y-1.5">
+<div class="flex items-center justify-between">
+<span class="font-headline-sm text-headline-sm font-semibold text-on-surface">Ephemeral VM</span>
+<input class="accent-primary" name="exec_env" type="radio">
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Clean room Firecracker microVM</p>
+</div>
+<div class="pt-space-md mt-space-md">
+<span class="font-code-sm text-code-sm text-on-surface-variant bg-surface-container-highest px-2 py-0.5 rounded">spin-up: ~850ms</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Safety Advisory Notice -->
+<div class="p-space-md rounded-xl bg-primary-fixed/30 flex items-start gap-space-sm">
+<span class="material-symbols-outlined text-primary text-[20px] shrink-0 mt-0.5">policy</span>
+<p class="font-body-sm text-body-sm text-on-primary-fixed leading-relaxed">
+<strong class="font-semibold">Human gate enforcement:</strong> Selecting an environment designates container routing parameters only. It does not authorize live script dispatch or payload execution without manual human plan sign-off.
+            </p>
+</div>
+<!-- Agent Profile Spec Banner -->
+<div class="flex items-center justify-between py-2 px-3 bg-surface-container rounded-lg font-code-sm text-code-sm text-on-surface-variant">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">memory</span>
+<span class="">Headless Chromium 122.0.6261.94 | Debian 12 (bookworm-slim)</span>
+</div>
+<span class="font-medium text-on-surface">2 vCPU / 4096MB Mem allocated</span>
+</div>
+</section>
+<!-- SECTION 02: REPRODUCTION PROTOCOL & DELTA SPEC -->
+<section class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm space-y-space-md">
+<div class="flex items-center justify-between pb-space-xs">
+<div class="flex items-center gap-space-sm">
+<span class="w-6 h-6 rounded-md bg-primary-fixed text-primary font-code-sm text-code-sm font-bold flex items-center justify-center">02</span>
+<h2 class="font-headline-md text-headline-md text-on-surface font-semibold tracking-tight">Reproduction Protocol &amp; Delta Spec</h2>
+</div>
+<span class="px-2.5 py-0.5 rounded-full bg-surface-container-high text-primary font-label-sm text-label-sm font-semibold">PLANNER READY</span>
+</div>
+<!-- Steps to Reproduce -->
+<div class="space-y-1.5">
+<div class="flex justify-between items-center">
+<label class="font-label-sm text-label-sm text-on-surface font-medium">Ordered Steps to Reproduce (Deterministic Sequence)</label>
+<button class="font-label-sm text-label-sm text-primary hover:underline font-medium flex items-center gap-1" type="button">
+<span class="material-symbols-outlined text-[16px]">playlist_add</span>
+                Prepend Template
+              </button>
+</div>
+<div class="rounded-lg bg-surface-container-low p-space-sm">
+<textarea class="w-full bg-transparent font-code-sm text-code-sm text-on-surface focus:outline-none resize-none leading-relaxed" rows="5">1. Navigate to /checkout with 2 items in cart (cart_id: "crt_8892")
+2. Input promo code 'SUMMER50' and trigger idempotency verification
+3. Rapidly dispatch double-click 'Confirm &amp; Pay' within 100ms window
+4. Query Postgres ledger charges: SELECT * FROM charges WHERE session_id = 'sess_0921'</textarea>
+</div>
+<div class="flex items-center justify-between text-code-sm font-code-sm pt-1">
+<span class="text-on-surface-variant">Auto-lexer detected: <strong>4 actionable steps</strong></span>
+<span class="text-secondary font-medium flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+                Synthesizable to test runner
+              </span>
+</div>
+</div>
+<!-- Expected vs Observed Behavior Diff -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-space-md pt-space-xs">
+<!-- Expected -->
+<div class="p-space-md rounded-xl bg-surface-container-low space-y-2">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-on-surface font-semibold flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[18px] text-secondary">check_circle</span>
+                  Expected Behavior
+                </span>
+<span class="font-code-sm text-code-sm text-secondary bg-surface-container-lowest px-2 py-0.5 rounded">DELTA_OK</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+                Single charge generated with $50.00 discount applied. Secondary incoming request rejected with HTTP 409 Conflict idempotency replay latch.
+              </p>
+</div>
+<!-- Observed Actual -->
+<div class="p-space-md rounded-xl bg-surface-container-low space-y-2">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-on-surface font-semibold flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[18px] text-error">error</span>
+                  Observed Actual Behavior
+                </span>
+<span class="font-code-sm text-code-sm text-error bg-surface-container-lowest px-2 py-0.5 rounded">DELTA_VIOLATION</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+                Two separate billing transactions recorded with identical millisecond timestamp; client ledger increments balance twice simultaneously.
+              </p>
+</div>
+</div>
+<!-- Stack Trace / Logs Area -->
+<div class="space-y-1.5 pt-space-xs">
+<div class="flex items-center justify-between">
+<label class="font-label-sm text-label-sm text-on-surface font-medium flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant">terminal</span>
+                Stack Trace / Server Log Excerpt
+              </label>
+<button class="font-label-sm text-label-sm text-on-surface-variant hover:text-on-surface flex items-center gap-1" type="button">
+<span class="material-symbols-outlined text-[16px]">content_copy</span>
+                Copy Excerpt
+              </button>
+</div>
+<div class="rounded-xl bg-surface-container p-space-md font-code-sm text-code-sm text-on-surface space-y-1 overflow-x-auto">
+<div class="flex gap-4">
+<span class="text-outline-variant select-none">01</span>
+<span class="">[2025-02-17T14:22:01.402Z] <span class="text-error font-bold">CRITICAL</span> Thread [worker-12]: Concurrent write lock collision</span>
+</div>
+<div class="flex gap-4">
+<span class="text-outline-variant select-none">02</span>
+<span class="pl-4">at IdempotencyGate.validate (<span class="text-primary font-medium">/src/middleware/idempotent.ts:88:14</span>)</span>
+</div>
+<div class="flex gap-4">
+<span class="text-outline-variant select-none">03</span>
+<span class="pl-4">at async ChargeDispatcher.processPayment (<span class="text-primary font-medium">/src/controllers/charge.ts:241:7</span>)</span>
+</div>
+<div class="flex gap-4">
+<span class="text-outline-variant select-none">04</span>
+<span class="">[Postgres-Wire] WARNING: unique constraint <span class="text-secondary font-mono">ux_idemp_key_session</span> violated (race resolution unhandled)</span>
+</div>
+</div>
+</div>
+</section>
+<!-- SECTION 03: SUPPORTING CONTEXT & SANITIZATION VAULT -->
+<section class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm space-y-space-md">
+<div class="flex items-center justify-between pb-space-xs">
+<div class="flex items-center gap-space-sm">
+<span class="w-6 h-6 rounded-md bg-primary-fixed text-primary font-code-sm text-code-sm font-bold flex items-center justify-center">03</span>
+<h2 class="font-headline-md text-headline-md text-on-surface font-semibold tracking-tight">Supporting Context &amp; Sanitization Vault</h2>
+</div>
+<span class="px-2.5 py-0.5 rounded-full bg-surface-container-high text-primary font-label-sm text-label-sm font-semibold">MASKING ACTIVE</span>
+</div>
+<!-- Token Shield Banner -->
+<div class="p-space-md rounded-xl bg-surface-container-low flex items-start gap-space-sm">
+<span class="material-symbols-outlined text-primary text-[20px] shrink-0 mt-0.5">shield</span>
+<div class="space-y-0.5">
+<h4 class="font-label-sm text-label-sm font-bold text-on-surface">Automated Token &amp; PII Shield Enabled</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+                Sensitive tokens, cookies, auth headers, and bearer credentials will be redacted automatically before plan synthesis or external AI evaluation.
+              </p>
+</div>
+</div>
+<!-- Safe Console Log Snippet (Masked) -->
+<div class="space-y-1.5">
+<div class="flex justify-between items-center">
+<label class="font-label-sm text-label-sm text-on-surface font-medium">Safe Console Log &amp; Network Ingress Excerpt</label>
+<span class="font-code-sm text-code-sm text-primary font-medium">2 items masked</span>
+</div>
+<div class="rounded-xl bg-surface-container-low p-space-md font-code-sm text-code-sm text-on-surface overflow-x-auto space-y-1">
+<div class="">&gt; req.headers['Authorization'] = 'Bearer <span class="bg-surface-container-highest px-1.5 py-0.5 rounded text-on-surface-variant font-bold">[REDACTED_API_KEY]</span>'</div>
+<div class="">&gt; req.body.stripe_token = 'tok_test_<span class="bg-surface-container-highest px-1.5 py-0.5 rounded text-on-surface-variant font-bold">[MASKED]</span>'</div>
+<div class="">&gt; req.body.cart_id = 'crt_8892'</div>
+</div>
+</div>
+<!-- Non-Sensitive Pre-flight Pre-requisites -->
+<div class="space-y-1.5">
+<label class="font-label-sm text-label-sm text-on-surface font-medium">Non-Sensitive Pre-Flight Prerequisites</label>
+<input class="w-full h-10 px-3.5 bg-surface-container-low rounded-lg font-body-md text-body-md text-on-surface focus:outline-none focus:bg-surface-container-lowest transition-all" type="text" value="Requires test account in KYC Tier-1 sandbox with pre-loaded mock balance ($200.00).">
+</div>
+<!-- Explicit Human Acknowledgement Checkbox -->
+<div class="pt-space-xs">
+<label class="flex items-start gap-space-sm cursor-pointer p-space-sm rounded-lg bg-surface-container-low hover:bg-surface-container transition-colors">
+<input checked="" class="mt-1 w-4 h-4 rounded text-primary focus:ring-0 accent-primary" type="checkbox">
+<span class="font-body-sm text-body-sm text-on-surface leading-snug">
+                I confirm this report targets a <strong>non-production sandbox environment</strong>. I understand that ReproProof synthetic workers will execute reproducible calls against this specific host. No production credentials or customer PII are present in this spec.
+              </span>
+</label>
+</div>
+</section>
+<!-- BOTTOM ACTION / DISPATCH BAR -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-space-md">
+<div class="flex items-center gap-space-xs text-on-surface-variant font-body-sm text-body-sm">
+<span class="material-symbols-outlined text-[18px]">lock</span>
+<span class="">Submitting creates an immutable reproduction spec. AI plan synthesis requires human review.</span>
+</div>
+<div class="flex items-center gap-space-sm shrink-0">
+<button class="px-space-md py-2 text-on-surface-variant hover:text-on-surface font-label-md text-label-md rounded-lg transition-colors" type="button">
+              Cancel
+            </button>
+<button class="px-space-md py-2 bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md rounded-lg transition-all" type="button">
+              Save Draft (Local)
+            </button>
+<button class="px-space-lg py-2.5 bg-primary-container hover:bg-primary text-on-primary font-label-md text-label-md font-semibold rounded-lg shadow-sm transition-all flex items-center gap-2" type="submit">
+<span class="material-symbols-outlined text-[18px]">auto_fix_high</span>
+              Synthesize Plan
+            </button>
+</div>
+</div>
+</form>
+<!-- RIGHT 4 COLUMNS: DIAGNOSTIC SIDEBAR & COMPLIANCE HUD -->
+<aside class="lg:col-span-4 space-y-space-md">
+<!-- CARD 1: REPRO COMPLIANCE GAUGE -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm space-y-space-sm">
+<div class="flex items-center justify-between">
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-semibold tracking-tight">Repro Compliance</h3>
+<span class="px-2 py-0.5 rounded-full bg-primary-fixed text-primary font-code-sm text-code-sm font-bold">100% PASS</span>
+</div>
+<div class="p-space-sm bg-surface-container-low rounded-lg space-y-2">
+<div class="flex justify-between items-center text-body-sm font-body-sm">
+<span class="text-on-surface-variant">Target Target Non-Prod:</span>
+<span class="font-bold text-primary flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">verified_user</span>
+                Verified Sandbox
+              </span>
+</div>
+<div class="w-full bg-surface-container h-1.5 rounded-full overflow-hidden">
+<div class="bg-primary h-full w-full rounded-full"></div>
+</div>
+</div>
+<ul class="font-code-sm text-code-sm space-y-2 text-on-surface-variant">
+<li class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px] text-primary">check</span>
+<span class="">Idempotency delta reproducible</span>
+</li>
+<li class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px] text-primary">check</span>
+<span class="">Bearer token sanitization armed</span>
+</li>
+<li class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px] text-primary">check</span>
+<span class="">Synthetic mock rails enabled</span>
+</li>
+</ul>
+</div>
+<!-- CARD 2: TOPOLOGY MAP VISUALIZATION -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm space-y-space-sm">
+<div class="flex items-center justify-between">
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-semibold tracking-tight">Sandbox Topology</h3>
+<span class="font-code-sm text-code-sm text-on-surface-variant">ISOLATION-V2</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Containerized flow layout configured for this intake payload:</p>
+<div class="bg-surface-container-low rounded-lg p-space-md flex flex-col items-center gap-2 text-center">
+<!-- Node A -->
+<div class="w-full py-2 px-3 rounded bg-surface-container-lowest text-on-surface font-code-sm text-code-sm font-semibold flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+<span class="">Repro Agent Runner</span>
+</div>
+<span class="text-on-surface-variant font-normal">v1.4</span>
+</div>
+<span class="material-symbols-outlined text-outline-variant text-[20px]">arrow_downward</span>
+<!-- Node B -->
+<div class="w-full py-2 px-3 rounded bg-surface-container-lowest text-on-surface font-code-sm text-code-sm font-semibold flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+<span class="">Proxy Gate (Mock Ledger)</span>
+</div>
+<span class="text-primary font-normal">SAFE-INLINE</span>
+</div>
+<span class="material-symbols-outlined text-outline-variant text-[20px]">arrow_downward</span>
+<!-- Node C -->
+<div class="w-full py-2 px-3 rounded bg-surface-container-lowest text-on-surface font-code-sm text-code-sm font-semibold flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+<span class="">k8s-pod: safe-04</span>
+</div>
+<span class="text-on-surface-variant font-normal">PORT: 8080</span>
+</div>
+</div>
+</div>
+<!-- CARD 3: REPRODUCTION ROADMAP GATES -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm space-y-space-sm">
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-semibold tracking-tight">Synthesis Roadmap</h3>
+<div class="space-y-space-sm pt-space-xs">
+<!-- Stage 1 -->
+<div class="flex items-start gap-space-sm">
+<span class="w-6 h-6 rounded-full bg-primary text-on-primary font-code-sm text-code-sm font-bold flex items-center justify-center shrink-0">1</span>
+<div>
+<p class="font-label-sm text-label-sm font-semibold text-on-surface">Spec Validation</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Schema and sandbox boundary confirmed.</p>
+</div>
+</div>
+<!-- Stage 2 -->
+<div class="flex items-start gap-space-sm">
+<span class="w-6 h-6 rounded-full bg-surface-container-high text-primary font-code-sm text-code-sm font-bold flex items-center justify-center shrink-0">2</span>
+<div>
+<p class="font-label-sm text-label-sm font-semibold text-on-surface">LLM Test Harness Generation</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Compile Playwright and Jest runner plans.</p>
+</div>
+</div>
+<!-- Stage 3 -->
+<div class="flex items-start gap-space-sm">
+<span class="w-6 h-6 rounded-full bg-surface-container text-on-surface-variant font-code-sm text-code-sm font-bold flex items-center justify-center shrink-0">3</span>
+<div>
+<p class="font-label-sm text-label-sm font-semibold text-on-surface">Human Approval Gate</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">QA sign-off required prior to execution dispatch.</p>
+</div>
+</div>
+<!-- Stage 4 -->
+<div class="flex items-start gap-space-sm">
+<span class="w-6 h-6 rounded-full bg-surface-container text-on-surface-variant font-code-sm text-code-sm font-bold flex items-center justify-center shrink-0">4</span>
+<div>
+<p class="font-label-sm text-label-sm font-semibold text-on-surface">Deterministic Execution</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Containerized run in isolated target replica.</p>
+</div>
+</div>
+</div>
+</div>
+<!-- CARD 4: STAGING POD STATUS -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm space-y-space-xs">
+<div class="flex items-center justify-between">
+<span class="font-code-sm text-code-sm text-on-surface-variant">K8S CLUSTER NODE-02</span>
+<span class="inline-block w-2 h-2 rounded-full bg-primary animate-ping"></span>
+</div>
+<div class="flex items-center justify-between pt-1">
+<span class="font-label-md text-label-md font-semibold text-on-surface">Staging Pod Ready</span>
+<span class="font-code-sm text-code-sm text-primary font-medium">HEALTHY</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant pt-1 leading-normal">
+            Target ingress responds to synthetic health ping in 12ms. Zero egress lock detected.
+          </p>
+</div>
+</aside>
+</div>
+</div>
+</div></main></div>
+
+</body></html>

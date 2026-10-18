@@ -15,6 +15,7 @@ export default function BugReportForm() {
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
+  const [draftSaved, setDraftSaved] = useState(false)
   const navigate = useNavigate()
 
   async function submit(event: React.FormEvent) {
@@ -54,11 +55,12 @@ export default function BugReportForm() {
       <label>Reproduction steps<textarea rows={4} value={stepsText} onChange={e => setStepsText(e.target.value)} placeholder={'Enter one action per line, for example:\nOpen the profile settings page\nClick the Save profile button'} /><small className="field-hint">Use specific actions. The API asks for clarification when steps are missing or too vague.</small></label>
       <div className="form-row"><label>Expected behavior<textarea rows={3} value={expectedBehavior} onChange={e => setExpectedBehavior(e.target.value)} placeholder="What should happen?" /></label><label>Actual behavior<textarea rows={3} value={actualBehavior} onChange={e => setActualBehavior(e.target.value)} placeholder="What happened instead?" /></label></div>
       <label>Browser<select value="chromium" disabled><option value="chromium">Chromium</option></select></label>
-      <button type="button" className="attach-button"><Paperclip size={15} />Attach screenshot or recording</button>
+      <button type="button" className="attach-button" disabled title="File upload is not supported by the current API"><Paperclip size={15} />Attachments unavailable</button>
       <div className="form-note"><Sparkles size={15} />Plans will use validated browser actions and require approval before execution.</div>
       {message.length > 0 && <div className="clarification-box" role="status"><b>A few details are needed before a plan can be prepared:</b><ul>{message.map(question => <li key={question}>{question}</li>)}</ul></div>}
       {error && <div className="error-banner" role="alert">{error}</div>}
-      <div className="form-footer"><span>Provide enough detail to make the reproduction unambiguous.</span><button className="primary-button" type="submit" disabled={submitting}>{submitting ? 'Submitting…' : 'Submit bug report'} {!submitting && <ArrowRight size={16} />}</button></div>
+      {draftSaved&&<div className="form-note" role="status">Local draft saved in this browser only.</div>}
+      <div className="form-footer"><span>Provide enough detail to make the reproduction unambiguous.</span><div className="button-row"><Link className="secondary-button" to="/">Cancel</Link><button type="button" className="secondary-button" onClick={()=>{localStorage.setItem('reproproof-bug-draft',JSON.stringify({title,description,targetUrl,stepsText,expectedBehavior,actualBehavior}));setDraftSaved(true)}}>Save local draft</button><button className="primary-button" type="submit" disabled={submitting}>{submitting ? 'Submitting…' : 'Submit bug report'} {!submitting && <ArrowRight size={16} />}</button></div></div>
     </form>}
   </div>
 }
