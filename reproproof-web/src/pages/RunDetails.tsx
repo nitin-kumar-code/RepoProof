@@ -28,7 +28,7 @@ export default function RunDetails() {
       : !run ? <p role="status">Loading plan…</p>
         : <>
           <div className="run-title-row"><div><div className="eyebrow">TEST RUN / {run.id}</div><h1>Reproduction plan</h1><p>Bug report {run.bugReportId} · Chromium · Created {new Date(run.createdAt).toLocaleString()}</p></div></div>
-          <div className="run-detail-grid"><div className="run-main-column"><PlanApproval plan={run.plan} status={run.status} /></div></div>
+          <div className="run-detail-grid"><div className="run-main-column"><PlanApproval run={run} onUpdated={updated => setState(current => ({ ...current, run: updated }))} /></div></div>
         </>}
   </div>
 }

@@ -17,6 +17,8 @@ const envSchema = z.object({
   PLANNER_MODE: z.enum(['mock', 'openai']).default('mock'),
   OPENAI_API_KEY: z.preprocess(value => value === '' ? undefined : value, z.string().min(1).optional()),
   OPENAI_MODEL: z.string().trim().min(1).default('gpt-4o-mini'),
+  APPROVAL_USERNAME: z.preprocess(value => value === '' ? undefined : value, z.string().trim().min(1).refine(value => !value.includes(':'), 'must not contain a colon').optional()),
+  APPROVAL_PASSWORD: z.preprocess(value => value === '' ? undefined : value, z.string().min(12).optional()),
 })
 
 const parsed = envSchema.safeParse(process.env)
@@ -32,6 +34,10 @@ if (Boolean(env.SUPABASE_URL) !== Boolean(env.SUPABASE_SERVICE_ROLE_KEY)) {
 
 if (env.PLANNER_MODE === 'openai' && !env.OPENAI_API_KEY) {
   throw new Error('Invalid environment configuration: OPENAI_API_KEY is required when PLANNER_MODE=openai')
+}
+
+if (Boolean(env.APPROVAL_USERNAME) !== Boolean(env.APPROVAL_PASSWORD)) {
+  throw new Error('Invalid environment configuration: APPROVAL_USERNAME and APPROVAL_PASSWORD must be configured together')
 }
 
 for (const host of env.ALLOWED_TARGET_HOSTS) {

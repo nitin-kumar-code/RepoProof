@@ -47,12 +47,22 @@ export interface AgentPlan {
   failureCriteria: string[]
 }
 
+export interface RunApproval {
+  approver: string
+  decision: 'approved' | 'rejected'
+  decidedAt: string
+  planHash: string
+}
+
 export interface RunRecord {
   id: string
   bugReportId: string
-  status: 'pending' | 'awaiting_approval' | 'approved' | 'running' | 'passed' | 'failed' | 'error'
+  status: 'pending' | 'awaiting_approval' | 'approved' | 'cancelled' | 'expired' | 'running' | 'verifying' | 'reproduced' | 'not_reproduced' | 'inconclusive' | 'passed' | 'failed' | 'error'
   browser: 'chromium'
   createdAt: string
   updatedAt: string
+  planHash: string
+  approvalExpiresAt: string
+  approval: RunApproval | null
   plan: AgentPlan
 }

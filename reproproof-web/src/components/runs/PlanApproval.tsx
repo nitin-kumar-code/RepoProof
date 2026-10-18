@@ -1,5 +1,8 @@
+import { useEffect, useState } from 'react'
 import { CircleDot, Sparkles } from 'lucide-react'
-import type { AgentPlan, PlanAction, RunRecord } from '../../types/run'
+import { decideRunApproval } from '../../api/runs'
+import type { PlanAction, RunRecord } from '../../types/run'
+import './PlanApproval.css'
 
 function describeAction(action: PlanAction | null): string {
   if (!action) return 'No browser action proposed'
@@ -14,10 +17,49 @@ function describeAction(action: PlanAction | null): string {
   }
 }
 
-export default function PlanApproval({ plan, status }: { plan: AgentPlan; status: RunRecord['status'] }) {
+export default function PlanApproval({ run, onUpdated }: { run: RunRecord; onUpdated: (run: RunRecord) => void }) {
+  const { plan, status } = run
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
+  const [clock, setClock] = useState(() => Date.now())
+  const approvalExpired = new Date(run.approvalExpiresAt).getTime() <= clock
+
+  useEffect(() => {
+    const remaining = new Date(run.approvalExpiresAt).getTime() - Date.now()
+    if (remaining <= 0) return
+    const timer = window.setTimeout(() => setClock(Date.now()), remaining)
+    return () => window.clearTimeout(timer)
+  }, [run.approvalExpiresAt])
+
+  const navigation = plan.steps.find(step => step.action?.type === 'navigate')?.action
+  const destination = navigation?.type === 'navigate'
+    ? navigation.url
+    : plan.preconditions.find(item => item.startsWith('Approved target: '))?.slice('Approved target: '.length)
+  const decide = async (decision: 'approved' | 'rejected') => {
+    if (new Date(run.approvalExpiresAt).getTime() <= Date.now()) {
+      setClock(Date.now())
+      return
+    }
+    if (decision === 'rejected' && !window.confirm('Reject this plan and cancel the run?')) return
+    setBusy(true)
+    setError('')
+    try {
+      const updated = await decideRunApproval(run.id, decision, username, password)
+      onUpdated(updated)
+      setPassword('')
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Could not record this decision.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
   return <section className="panel plan-panel">
     <div className="panel-heading"><div><div className="eyebrow">AI GENERATED PLAN</div><h2>Reproduction plan</h2></div><span className="status-pill approval"><CircleDot size={12} /> {status.replaceAll('_', ' ')}</span></div>
     <p className="muted">{plan.summary}</p>
+    {destination && <p className="muted"><b>Destination:</b> {destination}</p>}
     <div className="plan-ai"><Sparkles size={15} /><span>No browser actions have run. Review the plan before execution is implemented.</span></div>
     {plan.preconditions.length > 0 && <><h3>Preconditions</h3><ul>{plan.preconditions.map(item => <li key={item}>{item}</li>)}</ul></>}
     {plan.clarifications.length > 0 && <div className="clarification-box" role="status"><b>Report details to clarify:</b><ul>{plan.clarifications.map(item => <li key={item}>{item}</li>)}</ul></div>}
@@ -28,5 +70,20 @@ export default function PlanApproval({ plan, status }: { plan: AgentPlan; status
     </li>)}</ol>
     <h3>Success criteria</h3><ul>{plan.successCriteria.map((criterion, index) => <li key={`${index}-${criterion}`}>{criterion}</li>)}</ul>
     <h3>Failure criteria</h3><ul>{plan.failureCriteria.map((criterion, index) => <li key={`${index}-${criterion}`}>{criterion}</li>)}</ul>
+    {run.approval && <p className="muted">Decision {run.approval.decision} by {run.approval.approver} at {new Date(run.approval.decidedAt).toLocaleString()}.</p>}
+    {status === 'awaiting_approval' && <div className="approval-controls">
+      <h3>Record your decision</h3>
+      <p className="muted">Approval expires {new Date(run.approvalExpiresAt).toLocaleString()}. Your server-verified username is recorded with the decision.</p>
+      {approvalExpired && <span className="approval-expired-badge" role="status">Approval window expired</span>}
+      <div className="approval-credentials">
+        <label>Approver username<input disabled={approvalExpired || busy} autoComplete="username" value={username} onChange={event => setUsername(event.target.value)} /></label>
+        <label>Password<input disabled={approvalExpired || busy} type="password" autoComplete="current-password" value={password} onChange={event => setPassword(event.target.value)} /></label>
+      </div>
+      {error && <p className="error-banner" role="alert">{error}</p>}
+      <div className="approval-actions">
+        <button type="button" className="primary-button" disabled={approvalExpired || busy || !username || !password} onClick={() => void decide('approved')}>{busy ? 'Saving…' : 'Approve plan'}</button>
+        <button type="button" className="secondary-button" disabled={approvalExpired || busy || !username || !password} onClick={() => void decide('rejected')}>Reject and cancel</button>
+      </div>
+    </div>}
   </section>
 }

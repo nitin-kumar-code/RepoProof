@@ -10,6 +10,8 @@ services:
       PLANNER_MODE: ${PLANNER_MODE:-mock}
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4o-mini}
+      APPROVAL_USERNAME: ${APPROVAL_USERNAME:-}
+      APPROVAL_PASSWORD: ${APPROVAL_PASSWORD:-}
     expose:
       - "4000"
     healthcheck:

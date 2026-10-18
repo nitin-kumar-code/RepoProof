@@ -28,3 +28,13 @@ To use OpenAI structured outputs, set `PLANNER_MODE=openai` and
 `OPENAI_API_KEY`; `OPENAI_MODEL` defaults to `gpt-4o-mini`. The key stays on the
 API server. Every model result is parsed by the plan Zod schema and checked
 against the original report before a run is saved.
+
+## Human approval
+
+`POST /api/runs/:id/approve` requires HTTP Basic credentials configured with
+`APPROVAL_USERNAME` and `APPROVAL_PASSWORD`. The username is the server-verified
+approver recorded with the decision; identity is not accepted from the request
+body. Approval expires after 24 hours. Rejection cancels the run. Plans are
+fingerprinted with SHA-256, and the server checks that fingerprint again before
+atomically claiming a run for execution. Keep these credentials server-side and
+use HTTPS outside local development.

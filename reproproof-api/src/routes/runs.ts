@@ -5,13 +5,50 @@ import { bugRepository } from '../db/repository'
 import { runRepository } from '../db/runRepository'
 import { generatePlan } from '../services/planner'
 import { RunWithPlanSchema } from '../schemas/run'
+import { ApprovalError, approvalExpiryFrom, decideRunApproval, hashPlan, verifyApproverAuthorization } from '../services/approvals'
+import { env } from '../config/env'
 
 export const runsRouter = Router()
 
 const CreateRunSchema = z.object({ bugReportId: z.string().trim().min(1) }).strict()
+const ApprovalRequestSchema = z.object({ decision: z.enum(['approved', 'rejected']) }).strict()
 
 runsRouter.get('/', async (_request, response) => {
   response.json(await runRepository.list())
+})
+
+runsRouter.post('/:id/approve', async (request, response) => {
+  if (!env.APPROVAL_USERNAME || !env.APPROVAL_PASSWORD) {
+    response.status(503).json({ error: 'approval_auth_not_configured', message: 'Configure server-side approval credentials before recording decisions.' })
+    return
+  }
+  const approver = verifyApproverAuthorization(request.header('authorization'))
+  if (!approver) {
+    response.setHeader('WWW-Authenticate', 'Basic realm="ReproProof approval", charset="UTF-8"')
+    response.status(401).json({ error: 'approver_authentication_required' })
+    return
+  }
+  const parsed = ApprovalRequestSchema.safeParse(request.body)
+  if (!parsed.success) {
+    response.status(400).json({ error: 'invalid_approval_request' })
+    return
+  }
+  const run = await runRepository.get(request.params.id)
+  if (!run) {
+    response.status(404).json({ error: 'run_not_found' })
+    return
+  }
+  try {
+    response.json(await decideRunApproval(run, parsed.data.decision, approver))
+  } catch (cause) {
+    if (cause instanceof ApprovalError) {
+      const status = cause.code === 'invalid_run_state' ? 409 : cause.code === 'approval_expired' ? 410 : 409
+      response.status(status).json({ error: cause.code })
+      return
+    }
+    console.error(`Could not record approval for run ${run.id}:`, cause)
+    response.status(500).json({ error: 'approval_record_failed' })
+  }
 })
 
 runsRouter.get('/:id', async (request, response) => {
@@ -66,6 +103,9 @@ runsRouter.post('/', async (request, response) => {
     browser: bug.environment.browser,
     createdAt: now,
     updatedAt: now,
+    planHash: hashPlan(plan),
+    approvalExpiresAt: approvalExpiryFrom(new Date(now)),
+    approval: null,
     plan,
   })
 
