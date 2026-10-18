@@ -1,7 +1,7 @@
-import type { BugReport } from '../types/bug'
+import type { BugSummary } from '../types/bug'
 import type { TestRun } from '../types/run'
 
-export const bugs: BugReport[] = [
+export const bugs: BugSummary[] = [
   { id: 'BUG-248', title: 'Checkout button is unresponsive on Safari', project: 'Storefront', status: 'In progress', updatedAt: '12 min ago', severity: 'High' },
   { id: 'BUG-247', title: 'Profile image upload fails for large files', project: 'Accounts', status: 'Open', updatedAt: '1 hour ago', severity: 'Medium' },
   { id: 'BUG-246', title: 'Search results are missing pagination', project: 'Storefront', status: 'Open', updatedAt: '3 hours ago', severity: 'Low' },

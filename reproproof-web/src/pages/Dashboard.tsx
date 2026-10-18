@@ -1,10 +1,10 @@
 import { ArrowDownRight, ArrowRight, ArrowUpRight, Bug, CheckCircle2, Clock3, Plus, Sparkles } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { bugs, runs } from '../mocks/demoData'
-import type { BugReport } from '../types/bug'
+import type { BugStatus } from '../types/bug'
 import type { TestRun } from '../types/run'
 
-function Status({ status }: { status: BugReport['status'] | TestRun['status'] }) { return <span className={`status-pill ${status.toLowerCase().replaceAll(' ', '-')}`}><i />{status}</span> }
+function Status({ status }: { status: BugStatus | TestRun['status'] }) { return <span className={`status-pill ${status.toLowerCase().replaceAll(' ', '-')}`}><i />{status}</span> }
 export default function Dashboard() {
   return <div className="page dashboard"><div className="welcome-row"><div><div className="eyebrow">SUNDAY, OCTOBER 18, 2026</div><h1>Good morning, Alex <span>✳</span></h1><p>Here’s what’s happening across your workspace today.</p></div><Link className="primary-button" to="/new-bug"><Plus size={17} />Report a bug</Link></div>
     <div className="stats-grid"><article className="stat-card"><div className="stat-top"><span>Open bugs</span><span className="stat-icon rose"><Bug size={17} /></span></div><div className="stat-value">12 <small><ArrowUpRight size={13} /> 2 this week</small></div><div className="stat-bottom">Across 3 projects</div></article><article className="stat-card"><div className="stat-top"><span>Runs this month</span><span className="stat-icon blue"><Clock3 size={17} /></span></div><div className="stat-value">68 <small><ArrowUpRight size={13} /> 18%</small></div><div className="stat-bottom"><div className="progress"><i /></div>68% of monthly limit</div></article><article className="stat-card"><div className="stat-top"><span>Reproducibility rate</span><span className="stat-icon green"><CheckCircle2 size={17} /></span></div><div className="stat-value">84% <small className="positive"><ArrowUpRight size={13} /> 6%</small></div><div className="stat-bottom">Compared to last month</div></article><article className="stat-card"><div className="stat-top"><span>Avg. time to verify</span><span className="stat-icon violet"><Sparkles size={17} /></span></div><div className="stat-value">4.2 <small>min</small></div><div className="stat-bottom"><ArrowDownRight size={13} className="positive" /> 1.3 min faster this month</div></article></div>
