@@ -1,0 +1,3 @@
+import { Download, ShieldCheck } from 'lucide-react'
+import { Link } from 'react-router-dom'
+export default function PassportReport() { return <section className="passport-card"><div className="passport-top"><div className="passport-icon"><ShieldCheck size={19} /></div><span>DEMO PASSPORT</span><Download size={16} /></div><h2>Result is inconclusive.</h2><p>Recorded sample data. Evidence is unavailable from the backend.</p><div className="passport-meta"><span>RUN ID<b>RUN-891</b></span><span>PROVENANCE<b>Recorded demo</b></span></div><div className="passport-footer"><span><i /> Not verified</span><Link to="/evidence/RUN-891">View report ↗</Link></div></section> }
