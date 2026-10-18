@@ -4,6 +4,16 @@ import { z } from 'zod'
 const envSchema = z.object({
   PORT: z.coerce.number().int().min(1).max(65535).default(4000),
   CORS_ORIGIN: z.string().url().optional(),
+  // Exact hostnames, comma-separated. An empty allowlist rejects all target URLs.
+  ALLOWED_TARGET_HOSTS: z.string().default('').transform(value =>
+    value.split(',').map(host => host.trim().toLowerCase()).filter(Boolean),
+  ),
+  // Default to common local web app ports; add other ports deliberately.
+  ALLOWED_TARGET_PORTS: z.string().default('80,443,3000,4000,4173,5000,5173,8000,8080,8081,8443').transform(value =>
+    value.split(',').map(port => port.trim()).filter(Boolean).map(Number),
+  ),
+  SUPABASE_URL: z.string().url().optional(),
+  SUPABASE_SERVICE_ROLE_KEY: z.string().min(1).optional(),
 })
 
 const parsed = envSchema.safeParse(process.env)
@@ -12,3 +22,19 @@ if (!parsed.success) {
 }
 
 export const env = parsed.data
+
+if (Boolean(env.SUPABASE_URL) !== Boolean(env.SUPABASE_SERVICE_ROLE_KEY)) {
+  throw new Error('Invalid environment configuration: SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be configured together')
+}
+
+for (const host of env.ALLOWED_TARGET_HOSTS) {
+  if (host.includes('/') || host.includes(':') || host.includes('@') || host.includes('*')) {
+    throw new Error(`Invalid ALLOWED_TARGET_HOSTS entry "${host}": use exact hostnames without ports or wildcards`)
+  }
+}
+
+for (const port of env.ALLOWED_TARGET_PORTS) {
+  if (!Number.isInteger(port) || port < 1 || port > 65535) {
+    throw new Error(`Invalid ALLOWED_TARGET_PORTS entry "${port}": use comma-separated ports from 1 to 65535`)
+  }
+}

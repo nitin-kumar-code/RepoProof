@@ -1,9 +1,14 @@
 import { randomUUID } from 'node:crypto'
 import { Router } from 'express'
+import { env } from '../config/env'
 import { bugRepository } from '../db/repository'
 import { BugReportSchema, BugReportSubmissionSchema } from '../schemas/bug'
 
 export const bugsRouter = Router()
+
+function formatZodIssues(issues: Array<{ path: PropertyKey[]; message: string }>) {
+  return issues.map(issue => ({ path: issue.path.map(String).join('.'), message: issue.message }))
+}
 
 const clarificationPrompts: Record<string, string> = {
   'environment.targetUrl': 'What approved test URL should the browser use?',
@@ -18,12 +23,12 @@ function isSpecificStep(instruction: string): boolean {
   return normalized.length >= 3 && !vagueInstructions.has(normalized)
 }
 
-bugsRouter.get('/', (_request, response) => {
-  response.json(bugRepository.list())
+bugsRouter.get('/', async (_request, response) => {
+  response.json(await bugRepository.list())
 })
 
-bugsRouter.get('/:id', (request, response) => {
-  const report = bugRepository.get(request.params.id)
+bugsRouter.get('/:id', async (request, response) => {
+  const report = await bugRepository.get(request.params.id)
   if (!report) {
     response.status(404).json({ error: 'bug_not_found' })
     return
@@ -31,17 +36,38 @@ bugsRouter.get('/:id', (request, response) => {
   response.json(report)
 })
 
-bugsRouter.post('/', (request, response) => {
+bugsRouter.post('/', async (request, response) => {
   const parsed = BugReportSubmissionSchema.safeParse(request.body)
   if (!parsed.success) {
     response.status(400).json({
       error: 'invalid_bug_report',
-      issues: parsed.error.issues.map(issue => ({ path: issue.path.join('.'), message: issue.message })),
+      issues: formatZodIssues(parsed.error.issues),
     })
     return
   }
 
   const submission = parsed.data
+  const targetUrl = submission.environment.targetUrl
+  if (targetUrl) {
+    const parsedTarget = new URL(targetUrl)
+    const targetHost = parsedTarget.hostname.toLowerCase()
+    if (!env.ALLOWED_TARGET_HOSTS.includes(targetHost)) {
+      response.status(403).json({
+        error: 'target_not_allowed',
+        message: `Host "${targetHost}" is not in ALLOWED_TARGET_HOSTS. Add it to reproproof-api/.env and restart the API.`,
+      })
+      return
+    }
+    const targetPort = Number(parsedTarget.port || (parsedTarget.protocol === 'https:' ? 443 : 80))
+    if (!env.ALLOWED_TARGET_PORTS.includes(targetPort)) {
+      response.status(403).json({
+        error: 'target_port_not_allowed',
+        message: `Port ${targetPort} is not in ALLOWED_TARGET_PORTS. Add it to reproproof-api/.env only if this is an approved HTTP test service.`,
+      })
+      return
+    }
+  }
+
   const missing: string[] = []
   if (!submission.environment.targetUrl) missing.push('environment.targetUrl')
   if (!submission.steps?.length) missing.push('steps')
@@ -81,10 +107,10 @@ bugsRouter.post('/', (request, response) => {
   })
 
   if (!completeReport.success) {
-    response.status(400).json({ error: 'invalid_bug_report', issues: completeReport.error.issues })
+    response.status(400).json({ error: 'invalid_bug_report', issues: formatZodIssues(completeReport.error.issues) })
     return
   }
 
-  const report = bugRepository.save(completeReport.data)
-  response.status(201).json({ status: 'created', complete: true, bugReport: report })
+  const report = await bugRepository.save(completeReport.data)
+  response.status(201).json({ id: report.id, status: 'created', complete: true, bugReport: report })
 })
