@@ -1,0 +1,416 @@
+<!DOCTYPE html><html lang="en" style=""><head><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0" name="viewport"><meta content="web_dashboard" name="shell-type"><link href="https://fonts.googleapis.com" rel="preconnect"><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{"colors":{"secondary-container":"#2170e4","surface-container-highest":"#dae2fd","on-background":"#131b2e","on-surface":"#131b2e","on-primary-container":"#eeefff","on-tertiary-container":"#eaf1fa","inverse-on-surface":"#eef0ff","surface-dim":"#d2d9f4","inverse-primary":"#b4c5ff","primary-container":"#2563eb","surface-container-lowest":"#ffffff","on-tertiary-fixed":"#151c23","on-surface-variant":"#434655","on-primary":"#ffffff","primary-fixed":"#dbe1ff","on-tertiary":"#ffffff","on-secondary":"#ffffff","surface":"#faf8ff","on-error":"#ffffff","secondary-fixed-dim":"#adc6ff","tertiary-fixed":"#dce3ec","surface-bright":"#faf8ff","error":"#ba1a1a","secondary":"#0058be","error-container":"#ffdad6","surface-tint":"#0053db","background":"#faf8ff","primary":"#004ac6","outline-variant":"#c3c6d7","tertiary":"#4e565d","outline":"#737686","tertiary-container":"#676e76","on-primary-fixed":"#00174b","inverse-surface":"#283044","on-secondary-fixed-variant":"#004395","secondary-fixed":"#d8e2ff","tertiary-fixed-dim":"#c0c7d0","on-tertiary-fixed-variant":"#40484f","surface-container-high":"#e2e7ff","surface-container":"#eaedff","surface-variant":"#dae2fd","surface-container-low":"#f2f3ff","on-primary-fixed-variant":"#003ea8","on-secondary-container":"#fefcff","on-secondary-fixed":"#001a42","primary-fixed-dim":"#b4c5ff","on-error-container":"#93000a"},"borderRadius":{"DEFAULT":"0.125rem","lg":"0.25rem","xl":"0.5rem","full":"0.75rem"},"spacing":{"margin":"1rem","space-sm":"0.5rem","gutter-desktop":"1.5rem","space-md":"1rem","space-xs":"0.25rem","space-xl":"2rem","space-lg":"1.5rem","margin-desktop":"2rem","gutter":"1rem"},"fontFamily":{"label-sm":["Inter"],"headline-lg":["Inter"],"headline-md":["Inter"],"headline-sm":["Inter"],"code-sm":["JetBrains Mono"],"body-md":["Inter"],"body-lg":["Inter"],"headline-xl":["Inter"],"code-md":["JetBrains Mono"],"body-sm":["Inter"],"headline-xl-mobile":["Inter"],"label-md":["Inter"]},"fontSize":{"label-sm":["0.75rem",{"lineHeight":"1rem","letterSpacing":"0.02em","fontWeight":"500"}],"headline-lg":["1.5rem",{"lineHeight":"2rem","letterSpacing":"-0.02em","fontWeight":"600"}],"headline-md":["1.25rem",{"lineHeight":"1.75rem","letterSpacing":"-0.015em","fontWeight":"600"}],"headline-sm":["1.125rem",{"lineHeight":"1.5rem","letterSpacing":"-0.01em","fontWeight":"600"}],"code-sm":["0.75rem",{"lineHeight":"1rem","letterSpacing":"0em","fontWeight":"400"}],"body-md":["0.875rem",{"lineHeight":"1.25rem","letterSpacing":"0em","fontWeight":"400"}],"body-lg":["1rem",{"lineHeight":"1.5rem","letterSpacing":"0em","fontWeight":"400"}],"headline-xl":["2rem",{"lineHeight":"2.5rem","letterSpacing":"-0.025em","fontWeight":"700"}],"code-md":["0.875rem",{"lineHeight":"1.25rem","letterSpacing":"0em","fontWeight":"400"}],"body-sm":["0.75rem",{"lineHeight":"1rem","letterSpacing":"0.01em","fontWeight":"400"}],"headline-xl-mobile":["1.75rem",{"lineHeight":"2.25rem","letterSpacing":"-0.02em","fontWeight":"700"}],"label-md":["0.875rem",{"lineHeight":"1.25rem","letterSpacing":"0em","fontWeight":"500"}]}}}}</script><link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400..700;1,6..72,400..700&amp;display=swap" rel="stylesheet"><style class="">body, main { background-color: #F3F0E8 !important; color: #202923 !important; } aside { background-color: #183D33 !important; border-color: rgba(255,255,255,0.12) !important; color: #E7F4EB !important; } aside span, aside a { color: #D1E5DB !important; } aside a:hover { background-color: rgba(255,255,255,0.08) !important; color: #FFFFFF !important; } aside nav a[data-path="run-details-plan-approval"] { background-color: rgba(255,255,255,0.15) !important; color: #FFFFFF !important; font-weight: 600 !important; } header { background-color: #FFFEFA !important; border-color: #D9D7CC !important; } .bg-surface-container-lowest { background-color: #FFFEFA !important; border: 1px solid #D9D7CC !important; } .bg-primary-container, .bg-primary { background-color: #C04B2B !important; color: #FFFFFF !important; } .text-primary { color: #C04B2B !important; } h1, h2 { font-family: 'Newsreader', Georgia, serif !important; color: #202923 !important; } .border-outline-variant { border-color: #D9D7CC !important; } #btn-approve { background-color: #C04B2B !important; color: #FFFFFF !important; border-radius: 4px !important; } .bg-error-container { background-color: #FCEFEF !important; border: 1px solid #B83A3A !important; color: #B83A3A !important; } .bg-surface-container-high { background-color: #17211D !important; color: #E7F4EB !important; font-family: 'JetBrains Mono', monospace !important; }</style><style id="theme-neutral-override">
+  body, main { background-color: #F3F4F6 !important; color: #111827 !important; }
+  aside, header { background-color: #FFFFFF !important; border-color: #E5E7EB !important; color: #111827 !important; }
+  aside span, aside a { color: #4B5563 !important; }
+  aside nav a[data-path="run-details-plan-approval"] { background-color: #EFF6FF !important; color: #2563EB !important; }
+  .bg-surface-container-lowest, section.bg-surface-container-lowest { background-color: #FFFFFF !important; border: 1px solid #E5E7EB !important; }
+  .border-outline-variant, .border-b, .border-r, .border-t { border-color: #E5E7EB !important; }
+  .text-on-surface { color: #111827 !important; }
+  .text-on-surface-variant { color: #4B5563 !important; }
+  .bg-primary, .bg-primary-container, #authorizeBtn { background-color: #2563EB !important; color: #FFFFFF !important; }
+  .text-primary { color: #2563EB !important; }
+  .bg-primary-fixed { background-color: #EFF6FF !important; color: #2563EB !important; }
+  .bg-surface-container-high, .bg-surface-container { background-color: #F9FAFB !important; }
+</style></head><body class="bg-surface font-body-md text-on-surface antialiased"><aside class="fixed left-0 top-0 h-screen w-64 bg-surface-container-lowest border-r border-outline-variant z-50 flex flex-col justify-between select-none"><div class="flex flex-col flex-1 min-h-0"><div class="h-16 px-space-md border-b border-outline-variant flex items-center justify-between"><div class="flex items-center gap-space-sm"><div class="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-on-primary shadow-sm"><span class="material-symbols-outlined text-[20px]">bug_report</span></div><div class="flex flex-col"><span class="font-headline-sm text-headline-sm text-on-surface leading-none font-bold tracking-tight">ReproProof</span><span class="font-code-sm text-code-sm text-on-surface-variant font-medium mt-space-xs">DIAGNOSTICS</span></div></div><span class="font-code-sm text-code-sm px-space-xs py-0.5 rounded bg-surface-container text-on-surface-variant font-medium border border-outline-variant">v1.4.2</span></div><div class="p-space-md"><button class="w-full flex items-center justify-center gap-space-sm py-space-sm px-space-md bg-primary-container hover:bg-primary text-on-primary font-label-md text-label-md rounded-xl transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-primary" type="button"><span class="material-symbols-outlined text-[18px]">add</span><span class="">New Bug Report</span></button></div><nav class="flex-1 px-space-sm space-y-0.5 overflow-y-auto" data-active-classes="bg-primary-fixed text-primary font-semibold relative before:absolute before:left-0 before:top-1.5 before:bottom-1.5 before:w-1 before:bg-primary before:rounded-r"><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors font-label-md text-label-md" data-path="overview-dashboard" href="#"><span class="material-symbols-outlined text-[20px]">grid_view</span><span class="">Overview / Dashboard</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors font-label-md text-label-md" data-path="investigations-bug-reports" href="#"><span class="material-symbols-outlined text-[20px]">troubleshoot</span><span class="">Investigations / Bug Reports</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors font-label-md text-label-md" data-path="test-runs" href="#"><span class="material-symbols-outlined text-[20px]">play_circle</span><span class="">Test Runs</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors font-label-md text-label-md" data-path="run-details-plan-approval" href="#"><span class="material-symbols-outlined text-[20px]">task_alt</span><span class="">Run Details &amp; Plan Approval</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors font-label-md text-label-md" data-path="live-execution" href="#"><span class="material-symbols-outlined text-[20px]">terminal</span><span class="">Live Execution</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors font-label-md text-label-md" data-path="evidence-passports" href="#"><span class="material-symbols-outlined text-[20px]">verified</span><span class="">Evidence Passports</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors font-label-md text-label-md" data-path="qa-test-cases" href="#"><span class="material-symbols-outlined text-[20px]">checklist</span><span class="">QA Test Cases</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors font-label-md text-label-md" data-path="settings-diagnostics" href="#"><span class="material-symbols-outlined text-[20px]">tune</span><span class="">Settings &amp; Diagnostics</span></a></nav></div><div class="p-space-md border-t border-outline-variant bg-surface-container-low/50 space-y-space-sm"><div class="flex items-center justify-between text-code-sm font-code-sm px-space-xs"><div class="flex items-center gap-1.5 text-on-surface"><span class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span><span class="font-medium">MSW (MOCK)</span></div><span class="font-code-sm text-code-sm px-1.5 py-0.5 rounded bg-surface-container-high text-on-surface-variant">ACTIVE</span></div><div class="flex items-center justify-between text-code-sm font-code-sm px-space-xs text-on-surface-variant"><span class="">ENV</span><span class="font-medium text-on-surface">STAGING: SAFE</span></div><div class="flex items-center justify-between p-space-xs rounded-lg bg-surface-container-lowest border border-outline-variant hover:border-outline cursor-pointer transition-colors"><div class="flex items-center gap-space-sm truncate"><span class="material-symbols-outlined text-primary text-[18px]">corporate_fare</span><div class="flex flex-col truncate"><span class="font-label-sm text-label-sm text-on-surface font-medium truncate">workspace-01</span><span class="font-code-sm text-code-sm text-on-surface-variant truncate">Eng Team</span></div></div><span class="material-symbols-outlined text-on-surface-variant text-[18px]">unfold_more</span></div></div></aside><div class="pl-64 flex flex-col min-h-screen"><header class="fixed top-0 left-64 right-0 h-16 bg-surface-container-lowest border-b border-outline-variant z-40 flex items-center justify-between px-space-lg"><div class="flex items-center gap-space-md"><div class="flex items-center gap-space-xs font-body-sm text-body-sm text-on-surface-variant"><span class="hover:text-on-surface cursor-pointer font-medium">ReproProof</span><span class="text-outline-variant">/</span><span class="hover:text-on-surface cursor-pointer font-medium">Investigations</span><span class="text-outline-variant">/</span><span class="font-code-sm text-code-sm text-primary font-semibold bg-surface-container-high px-1.5 py-0.5 rounded border border-outline-variant">BUG-8492</span></div><div class="hidden xl:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-code-sm text-code-sm"><span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span><span class="font-medium">FIXTURES ACTIVE (READ-ONLY)</span></div></div><div class="flex items-center gap-space-md"><div class="relative flex items-center w-64"><span class="material-symbols-outlined absolute left-2.5 text-on-surface-variant text-[18px]">search</span><input class="w-full h-9 pl-9 pr-8 bg-surface-container-lowest border border-outline-variant rounded-xl font-body-sm text-body-sm text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all" placeholder="Search tests, traces..." type="text"><kbd class="absolute right-2 px-1.5 py-0.5 rounded bg-surface-container font-code-sm text-code-sm text-on-surface-variant border border-outline-variant">⌘K</kbd></div><button class="flex items-center gap-1.5 h-9 px-3 bg-primary-container hover:bg-primary text-on-primary font-label-sm text-label-sm rounded-xl transition-colors shadow-sm focus:outline-none" type="button"><span class="material-symbols-outlined text-[16px]">add</span><span class="">New Bug</span></button><button class="relative p-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded-xl transition-colors" type="button"><span class="material-symbols-outlined text-[20px]">notifications</span><span class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-error ring-2 ring-surface-container-lowest"></span></button><div class="h-6 w-px bg-outline-variant"></div><div class="flex items-center gap-space-sm pl-space-xs"><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div><div class="hidden md:flex flex-col text-left"><span class="font-label-sm text-label-sm text-on-surface font-semibold leading-tight">Alex Chen</span><span class="font-code-sm text-code-sm text-on-surface-variant leading-tight">QA Lead</span></div></div></div></header><main class="w-full pt-16 bg-surface min-h-screen"><div class="flex flex-col w-full">
+<div class="px-space-md lg:px-space-xl py-space-lg space-y-space-lg">
+<!-- Screen Meta Bar / Breadcrumb Context -->
+<div class="flex flex-col xl:flex-row xl:items-center justify-between gap-space-md">
+<div class="space-y-space-xs">
+<div class="flex flex-wrap items-center gap-space-sm text-on-surface-variant font-label-md text-label-md">
+<span class="font-code-md text-code-md px-space-xs py-0.5 rounded bg-surface-container text-primary font-semibold">RUN-8822</span>
+<span class="text-outline-variant font-semibold">/</span>
+<span class="font-code-md text-code-md text-on-surface font-semibold">BUG-1044</span>
+<span class="text-outline-variant">·</span>
+<span class="font-headline-md text-headline-md text-on-surface tracking-tight">DELETE /api/users wipes organization cascade when ID is null</span>
+</div>
+<div class="flex flex-wrap items-center gap-space-md font-body-sm text-body-sm text-on-surface-variant">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-tertiary">hub</span>
+<span class="">Target:</span>
+<code class="font-code-sm text-code-sm text-on-surface bg-surface-container-high px-1.5 py-0.5 rounded">staging-sandbox.internal.reproproof.dev:8443</code>
+</div>
+<span class="text-outline-variant">|</span>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-tertiary">smart_toy</span>
+<span class="">Created 4m ago by <span class="font-medium text-on-surface">Claude Code agent v2.1</span></span>
+</div>
+</div>
+</div>
+<!-- Live Pipeline State Indicator -->
+<div class="flex items-center gap-space-sm">
+<div class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-50 text-amber-800 shadow-sm">
+<span class="w-2 h-2 rounded-full bg-amber-500 animate-ping"></span>
+<span class="font-code-sm text-code-sm font-semibold tracking-wide">AWAITING_HUMAN_APPROVAL</span>
+</div>
+<div class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-container-high text-on-surface font-code-sm text-code-sm">
+<span class="material-symbols-outlined text-[16px] text-primary">security</span>
+<span class="">TIER-3 GATE</span>
+</div>
+</div>
+</div>
+<!-- High-Visibility Safety Alert Panel -->
+<div class="relative overflow-hidden rounded-xl bg-error-container text-on-error-container p-space-lg shadow-sm">
+<div class="absolute -right-8 -bottom-10 opacity-10 pointer-events-none">
+<span class="material-symbols-outlined text-[180px] text-error">gshield</span>
+</div>
+<div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-space-md relative z-10">
+<div class="flex items-start gap-space-md">
+<div class="w-12 h-12 rounded-xl bg-error text-on-error flex items-center justify-center shrink-0 shadow-sm">
+<span class="material-symbols-outlined text-[28px]" style="font-variation-settings: 'FILL' 1;">warning</span>
+</div>
+<div class="space-y-1">
+<div class="flex flex-wrap items-center gap-space-sm">
+<span class="font-headline-sm text-headline-sm text-on-error-container font-bold tracking-tight">DESTRUCTIVE OPERATION DETECTED — ELEVATED APPROVAL GATE</span>
+<span class="px-2 py-0.5 rounded bg-error text-on-error font-code-sm text-code-sm font-bold tracking-wider uppercase">Tier 3 Risk</span>
+</div>
+<p class="font-body-md text-body-md text-on-error-container/90">
+              Reproduction Plan contains high-impact database record truncation at <strong class="font-semibold underline decoration-error">Step 3</strong>. Explicit human cryptosigning is mandatory prior to container spin-up.
+            </p>
+</div>
+</div>
+<div class="shrink-0 flex items-center gap-2 px-3 py-2 rounded-lg bg-surface-container-lowest text-error font-code-sm text-code-sm font-medium shadow-sm">
+<span class="material-symbols-outlined text-[18px]">verified_user</span>
+<span class="">ENFORCED: RDS db-sandbox-repro-294.us-east-2 (PROD BLOCKED)</span>
+</div>
+</div>
+<!-- Containment Invariants Bar -->
+<div class="mt-space-md pt-space-sm flex flex-wrap items-center gap-x-space-lg gap-y-space-xs font-code-sm text-code-sm text-on-error-container/80">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[15px] text-error">deployed_code</span>
+<span class="">Ephemeral Container: <strong class="text-on-error-container font-semibold">#env-9921-isolated</strong></span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[15px] text-error">fence</span>
+<span class="">Proxy Egress Lock: <strong class="text-on-error-container font-semibold">ZERO_EXTERNAL_NET</strong></span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[15px] text-error">gavel</span>
+<span class="">SecOps Rule: <strong class="text-on-error-container font-semibold">SIG-901 (Strict Cascade Shield)</strong></span>
+</div>
+</div>
+</div>
+<!-- Main Two-Column Architectural Layout -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-start">
+<!-- LEFT COLUMN: Behavioral Analysis & Compiled Reproduction Steps (8 of 12 cols) -->
+<div class="lg:col-span-8 space-y-space-lg">
+<!-- Card 1: Target Bug Behavior Analysis -->
+<div class="rounded-xl bg-surface-container-lowest shadow-sm overflow-hidden">
+<div class="px-space-lg py-space-md bg-surface-container-low flex flex-wrap items-center justify-between gap-space-sm">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-primary text-[22px]">analytics</span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface font-bold">Target Bug Behavior Analysis</h2>
+</div>
+<div class="flex items-center gap-2">
+<span class="px-2.5 py-0.5 rounded-full bg-error-container text-on-error-container font-code-sm text-code-sm font-bold tracking-wider">SEVERITY: CRITICAL</span>
+<span class="px-2 py-0.5 rounded bg-surface-container-high text-on-surface-variant font-code-sm text-code-sm font-medium">PostgreSQL v15.4</span>
+</div>
+</div>
+<div class="p-space-lg space-y-space-md">
+<div>
+<div class="flex items-center justify-between mb-space-xs">
+<span class="font-label-sm text-label-sm text-on-surface-variant font-semibold tracking-wider uppercase">Observed Relational Flaw (Query Execution Trace)</span>
+<span class="font-code-sm text-code-sm text-tertiary">runtime/dal/users.ts:114</span>
+</div>
+<div class="p-space-md rounded-lg bg-surface-container-high text-on-surface font-code-sm text-code-sm leading-relaxed overflow-x-auto shadow-inner">
+<span class="text-tertiary select-none">-- Query executed when params.userId === "" or null:</span><br>
+<span class="font-semibold text-error">DELETE FROM</span> users <span class="font-semibold text-error">WHERE</span> organization_id = <span class="text-primary font-medium">'org_91288'</span> <span class="font-semibold text-error">AND</span> id = <span class="text-error font-bold">NULL</span>;<br>
+<span class="text-tertiary select-none">/* Node.js pg client evaluates NULL concatenation resulting in broader multi-tenant cascade sweep */</span>
+</div>
+</div>
+<!-- 2-Column Comparative Behavior Breakdown -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-space-md pt-space-xs">
+<!-- Current State -->
+<div class="p-space-md rounded-lg bg-error-container/30 space-y-space-xs">
+<div class="flex items-center gap-2 text-error font-label-md text-label-md font-bold">
+<span class="material-symbols-outlined text-[18px]">cancel</span>
+<span class="">CURRENT REPRODUCIBLE BEHAVIOR</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface">
+<span class="font-code-sm text-code-sm font-semibold text-error bg-surface-container-lowest px-1.5 py-0.5 rounded shadow-sm">HTTP 200 OK</span>
+<span class="block mt-1 text-on-surface-variant">Driver clears conditional predicate and silently deletes all member records associated with target Organization ID cascade (42 sandbox entities purged).</span>
+</p>
+</div>
+<!-- Expected Spec -->
+<div class="p-space-md rounded-lg bg-surface-container space-y-space-xs">
+<div class="flex items-center gap-2 text-primary font-label-md text-label-md font-bold">
+<span class="material-symbols-outlined text-[18px]">check_circle</span>
+<span class="">EXPECTED SPECIFICATION</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface">
+<span class="font-code-sm text-code-sm font-semibold text-primary bg-surface-container-lowest px-1.5 py-0.5 rounded shadow-sm">HTTP 400 Bad Request</span>
+<span class="block mt-1 text-on-surface-variant">Invariant assertion check rejects payload early: <code class="font-code-sm text-code-sm text-on-surface font-medium">"Missing required parameter: userId"</code> without emitting database transaction.</span>
+</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Card 2: Sequential Reproduction Plan -->
+<div class="rounded-xl bg-surface-container-lowest shadow-sm overflow-hidden">
+<div class="px-space-lg py-space-md bg-surface-container-low flex flex-wrap items-center justify-between gap-space-sm">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-primary text-[22px]">format_list_numbered</span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface font-bold">Sequential Reproduction Plan</h2>
+</div>
+<div class="flex items-center gap-2">
+<span class="px-2.5 py-0.5 rounded-full bg-surface-container-high text-on-surface font-code-sm text-code-sm font-semibold">5 Steps Compiled</span>
+<span class="px-2 py-0.5 rounded bg-surface-container text-on-surface-variant font-code-sm text-code-sm">EST. RUNTIME: ~24s</span>
+</div>
+</div>
+<div class="p-space-lg space-y-space-md">
+<!-- Step 1 -->
+<div class="p-space-md rounded-lg bg-surface-container-low space-y-2">
+<div class="flex flex-wrap items-center justify-between gap-space-sm">
+<div class="flex items-center gap-2">
+<span class="w-6 h-6 rounded-full bg-surface-container-highest text-primary font-code-sm text-code-sm font-bold flex items-center justify-center">01</span>
+<span class="font-label-md text-label-md text-on-surface font-bold">Initialize Ephemeral Browser &amp; Seed User</span>
+</div>
+<span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-code-sm text-code-sm font-semibold">RISK: LOW</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant pl-8">
+                Spawns headless Chromium probe in sandbox. Seeds dummy test customer record <code class="font-code-sm text-code-sm text-primary font-semibold">usr_seed_test99</code> into isolated sandbox tenant namespace.
+              </p>
+<div class="pl-8 flex flex-wrap items-center gap-space-md font-code-sm text-code-sm text-tertiary">
+<span class="flex items-center gap-1"><span class="font-semibold text-on-surface">Endpoint:</span> POST /api/test/seed</span>
+<span class="">·</span>
+<span class="flex items-center gap-1"><span class="font-semibold text-on-surface">Payload:</span> 1.2 KB</span>
+</div>
+</div>
+<!-- Step 2 -->
+<div class="p-space-md rounded-lg bg-surface-container-low space-y-2">
+<div class="flex flex-wrap items-center justify-between gap-space-sm">
+<div class="flex items-center gap-2">
+<span class="w-6 h-6 rounded-full bg-surface-container-highest text-primary font-code-sm text-code-sm font-bold flex items-center justify-center">02</span>
+<span class="font-label-md text-label-md text-on-surface font-bold">Authenticate Sandbox Admin Session</span>
+</div>
+<span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-code-sm text-code-sm font-semibold">RISK: LOW</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant pl-8">
+                Acquires short-lived JWT token via mock synthetic authentication service with Organization Scoped claims for tenant <code class="font-code-sm text-code-sm text-on-surface">org_91288</code>.
+              </p>
+<div class="pl-8 flex flex-wrap items-center gap-space-md font-code-sm text-code-sm text-tertiary">
+<span class="flex items-center gap-1"><span class="font-semibold text-on-surface">Endpoint:</span> POST /api/auth/login</span>
+<span class="">·</span>
+<span class="px-1.5 py-0.2 rounded bg-surface-container-high text-on-surface-variant">REDACTED_EPHEMERAL_TOKEN</span>
+</div>
+</div>
+<!-- Step 3: Critical Destructive Warning Step -->
+<div class="relative p-space-md rounded-lg bg-error-container/40 space-y-2 shadow-sm">
+<div class="flex flex-wrap items-center justify-between gap-space-sm">
+<div class="flex items-center gap-2">
+<span class="w-6 h-6 rounded-full bg-error text-on-error font-code-sm text-code-sm font-bold flex items-center justify-center">03</span>
+<span class="font-label-md text-label-md text-error font-bold flex items-center gap-1.5">
+<span class="">Dispatch Malformed DELETE Call</span>
+<span class="material-symbols-outlined text-[18px]">bolt</span>
+</span>
+</div>
+<span class="px-2.5 py-0.5 rounded-full bg-error text-on-error font-code-sm text-code-sm font-bold tracking-wide">⚠️ RISK: CRITICAL / DESTRUCTIVE</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface pl-8 leading-relaxed font-medium">
+                Invokes the suspected cascade bug. Sends null parameter string. Validates HTTP response status code, SQL execution traces, and calculates total mutated database rows.
+              </p>
+<div class="pl-8 pt-1 flex flex-col sm:flex-row sm:items-center justify-between gap-2 font-code-sm text-code-sm">
+<div class="flex items-center gap-2">
+<span class="px-2 py-0.5 rounded bg-surface-container-lowest text-error font-semibold shadow-sm">Target: DELETE /api/users?userId=</span>
+<span class="text-tertiary">| Mutation: <strong class="text-error">High</strong></span>
+</div>
+<div class="text-error font-semibold">
+                  Expected Row Deletion Scope: org_91288 (All 42 sandbox records)
+                </div>
+</div>
+</div>
+<!-- Step 4 -->
+<div class="p-space-md rounded-lg bg-surface-container-low space-y-2">
+<div class="flex flex-wrap items-center justify-between gap-space-sm">
+<div class="flex items-center gap-2">
+<span class="w-6 h-6 rounded-full bg-surface-container-highest text-primary font-code-sm text-code-sm font-bold flex items-center justify-center">04</span>
+<span class="font-label-md text-label-md text-on-surface font-bold">Inspect Audit Trail &amp; Rowcount Isolation</span>
+</div>
+<span class="px-2 py-0.5 rounded bg-amber-100 text-amber-800 font-code-sm text-code-sm font-semibold">RISK: MEDIUM</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant pl-8">
+                Reads transactional WAL log on replica to certify whether sibling tenant records in parallel test partitions were untouched.
+              </p>
+<div class="pl-8 flex flex-wrap items-center gap-space-md font-code-sm text-code-sm text-tertiary">
+<span class="flex items-center gap-1"><span class="font-semibold text-on-surface">Endpoint:</span> GET /api/audit/isolation-check</span>
+<span class="">·</span>
+<span class="">Assert count(<code class="text-on-surface">org_other_*</code>) == 0 deleted</span>
+</div>
+</div>
+<!-- Step 5 -->
+<div class="p-space-md rounded-lg bg-surface-container-low space-y-2">
+<div class="flex flex-wrap items-center justify-between gap-space-sm">
+<div class="flex items-center gap-2">
+<span class="w-6 h-6 rounded-full bg-surface-container-highest text-primary font-code-sm text-code-sm font-bold flex items-center justify-center">05</span>
+<span class="font-label-md text-label-md text-on-surface font-bold">Compile Evidence Passport &amp; State Diffs</span>
+</div>
+<span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-code-sm text-code-sm font-semibold">RISK: LOW</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant pl-8">
+                Collects network HAR, browser console recording, snapshot state before/after, and cryptographically signs reproduction artifact.
+              </p>
+<div class="pl-8 flex flex-wrap items-center gap-space-md font-code-sm text-code-sm text-tertiary">
+<span class="flex items-center gap-1"><span class="font-semibold text-on-surface">Output:</span> <code class="text-primary font-semibold">passport-RUN-8822.repro</code></span>
+<span class="">·</span>
+<span class="">Storage: S3 Bucket /repro-evidence-signed</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- RIGHT COLUMN: Human Approval Action Gate & Security Containment (4 of 12 cols) -->
+<div class="lg:col-span-4 space-y-space-lg">
+<!-- Card 1: Execution Authorization Gate -->
+<div class="rounded-xl bg-surface-container-lowest shadow-md overflow-hidden">
+<div class="px-space-lg py-space-md bg-primary text-on-primary flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[20px]">fingerprint</span>
+<h3 class="font-headline-sm text-headline-sm font-bold">Execution Authorization Gate</h3>
+</div>
+<span class="px-2 py-0.5 rounded bg-primary-container text-on-primary-container font-code-sm text-code-sm font-semibold">ECDSA-256</span>
+</div>
+<div class="p-space-lg space-y-space-md">
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+              By authorizing, your team's developer cryptographic key signs this blueprint for the isolated runtime container. Execution will proceed immediately upon confirmation.
+            </p>
+<!-- Verification Checkboxes -->
+<div class="space-y-space-sm pt-space-xs">
+<label class="flex items-start gap-space-sm p-space-sm rounded-lg hover:bg-surface-container-low cursor-pointer transition-colors">
+<input checked="" class="mt-0.5 h-4 w-4 rounded accent-primary text-primary focus:ring-primary cursor-pointer" id="ack-destructive" type="checkbox">
+<span class="font-body-sm text-body-sm text-on-surface leading-tight select-none">
+                  I acknowledge that <strong class="text-error font-semibold">Step 3</strong> executes a destructive relational deletion and explicitly confirm the target environment is the isolated staging sandbox <code class="font-code-sm text-code-sm font-semibold text-primary">#env-9921</code>.
+                </span>
+</label>
+<label class="flex items-start gap-space-sm p-space-sm rounded-lg hover:bg-surface-container-low cursor-pointer transition-colors">
+<input checked="" class="mt-0.5 h-4 w-4 rounded accent-primary text-primary focus:ring-primary cursor-pointer" id="ack-isolation" type="checkbox">
+<span class="font-body-sm text-body-sm text-on-surface leading-tight select-none">
+                  I verify that production data paths are severed and that synthetic seed data can be recycled automatically post-run.
+                </span>
+</label>
+</div>
+<!-- Signer Identity Tag -->
+<div class="flex items-center justify-between p-2.5 rounded-lg bg-surface-container-low font-code-sm text-code-sm text-on-surface-variant">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+<span class="font-medium text-on-surface">Signature Validated</span>
+</div>
+<span class="font-semibold text-primary">eng-lead@reproproof.dev</span>
+</div>
+<!-- Primary Action CTA -->
+<div class="pt-space-xs space-y-space-sm">
+<button class="w-full py-3 px-space-md rounded-xl bg-primary-container hover:bg-primary text-on-primary font-label-md text-label-md font-bold shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 active:scale-[0.99] focus:outline-none focus:ring-2 focus:ring-primary" id="btn-approve" type="button">
+<span class="material-symbols-outlined text-[20px]">task_alt</span>
+<span class="">Approve &amp; Authorize Execution</span>
+</button>
+<div class="grid grid-cols-2 gap-space-sm">
+<button class="py-2.5 px-space-sm rounded-xl bg-surface-container-low hover:bg-surface-container text-on-surface font-label-md text-label-md font-semibold transition-colors flex items-center justify-center gap-1.5 focus:outline-none" type="button">
+<span class="material-symbols-outlined text-[16px]">edit_note</span>
+<span class="">Request Edit</span>
+</button>
+<button class="py-2.5 px-space-sm rounded-xl bg-error-container hover:bg-red-200 text-on-error-container font-label-md text-label-md font-semibold transition-colors flex items-center justify-center gap-1.5 focus:outline-none" type="button">
+<span class="material-symbols-outlined text-[16px]">block</span>
+<span class="">Reject Blueprint</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Card 2: Containment Verification Checks -->
+<div class="rounded-xl bg-surface-container-lowest shadow-sm overflow-hidden">
+<div class="px-space-lg py-space-md bg-surface-container-low flex items-center justify-between">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-emerald-600 text-[20px]">verified</span>
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-bold">Containment Verification</h3>
+</div>
+<span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-code-sm text-code-sm font-bold">4 / 4 PASSED</span>
+</div>
+<div class="p-space-lg space-y-space-sm font-code-sm text-code-sm">
+<div class="flex items-center justify-between p-2 rounded bg-surface-container-low">
+<div class="flex items-center gap-2 text-on-surface">
+<span class="material-symbols-outlined text-emerald-600 text-[18px]">check</span>
+<span class="">DNS Routing Barrier</span>
+</div>
+<span class="text-tertiary">*.internal.reproproof.dev</span>
+</div>
+<div class="flex items-center justify-between p-2 rounded bg-surface-container-low">
+<div class="flex items-center gap-2 text-on-surface">
+<span class="material-symbols-outlined text-emerald-600 text-[18px]">check</span>
+<span class="">Postgres Tenant Ringfencing</span>
+</div>
+<span class="text-primary font-medium">TENANT_ID=org_91288</span>
+</div>
+<div class="flex items-center justify-between p-2 rounded bg-surface-container-low">
+<div class="flex items-center gap-2 text-on-surface">
+<span class="material-symbols-outlined text-emerald-600 text-[18px]">check</span>
+<span class="">Outbound Network Blackhole</span>
+</div>
+<span class="text-error font-medium">0.0.0.0/0 BLOCKED</span>
+</div>
+<div class="flex items-center justify-between p-2 rounded bg-surface-container-low">
+<div class="flex items-center gap-2 text-on-surface">
+<span class="material-symbols-outlined text-emerald-600 text-[18px]">check</span>
+<span class="">Time-To-Live Hard Limit</span>
+</div>
+<span class="text-on-surface font-medium">180s MAX EXEC</span>
+</div>
+<!-- Point In Time Restore State -->
+<div class="mt-space-md p-2.5 rounded-lg bg-surface-container flex items-center gap-2 text-on-surface-variant font-body-sm text-body-sm">
+<span class="material-symbols-outlined text-primary text-[18px]">restore</span>
+<span class="">Pre-execution RDS snapshot taken at <strong class="text-on-surface font-code-sm text-code-sm">14:02:11 UTC</strong> (Auto-restore ready).</span>
+</div>
+</div>
+</div>
+<!-- Card 3: Agent Reasoning Log -->
+<div class="rounded-xl bg-surface-container-lowest shadow-sm overflow-hidden">
+<div class="px-space-lg py-space-md bg-surface-container-low flex items-center justify-between">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-primary text-[20px]">psychology</span>
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-bold">Agent Reasoning Log</h3>
+</div>
+<span class="px-2 py-0.5 rounded bg-surface-container text-on-surface-variant font-code-sm text-code-sm">LLM-DETERMINISTIC</span>
+</div>
+<div class="p-space-md bg-surface-container-high font-code-sm text-code-sm text-on-surface leading-relaxed space-y-2 select-text max-h-60 overflow-y-auto">
+<div class="text-tertiary">[14:01:45] Synthesizing minimal viable repro for customer incident ticket INC-419...</div>
+<div class=""><span class="text-primary font-semibold">&gt;</span> Analyzed git commit <code class="text-primary font-medium">7fc9a1e</code> in repository: <code class="text-on-surface font-medium">core-user-service</code></div>
+<div class=""><span class="text-primary font-semibold">&gt;</span> Identified unescaped null interpolation inside <code class="text-on-surface font-medium">deleteUserById()</code> helper.</div>
+<div class="text-amber-800 bg-amber-50 p-1.5 rounded"><span class="font-bold">CAUTION:</span> Full organization deletion risk detected in live staging DB. Re-routing execution to ephemeral sandbox pool #env-9921.</div>
+<div class=""><span class="text-primary font-semibold">&gt;</span> Seed recipe generated with test tenant org_91288. Ready for human cryptographic handshake.</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<script>
+    // Simple micro-interaction for button feedback and checkbox assertion
+    document.addEventListener('DOMContentLoaded', () => {
+      const btnApprove = document.getElementById('btn-approve');
+      const ackDestructive = document.getElementById('ack-destructive');
+      const ackIsolation = document.getElementById('ack-isolation');
+
+      function validateState() {
+        if (!ackDestructive.checked || !ackIsolation.checked) {
+          btnApprove.disabled = true;
+          btnApprove.classList.add('opacity-50', 'cursor-not-allowed');
+        } else {
+          btnApprove.disabled = false;
+          btnApprove.classList.remove('opacity-50', 'cursor-not-allowed');
+        }
+      }
+
+      ackDestructive.addEventListener('change', validateState);
+      ackIsolation.addEventListener('change', validateState);
+
+      btnApprove.addEventListener('click', () => {
+        btnApprove.innerHTML = `<span class="material-symbols-outlined text-[20px] animate-spin">refresh</span><span>Signing & Launching Runner...</span>`;
+        btnApprove.classList.add('bg-primary');
+        setTimeout(() => {
+          btnApprove.innerHTML = `<span class="material-symbols-outlined text-[20px]">done_all</span><span>Authorized & Dispatched</span>`;
+          btnApprove.classList.remove('bg-primary-container');
+          btnApprove.classList.add('bg-emerald-600', 'text-white');
+        }, 1200);
+      });
+    });
+  </script>
+</div></main></div>
+
+</body></html>
