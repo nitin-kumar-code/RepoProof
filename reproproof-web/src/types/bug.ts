@@ -33,7 +33,7 @@ export interface BugReportSubmission {
 
 export type BugCreateResult =
   | { status: 'clarification_required'; complete: false; clarificationRequests: Array<{ field: string; question: string }> }
-  | { status: 'created'; complete: true; bugReport: BugReport }
+  | { id: string; status: 'created'; complete: true; bugReport: BugReport }
 
 export type BugStatus = 'Open' | 'In progress' | 'Resolved'
 export interface BugSummary {

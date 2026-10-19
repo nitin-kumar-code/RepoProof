@@ -1,5 +1,17 @@
 import { apiRequest } from './client'
-import type { TestRun } from '../types/run'
+import type { RunRecord } from '../types/run'
 
-export const getRuns = () => apiRequest<TestRun[]>('/api/runs')
-export const getRun = (id: string) => apiRequest<TestRun>(`/api/runs/${encodeURIComponent(id)}`)
+export const createRun = (bugReportId: string) => apiRequest<RunRecord>('/api/runs', {
+  method: 'POST',
+  body: JSON.stringify({ bugReportId }),
+})
+export const getRuns = () => apiRequest<RunRecord[]>('/api/runs')
+export const getRun = (id: string) => apiRequest<RunRecord>(`/api/runs/${encodeURIComponent(id)}`)
+export const decideRunApproval = (id: string, decision: 'approved' | 'rejected', username: string, password: string) =>
+  apiRequest<RunRecord>(`/api/runs/${encodeURIComponent(id)}/approve`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Basic ${btoa(encodeURIComponent(`${username}:${password}`).replace(/%([0-9A-F]{2})/g, (_match, hex: string) => String.fromCharCode(Number.parseInt(hex, 16))))}`,
+    },
+    body: JSON.stringify({ decision }),
+  })

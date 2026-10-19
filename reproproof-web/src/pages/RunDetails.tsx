@@ -1,10 +1,34 @@
-import { useState } from 'react'
-import { AlertTriangle, ArrowDown, ArrowRight, Ban, CheckCircle2, Circle, LockKeyhole, Shield, ShieldAlert, ShieldCheck } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { ArrowLeft } from 'lucide-react'
 import { Link, useParams } from 'react-router-dom'
+import { getRun } from '../api/runs'
+import PlanApproval from '../components/runs/PlanApproval'
+import type { RunRecord } from '../types/run'
 
-export default function RunDetails(){const {id='RUN-8822'}=useParams();const [ack,setAck]=useState(false);const [sandboxAck,setSandboxAck]=useState(false);const isDelete=id==='RUN-8822';if(!isDelete)return <main className="page plan-review-page"><div className="plan-run-heading"><div><div className="plan-run-title"><code>{id}</code><h1>Run plan unavailable</h1></div><p>This run has no plan in the local page fixture. Plan lookup and approval APIs are not connected.</p></div></div><section className="authorization-card"><div className="authorization-head"><ShieldAlert size={20}/><h2>No plan fixture available</h2></div><div className="authorization-body"><p>Run details and plan data are not available for this record. This page will not infer a plan or execution status from a fixture.</p><Link className="primary-button" to="/runs">Return to Test Runs</Link></div></section></main>;return <main className="page plan-review-page"><div className="plan-run-heading"><div><div className="plan-run-title"><code>{id}</code><span>/</span><code>BUG-1044</code><h1>DELETE /api/users wipes organization cascade when ID is null</h1></div><p><span>⌘</span> Target: <code>recorded staging sandbox · not connected</code><i/> <span>Created as a static design fixture</span></p></div><div className="plan-status"><span>AWAITING HUMAN APPROVAL · DEMO</span><b><Shield size={14}/> TIER-3 GATE</b></div></div><section className="destructive-banner"><div className="destructive-icon"><AlertTriangle size={24}/></div><div className="destructive-copy"><h2>DESTRUCTIVE OPERATION DETECTED — ELEVATED APPROVAL GATE <code>TIER 3 RISK</code></h2><p>This recorded scenario describes a high impact database operation at <u>Step 3</u>. No query is sent and no deletion is performed by this UI.</p></div><div className="enforcement-chip"><ShieldCheck size={17}/> MOCK SAFEGUARD · NO RUNNER CONNECTED</div><div className="risk-details"><span>◈ Scenario: <b>organization cascade delete</b></span><span>▦ Egress policy: <b>not configured</b></span><span>⚖ Approval service: <b>unavailable</b></span></div></section>
- <div className="plan-review-grid"><div className="plan-review-main"><section className="behavior-card"><div className="reference-card-head"><h2><span>▥</span> Target Bug Behavior Analysis</h2><div><b>SEVERITY: CRITICAL · FIXTURE</b><code>PostgreSQL example</code></div></div><div className="behavior-content"><div className="behavior-label"><b>OBSERVED RELATIONAL FLAW · SAMPLE ONLY</b><code>example source location</code></div><pre className="query-preview"><code><span>-- Illustrative query text only; never executed by this application</span>{'\n'}<strong>DELETE</strong> FROM users WHERE organization_id = <em>':org_id'</em> AND id = <strong>NULL</strong>;{'\n'}<span>-- Placeholder used to describe the reported risk</span></code></pre><div className="behavior-comparison"><article className="actual-behavior"><h3><AlertTriangle size={17}/> REPORTED BEHAVIOR · UNVERIFIED</h3><b>Example: unexpected cascade</b><p>Use the report details to explain the impact. No reproduction result is connected to this page.</p></article><article className="expected-behavior"><h3><CheckCircle2 size={17}/> EXPECTED SPECIFICATION</h3><b>Reject invalid identifiers</b><p>Expected behavior should be recorded in the submitted bug report and reviewed before any future execution.</p></article></div></div></section>
- <section className="sequential-plan"><div className="reference-card-head"><h2>▤ Sequential Reproduction Plan</h2><span className="fixture-label">PLAN FIXTURE · NOT APPROVED</span></div><div className="plan-plan-steps">{['Open the approved non-production target','Prepare synthetic fixture data','Review the DELETE route behavior','Capture a safe read-only observation','Reset the isolated test fixture'].map((step,i)=><div key={step}><b>{i+1}</b><span>{step}</span><small>{i===2?'HIGH RISK · WOULD REQUIRE REVIEW':'SAMPLE STEP · NOT RUN'}</small></div>)}</div><div className="plan-guard-note"><LockKeyhole size={16}/> These steps are illustrative. The backend has no run-plan or execution endpoint.</div></section></div>
- <aside className="authorization-card"><div className="authorization-head"><ShieldCheck size={20}/><h2>Execution Authorization Gate</h2><code>UNAVAILABLE</code></div><div className="authorization-body"><p>This screen cannot authorize a runtime. Approval requires a backend-enforced policy and sandbox integration, neither of which is connected.</p><label><input type="checkbox" checked={ack} onChange={e=>setAck(e.target.checked)}/> I understand the recorded scenario describes a destructive operation.</label><label><input type="checkbox" checked={sandboxAck} onChange={e=>setSandboxAck(e.target.checked)}/> I confirm this page does not execute or authorize a deletion.</label><div className="signature-placeholder"><Circle size={13}/> No signature or server approval state</div><button className="authorize-button" disabled title="Approval endpoint not implemented"><CheckCircle2 size={17}/> Approve &amp; Authorize Execution</button><div className="authorize-actions"><button disabled><ArrowRight size={14}/> Request Edit</button><button disabled><Ban size={14}/> Reject Blueprint</button></div><p className="authorization-footnote">Controls are disabled because approval and rejection endpoints are not available.</p></div></aside></div>
- <div className="plan-bottom-links"><Link to="/runs"><ArrowRight size={15}/> All Test Runs</Link><Link to={`/runs/${id}/execution`}>Open Live Execution <ArrowDown size={14}/></Link><Link to={`/evidence/${id}`}>Evidence Passport</Link></div>
- </main>}
+export default function RunDetails() {
+  const { id = '' } = useParams()
+  const [state, setState] = useState<{ id: string; run: RunRecord | null; error: string }>({ id: '', run: null, error: '' })
+
+  useEffect(() => {
+    let active = true
+    void getRun(id).then(result => {
+      if (active) setState({ id, run: result, error: '' })
+    }).catch(cause => {
+      if (active) setState({ id, run: null, error: cause instanceof Error ? cause.message : 'Could not load this run.' })
+    })
+    return () => { active = false }
+  }, [id])
+
+  const error = state.id === id ? state.error : ''
+  const run = state.id === id ? state.run : null
+
+  return <div className="page run-detail">
+    <div className="back-link"><Link to="/runs"><ArrowLeft size={15} />Back to runs</Link></div>
+    {error ? <div className="error-banner" role="alert">{error}</div>
+      : !run ? <p role="status">Loading plan…</p>
+        : <>
+          <div className="run-title-row"><div><div className="eyebrow">TEST RUN / {run.id}</div><h1>Reproduction plan</h1><p>Bug report {run.bugReportId} · Chromium · Created {new Date(run.createdAt).toLocaleString()}</p></div></div>
+          <div className="run-detail-grid"><div className="run-main-column"><PlanApproval run={run} onUpdated={updated => setState(current => ({ ...current, run: updated }))} /></div></div>
+        </>}
+  </div>
+}
