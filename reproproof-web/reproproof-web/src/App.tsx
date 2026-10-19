@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { BrowserRouter, Route, Routes , useLocation} from 'react-router-dom'
+import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom'
 import Sidebar from './components/layout/Sidebar'
 import Header from './components/layout/Header'
 import Dashboard from './pages/Dashboard'
