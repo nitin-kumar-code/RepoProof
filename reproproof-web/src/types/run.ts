@@ -61,6 +61,16 @@ export interface EvidenceReference {
   timestamp: string
 }
 
+export interface EvidenceRecord {
+  id: string
+  runId: string
+  attemptNumber: number
+  type: 'video' | 'screenshot' | 'console' | 'network' | 'report'
+  storageKey: string
+  createdAt: string
+  sanitized: boolean
+}
+
 export interface TelemetryEvent {
   type: 'console_error' | 'page_error' | 'request_failed' | 'http_failure'
   timestamp: string
@@ -78,6 +88,7 @@ export interface RunExecution {
   result: 'reproduced' | 'not_reproduced' | 'inconclusive'
   artifactDirectory: string
   files: EvidenceReference[]
+  evidenceRecords: EvidenceRecord[]
   telemetry: TelemetryEvent[]
   error: string | null
 }

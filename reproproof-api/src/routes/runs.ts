@@ -12,6 +12,7 @@ import { env } from '../config/env'
 import { TargetValidationError } from '../services/targetValidation'
 import { executeApprovedPlan } from '../services/executor'
 import { sanitizeError } from '../browser/telemetry'
+import { createEvidenceDownloadUrl } from '../services/evidenceStorage'
 import type { RunWithPlan } from '../schemas/run'
 
 export const runsRouter = Router()
@@ -37,6 +38,7 @@ async function finishClaimedRun(run: RunWithPlan): Promise<void> {
           result: 'inconclusive',
           artifactDirectory: path.join(env.RUN_ARTIFACTS_DIR, run.id.replace(/[^a-z0-9-]/gi, '_')),
           files: [],
+          evidenceRecords: [],
           telemetry: [],
           error: sanitizeError(cause),
         })
@@ -98,54 +100,53 @@ runsRouter.get('/:id', async (request, response) => {
   response.json(run)
 })
 
-runsRouter.get('/:id/artifacts/:kind/:file', async (request, response) => {
+runsRouter.get('/:id/evidence/:evidenceId', async (request, response) => {
   const run = await runRepository.get(request.params.id)
   if (!run?.execution) {
-    response.status(404).json({ error: 'artifact_not_found' })
+    response.status(404).json({ error: 'evidence_not_found' })
     return
   }
-  const kind = request.params.kind
-  const file = request.params.file
-  if (!['screenshot', 'recording', 'telemetry'].includes(kind)
-    || !/^[a-zA-Z0-9._-]+$/.test(file) || file === '.' || file === '..') {
-    response.status(404).json({ error: 'artifact_not_found' })
+  const record = run.execution.evidenceRecords.find(item => item.id === request.params.evidenceId)
+  if (!record || record.runId !== run.id) {
+    response.status(404).json({ error: 'evidence_not_found' })
     return
   }
-  if ((kind === 'screenshot' && !file.endsWith('.png'))
-    || (kind === 'recording' && !file.endsWith('.webm'))
-    || (kind === 'telemetry' && file !== 'telemetry.json')) {
-    response.status(404).json({ error: 'artifact_not_found' })
-    return
-  }
-
-  const subdirectory = kind === 'screenshot' ? 'screenshots' : kind === 'recording' ? 'video' : ''
-  const expectedReference = subdirectory ? path.join(subdirectory, file) : file
-  if (!run.execution.files.some(reference => reference.kind === kind && reference.file === expectedReference)) {
-    response.status(404).json({ error: 'artifact_not_found' })
-    return
-  }
-
   const safeRunId = run.id.replace(/[^a-z0-9-]/gi, '_')
+  if (!record.storageKey.startsWith(`${safeRunId}/`)) {
+    response.status(404).json({ error: 'evidence_not_found' })
+    return
+  }
+  const signedUrl = await createEvidenceDownloadUrl(record.storageKey)
+  if (signedUrl) {
+    response.setHeader('Cache-Control', 'private, no-store')
+    response.redirect(302, signedUrl)
+    return
+  }
+  if (!/^[a-zA-Z0-9_-]+\/(?:screenshots\/[a-zA-Z0-9._-]+\.png|video\/[a-zA-Z0-9._-]+\.webm|console\.json|network\.json|report\.json)$/.test(record.storageKey)) {
+    response.status(404).json({ error: 'evidence_not_found' })
+    return
+  }
   const runDirectory = path.resolve(env.RUN_ARTIFACTS_DIR, safeRunId)
-  const candidate = path.resolve(runDirectory, expectedReference)
+  const relativeStorageKey = record.storageKey.slice(record.storageKey.indexOf('/') + 1)
+  const candidate = path.resolve(runDirectory, relativeStorageKey)
   if (!candidate.startsWith(`${runDirectory}${path.sep}`)) {
-    response.status(404).json({ error: 'artifact_not_found' })
+    response.status(404).json({ error: 'evidence_not_found' })
     return
   }
   try {
     const actual = await realpath(candidate)
     const actualRunDirectory = await realpath(runDirectory)
     if (!actual.startsWith(`${actualRunDirectory}${path.sep}`) || !(await stat(actual)).isFile()) {
-      response.status(404).json({ error: 'artifact_not_found' })
+      response.status(404).json({ error: 'evidence_not_found' })
       return
     }
     response.setHeader('Cache-Control', 'private, no-store')
     response.setHeader('X-Content-Type-Options', 'nosniff')
     response.sendFile(actual, { dotfiles: 'deny' }, error => {
-      if (error && !response.headersSent) response.status(404).json({ error: 'artifact_not_found' })
+      if (error && !response.headersSent) response.status(404).json({ error: 'evidence_not_found' })
     })
   } catch {
-    response.status(404).json({ error: 'artifact_not_found' })
+    response.status(404).json({ error: 'evidence_not_found' })
   }
 })
 

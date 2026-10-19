@@ -3,6 +3,7 @@ import { ArrowLeft } from 'lucide-react'
 import { Link, useParams } from 'react-router-dom'
 import { getRun } from '../api/runs'
 import PlanApproval from '../components/runs/PlanApproval'
+import PassportReport from '../components/evidence/PassportReport'
 import type { RunRecord } from '../types/run'
 
 export default function RunDetails() {
@@ -31,7 +32,7 @@ export default function RunDetails() {
       : !run ? <p role="status">Loading plan…</p>
         : <>
           <div className="run-title-row"><div><div className="eyebrow">TEST RUN / {run.id}</div><h1>Reproduction plan</h1><p>Bug report {run.bugReportId} · Chromium · Created {new Date(run.createdAt).toLocaleString()}</p></div></div>
-          <div className="run-detail-grid"><div className="run-main-column"><PlanApproval run={run} onUpdated={updateRun} /></div></div>
+          <div className="run-detail-grid"><div className="run-main-column"><PlanApproval run={run} onUpdated={updateRun} /></div><aside className="run-side-column"><PassportReport run={run} /></aside></div>
         </>}
   </div>
 }

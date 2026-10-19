@@ -16,6 +16,7 @@ const envSchema = z.object({
   ),
   ALLOW_INSECURE_LOCAL_TARGETS: z.enum(['true', 'false']).default('false').transform(value => value === 'true'),
   RUN_ARTIFACTS_DIR: z.string().trim().min(1).default('artifacts/runs'),
+  EVIDENCE_STORAGE_BUCKET: z.string().trim().min(1).default('reproproof-evidence'),
   SUPABASE_URL: z.preprocess(value => value === '' ? undefined : value, z.string().url().optional()),
   SUPABASE_SERVICE_ROLE_KEY: z.preprocess(value => value === '' ? undefined : value, z.string().min(1).optional()),
   PLANNER_MODE: z.enum(['mock', 'openai']).default('mock'),
@@ -77,6 +78,10 @@ validateOrigins(env.ALLOWED_RESOURCE_ORIGINS, 'ALLOWED_RESOURCE_ORIGINS')
 
 if (Boolean(env.SUPABASE_URL) !== Boolean(env.SUPABASE_SERVICE_ROLE_KEY)) {
   throw new Error('Invalid environment configuration: SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be configured together')
+}
+
+if (env.APP_ENV === 'production' && !env.SUPABASE_URL) {
+  throw new Error('Invalid environment configuration: production requires Supabase for private evidence storage')
 }
 
 if (env.PLANNER_MODE === 'openai' && !env.OPENAI_API_KEY) {

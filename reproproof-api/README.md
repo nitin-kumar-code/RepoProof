@@ -42,13 +42,19 @@ individual page operations have bounded timeouts. A locator waits briefly for
 its first match, then must match exactly one element before interaction, or the
 run is marked inconclusive.
 
-Screenshots, the finalized WebM recording, and sanitized telemetry are written
-under `RUN_ARTIFACTS_DIR` (default `artifacts/runs`). With Compose, the run data
-is mounted at `./reproproof-api/artifacts` on the host. The run response records
-relative file references and telemetry metadata; request headers and bodies are
-not captured. The API serves only files listed in the run's evidence record at
-`GET /api/runs/:id/artifacts/:kind/:file`. Treat screenshots and recordings as
-sensitive because they may contain the approved test app's visible data.
+Screenshots, the finalized WebM recording, separate console and network logs,
+and a run report are written under `RUN_ARTIFACTS_DIR` (default
+`artifacts/runs`). With Compose, the run data is mounted at
+`./reproproof-api/artifacts` on the host. Every file has a sanitized evidence
+record and can be retrieved at `GET /api/runs/:id/evidence/:evidenceId`. In
+production, create `EVIDENCE_STORAGE_BUCKET` as a **private** Supabase Storage
+bucket; downloads use signed URLs that expire after 60 seconds. Development
+stores evidence locally. Request headers and bodies are not captured. Screenshots
+and recordings can contain visible test data, so use synthetic accounts and
+values in the browser. Screenshot captures mask password fields, fields marked
+`data-sensitive="true"`, and credit-card autocomplete fields. Video recordings
+are not visually redacted; their evidence records explicitly mark them as not
+sanitized.
 
 The plan schema accepts only typed browser actions. It rejects extra fields and
 has no JavaScript, shell, or arbitrary-script action. Destructive actions such

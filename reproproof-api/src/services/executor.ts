@@ -1,4 +1,5 @@
 import { mkdir, writeFile } from 'node:fs/promises'
+import { randomUUID } from 'node:crypto'
 import path from 'node:path'
 import type { Locator, Page } from 'playwright'
 import { env } from '../config/env'
@@ -9,6 +10,8 @@ import type { ExecutionEvidenceSchema, EvidenceReferenceSchema, RunWithPlan } fr
 import { createBrowserRun } from '../browser/runner'
 import { sanitizeError } from '../browser/telemetry'
 import { z } from 'zod'
+import { redactValue } from './redactor'
+import { persistEvidenceFiles } from './evidenceStorage'
 
 type ExecutionEvidence = z.infer<typeof ExecutionEvidenceSchema>
 type EvidenceReference = z.infer<typeof EvidenceReferenceSchema>
@@ -59,7 +62,18 @@ function recordFile(files: EvidenceReference[], kind: EvidenceReference['kind'],
 async function screenshot(page: Page, directory: string, files: EvidenceReference[], actionNumber: number | null, label: string): Promise<void> {
   const filename = `${actionNumber === null ? 'checkpoint' : `step-${actionNumber}`}-${slug(label)}.png`
   const file = path.join(directory, 'screenshots', filename)
-  await page.screenshot({ path: file, fullPage: false, animations: 'disabled', timeout: maxStepMs })
+  await page.screenshot({
+    path: file,
+    fullPage: false,
+    animations: 'disabled',
+    mask: [
+      page.locator('input[type="password"]'),
+      page.locator('[data-sensitive="true"]'),
+      page.locator('input[autocomplete^="cc-"]'),
+    ],
+    maskColor: '#1e293b',
+    timeout: maxStepMs,
+  })
   recordFile(files, 'screenshot', path.relative(directory, file), actionNumber)
 }
 
@@ -132,6 +146,7 @@ export async function executeApprovedPlan(run: RunWithPlan): Promise<ExecutionEv
   const artifactRoot = path.resolve(env.RUN_ARTIFACTS_DIR)
   const runDirectory = path.join(artifactRoot, safeRunId)
   const files: EvidenceReference[] = []
+  const evidenceRecords: ExecutionEvidence['evidenceRecords'] = []
   let browserRun: Awaited<ReturnType<typeof createBrowserRun>> | undefined
   let result: RunResult = 'inconclusive'
   let errorMessage: string | null = null
@@ -206,14 +221,30 @@ export async function executeApprovedPlan(run: RunWithPlan): Promise<ExecutionEv
   }
   if (recordingPath) recordFile(files, 'recording', path.relative(runDirectory, recordingPath), null)
 
-  const telemetry = browserRun?.telemetry.events ?? []
+  const telemetry = redactValue(browserRun?.telemetry.events ?? [])
   try {
     await mkdir(runDirectory, { recursive: true, mode: 0o700 })
-    await writeFile(path.join(runDirectory, 'telemetry.json'), JSON.stringify(telemetry, null, 2), { mode: 0o600 })
-    recordFile(files, 'telemetry', 'telemetry.json', null)
+    const consoleEvents = telemetry.filter(event => event.type === 'console_error' || event.type === 'page_error')
+    const networkEvents = telemetry.filter(event => event.type === 'request_failed' || event.type === 'http_failure')
+    const createdAt = new Date().toISOString()
+    const addRecord = (type: ExecutionEvidence['evidenceRecords'][number]['type'], relativePath: string) => {
+      evidenceRecords.push({ id: randomUUID(), runId: run.id, attemptNumber: 1, type, storageKey: `${safeRunId}/${relativePath}`, createdAt, sanitized: type !== 'video' })
+    }
+    await writeFile(path.join(runDirectory, 'console.json'), JSON.stringify(consoleEvents, null, 2), { mode: 0o600 })
+    addRecord('console', 'console.json')
+    await writeFile(path.join(runDirectory, 'network.json'), JSON.stringify(networkEvents, null, 2), { mode: 0o600 })
+    addRecord('network', 'network.json')
+    for (const file of files) {
+      addRecord(file.kind === 'screenshot' ? 'screenshot' : 'video', file.file)
+    }
+    addRecord('report', 'report.json')
+    const report = redactValue({ runId: run.id, attemptNumber: 1, result, startedAt, completedAt: new Date().toISOString(), error: errorMessage, telemetryCounts: { console: consoleEvents.length, network: networkEvents.length }, evidenceRecords })
+    await writeFile(path.join(runDirectory, 'report.json'), JSON.stringify(report, null, 2), { mode: 0o600 })
+    await persistEvidenceFiles(runDirectory, evidenceRecords)
   } catch (cause) {
-    errorMessage ??= `Could not save telemetry: ${sanitizeError(cause)}`
+    errorMessage ??= `Could not save evidence bundle: ${sanitizeError(cause)}`
     result = 'inconclusive'
+    evidenceRecords.length = 0
   }
 
   return {
@@ -222,7 +253,8 @@ export async function executeApprovedPlan(run: RunWithPlan): Promise<ExecutionEv
     result,
     artifactDirectory: path.relative(process.cwd(), runDirectory) || runDirectory,
     files,
+    evidenceRecords,
     telemetry,
-    error: errorMessage,
+    error: errorMessage ? redactValue(errorMessage) : null,
   }
 }

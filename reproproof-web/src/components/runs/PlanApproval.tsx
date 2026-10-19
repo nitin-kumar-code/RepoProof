@@ -116,13 +116,12 @@ export default function PlanApproval({ run, onUpdated }: { run: RunRecord; onUpd
       <h3>Execution evidence</h3>
       <p className="muted">{new Date(run.execution.startedAt).toLocaleString()} – {new Date(run.execution.completedAt).toLocaleString()} · {run.execution.telemetry.length} telemetry events</p>
       {run.execution.error && <p className="error-banner" role="status">{run.execution.error}</p>}
-      <ul className="evidence-files">{run.execution.files.map((file, index) => {
-        const filename = file.file.split('/').pop() ?? file.file
-        const href = `${baseUrl}/api/runs/${encodeURIComponent(run.id)}/artifacts/${file.kind}/${encodeURIComponent(filename)}`
-        return <li key={`${file.kind}-${file.file}-${index}`}>
-          <b>{file.kind}</b>{file.actionNumber ? ` · step ${file.actionNumber}` : ''}: <a href={href} target="_blank" rel="noreferrer">{file.file}</a>
-          {file.kind === 'screenshot' && <a href={href} target="_blank" rel="noreferrer"><img className="evidence-preview" src={href} alt={`Screenshot ${file.actionNumber ?? 'checkpoint'}`} loading="lazy" /></a>}
-          {file.kind === 'recording' && <video className="evidence-preview" src={href} controls preload="metadata" />}
+      <ul className="evidence-files">{run.execution.evidenceRecords.map(record => {
+        const href = `${baseUrl}/api/runs/${encodeURIComponent(run.id)}/evidence/${encodeURIComponent(record.id)}`
+        return <li key={record.id}>
+          <b>{record.type}</b> · attempt {record.attemptNumber}: <a href={href} target="_blank" rel="noreferrer" download>{record.storageKey.split('/').pop()}</a>
+          {record.type === 'screenshot' && <a href={href} target="_blank" rel="noreferrer"><img className="evidence-preview" src={href} alt="Execution screenshot" loading="lazy" /></a>}
+          {record.type === 'video' && <video className="evidence-preview" src={href} controls preload="metadata" />}
         </li>
       })}</ul>
     </div>}

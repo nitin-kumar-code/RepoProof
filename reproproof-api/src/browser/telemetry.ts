@@ -1,12 +1,13 @@
 import type { Page, Request } from 'playwright'
 import type { z } from 'zod'
 import { TelemetryEventSchema } from '../schemas/run'
+import { redactText } from '../services/redactor'
 
 export type TelemetryEvent = z.infer<typeof TelemetryEventSchema>
 const maxEvents = 500
 
 function safeText(value: string, maxLength = 2000): string {
-  return value
+  return redactText(value)
     .replace(/Bearer\s+\S+/gi, 'Bearer [redacted]')
     .replace(/\b(password|passwd|token|secret|api[_-]?key)\s*[:=]\s*[^\s,;]+/gi, '$1=[redacted]')
     .replace(/\bsk-[A-Za-z0-9_-]{8,}\b/g, '[redacted key]')

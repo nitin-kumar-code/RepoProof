@@ -32,6 +32,16 @@ export const EvidenceReferenceSchema = z.object({
   timestamp: z.string().datetime(),
 }).strict()
 
+export const EvidenceRecordSchema = z.object({
+  id: z.string().uuid(),
+  runId: z.string().min(1),
+  attemptNumber: z.number().int().positive(),
+  type: z.enum(['video', 'screenshot', 'console', 'network', 'report']),
+  storageKey: z.string().min(1).max(500),
+  createdAt: z.string().datetime(),
+  sanitized: z.boolean(),
+}).strict()
+
 export const TelemetryEventSchema = z.object({
   type: z.enum(['console_error', 'page_error', 'request_failed', 'http_failure']),
   timestamp: z.string().datetime(),
@@ -49,6 +59,7 @@ export const ExecutionEvidenceSchema = z.object({
   result: z.enum(['reproduced', 'not_reproduced', 'inconclusive']),
   artifactDirectory: z.string().min(1),
   files: z.array(EvidenceReferenceSchema).max(500),
+  evidenceRecords: z.array(EvidenceRecordSchema).max(500).default([]),
   telemetry: z.array(TelemetryEventSchema).max(500),
   error: z.string().max(2000).nullable(),
 }).strict()

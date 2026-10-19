@@ -70,6 +70,17 @@
   object-fit: contain;
 }
 
+.passport-download {
+  margin-left: auto;
+  display: inline-flex;
+  color: #b5c5da;
+}
+
+.passport-top button:disabled {
+  margin-left: auto;
+  opacity: 0.45;
+}
+
 @media (max-width: 650px) {
   .approval-credentials {
     grid-template-columns: 1fr;
