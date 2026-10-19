@@ -1,5 +1,5 @@
 import { supabase } from './client'
-import { RunWithPlanSchema, type RunWithPlan } from '../schemas/run'
+import { ExecutionEvidenceSchema, RunWithPlanSchema, type RunWithPlan } from '../schemas/run'
 
 export type ApprovalDecision = NonNullable<RunWithPlan['approval']>
 
@@ -103,6 +103,25 @@ export const runRepository = {
     const { plan, ...record } = updated
     const { data, error } = await supabase.from('test_runs').update({ run: record, status: 'running' })
       .eq('id', id).eq('status', 'approved').eq('plan_hash', expectedPlanHash)
+      .select('run, plan').maybeSingle()
+    if (error) throw error
+    return data ? RunWithPlanSchema.parse({ ...data.run, plan: data.plan }) : undefined
+  },
+
+  async recordExecution(id: string, expectedPlanHash: string, evidence: RunWithPlan['execution'], now: string): Promise<RunWithPlan | undefined> {
+    const validatedEvidence = ExecutionEvidenceSchema.parse(evidence)
+    const current = await this.get(id)
+    if (!current) return undefined
+    const updated = RunWithPlanSchema.parse({ ...current, status: 'verifying', execution: validatedEvidence, updatedAt: now })
+    if (!supabase) {
+      const stillCurrent = memoryRuns.get(id)
+      if (!stillCurrent || stillCurrent.status !== 'running' || stillCurrent.planHash !== expectedPlanHash) return undefined
+      memoryRuns.set(id, updated)
+      return updated
+    }
+    const { plan, ...record } = updated
+    const { data, error } = await supabase.from('test_runs').update({ run: record, status: 'verifying' })
+      .eq('id', id).eq('status', 'running').eq('plan_hash', expectedPlanHash)
       .select('run, plan').maybeSingle()
     if (error) throw error
     return data ? RunWithPlanSchema.parse({ ...data.run, plan: data.plan }) : undefined

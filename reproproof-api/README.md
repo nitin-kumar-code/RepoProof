@@ -28,6 +28,34 @@ container or network-level egress restrictions, including blocks for private,
 link-local, and cloud metadata ranges, as a second boundary for the browser
 process.
 
+## Browser execution and evidence
+
+After a run is approved, call `POST /api/runs/:id/execute`. The endpoint
+atomically claims the approved plan and immediately returns `202 Accepted` with
+the run in `running` state. Poll `GET /api/runs/:id` until it reaches a final
+state. The background attempt starts one isolated Chromium context and executes
+the approved typed actions in order; it rejects an unapproved, changed, or
+already claimed plan. Only one browser attempt runs at a time in each API
+process; concurrent execution requests receive `409 browser_executor_busy`.
+Each attempt is limited to 30 actions and two minutes;
+individual page operations have bounded timeouts. A locator waits briefly for
+its first match, then must match exactly one element before interaction, or the
+run is marked inconclusive.
+
+Screenshots, the finalized WebM recording, separate console and network logs,
+and a run report are written under `RUN_ARTIFACTS_DIR` (default
+`artifacts/runs`). With Compose, the run data is mounted at
+`./reproproof-api/artifacts` on the host. Every file has a sanitized evidence
+record and can be retrieved at `GET /api/runs/:id/evidence/:evidenceId`. In
+production, create `EVIDENCE_STORAGE_BUCKET` as a **private** Supabase Storage
+bucket; downloads use signed URLs that expire after 60 seconds. Development
+stores evidence locally. Request headers and bodies are not captured. Screenshots
+and recordings can contain visible test data, so use synthetic accounts and
+values in the browser. Screenshot captures mask password fields, fields marked
+`data-sensitive="true"`, and credit-card autocomplete fields. Video recordings
+are not visually redacted; their evidence records explicitly mark them as not
+sanitized.
+
 The plan schema accepts only typed browser actions. It rejects extra fields and
 has no JavaScript, shell, or arbitrary-script action. Destructive actions such
 as delete, remove, drop, and reset are converted to clarification-only steps

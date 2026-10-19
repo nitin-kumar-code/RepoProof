@@ -6,7 +6,10 @@ export const createRun = (bugReportId: string) => apiRequest<RunRecord>('/api/ru
   body: JSON.stringify({ bugReportId }),
 })
 export const getRuns = () => apiRequest<RunRecord[]>('/api/runs')
-export const getRun = (id: string) => apiRequest<RunRecord>(`/api/runs/${encodeURIComponent(id)}`)
+export const getRun = (id: string, signal?: AbortSignal) => apiRequest<RunRecord>(`/api/runs/${encodeURIComponent(id)}`, { signal })
+export const executeRun = (id: string) => apiRequest<RunRecord>(`/api/runs/${encodeURIComponent(id)}/execute`, {
+  method: 'POST',
+})
 export const decideRunApproval = (id: string, decision: 'approved' | 'rejected', username: string, password: string) =>
   apiRequest<RunRecord>(`/api/runs/${encodeURIComponent(id)}/approve`, {
     method: 'POST',

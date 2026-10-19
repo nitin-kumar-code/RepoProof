@@ -54,6 +54,45 @@ export interface RunApproval {
   planHash: string
 }
 
+export interface EvidenceReference {
+  kind: 'screenshot' | 'recording' | 'telemetry'
+  file: string
+  actionNumber: number | null
+  timestamp: string
+}
+
+export interface EvidenceRecord {
+  id: string
+  runId: string
+  attemptNumber: number
+  type: 'video' | 'screenshot' | 'console' | 'network' | 'report'
+  storageKey: string
+  createdAt: string
+  sanitized: boolean
+}
+
+export interface TelemetryEvent {
+  type: 'console_error' | 'page_error' | 'request_failed' | 'http_failure'
+  timestamp: string
+  message?: string
+  severity?: string
+  method?: string
+  url?: string
+  status?: number
+  failure?: string
+}
+
+export interface RunExecution {
+  startedAt: string
+  completedAt: string
+  result: 'reproduced' | 'not_reproduced' | 'inconclusive'
+  artifactDirectory: string
+  files: EvidenceReference[]
+  evidenceRecords: EvidenceRecord[]
+  telemetry: TelemetryEvent[]
+  error: string | null
+}
+
 export interface RunRecord {
   id: string
   bugReportId: string
@@ -64,5 +103,6 @@ export interface RunRecord {
   planHash: string
   approvalExpiresAt: string
   approval: RunApproval | null
+  execution: RunExecution | null
   plan: AgentPlan
 }
