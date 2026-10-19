@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { ArrowLeft } from 'lucide-react'
 import { Link, useParams } from 'react-router-dom'
 import { getRun } from '../api/runs'
@@ -21,6 +21,9 @@ export default function RunDetails() {
 
   const error = state.id === id ? state.error : ''
   const run = state.id === id ? state.run : null
+  const updateRun = useCallback((updated: RunRecord) => {
+    setState(current => ({ ...current, run: updated }))
+  }, [])
 
   return <div className="page run-detail">
     <div className="back-link"><Link to="/runs"><ArrowLeft size={15} />Back to runs</Link></div>
@@ -28,7 +31,7 @@ export default function RunDetails() {
       : !run ? <p role="status">Loading plan…</p>
         : <>
           <div className="run-title-row"><div><div className="eyebrow">TEST RUN / {run.id}</div><h1>Reproduction plan</h1><p>Bug report {run.bugReportId} · Chromium · Created {new Date(run.createdAt).toLocaleString()}</p></div></div>
-          <div className="run-detail-grid"><div className="run-main-column"><PlanApproval run={run} onUpdated={updated => setState(current => ({ ...current, run: updated }))} /></div></div>
+          <div className="run-detail-grid"><div className="run-main-column"><PlanApproval run={run} onUpdated={updateRun} /></div></div>
         </>}
   </div>
 }

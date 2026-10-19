@@ -25,6 +25,34 @@ export const ApprovalRecordSchema = z.object({
   planHash: z.string().regex(/^[a-f0-9]{64}$/),
 }).strict()
 
+export const EvidenceReferenceSchema = z.object({
+  kind: z.enum(['screenshot', 'recording', 'telemetry']),
+  file: z.string().min(1),
+  actionNumber: z.number().int().positive().nullable(),
+  timestamp: z.string().datetime(),
+}).strict()
+
+export const TelemetryEventSchema = z.object({
+  type: z.enum(['console_error', 'page_error', 'request_failed', 'http_failure']),
+  timestamp: z.string().datetime(),
+  message: z.string().max(2000).optional(),
+  severity: z.string().max(40).optional(),
+  method: z.string().max(20).optional(),
+  url: z.string().max(2000).optional(),
+  status: z.number().int().min(100).max(599).optional(),
+  failure: z.string().max(500).optional(),
+}).strict()
+
+export const ExecutionEvidenceSchema = z.object({
+  startedAt: z.string().datetime(),
+  completedAt: z.string().datetime(),
+  result: z.enum(['reproduced', 'not_reproduced', 'inconclusive']),
+  artifactDirectory: z.string().min(1),
+  files: z.array(EvidenceReferenceSchema).max(500),
+  telemetry: z.array(TelemetryEventSchema).max(500),
+  error: z.string().max(2000).nullable(),
+}).strict()
+
 export const RunSchema = z.object({
   id: z.string().min(1),
   bugReportId: z.string().min(1),
@@ -35,6 +63,7 @@ export const RunSchema = z.object({
   planHash: z.string().regex(/^[a-f0-9]{64}$/),
   approvalExpiresAt: z.string().datetime(),
   approval: ApprovalRecordSchema.nullable(),
+  execution: ExecutionEvidenceSchema.nullable().default(null),
 }).strict()
 
 export const RunWithPlanSchema = RunSchema.extend({ plan: AgentPlanSchema }).strict()

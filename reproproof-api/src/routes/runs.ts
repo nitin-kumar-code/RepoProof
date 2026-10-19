@@ -1,18 +1,55 @@
 import { randomUUID } from 'node:crypto'
+import { realpath, stat } from 'node:fs/promises'
+import path from 'node:path'
 import { Router } from 'express'
 import { z } from 'zod'
 import { bugRepository } from '../db/repository'
 import { runRepository } from '../db/runRepository'
 import { generatePlan } from '../services/planner'
 import { RunWithPlanSchema } from '../schemas/run'
-import { ApprovalError, approvalExpiryFrom, decideRunApproval, hashPlan, verifyApproverAuthorization } from '../services/approvals'
+import { ApprovalError, approvalExpiryFrom, claimApprovedRun, completeApprovedRun, decideRunApproval, hashPlan, markRunVerifying, verifyApproverAuthorization } from '../services/approvals'
 import { env } from '../config/env'
 import { TargetValidationError } from '../services/targetValidation'
+import { executeApprovedPlan } from '../services/executor'
+import { sanitizeError } from '../browser/telemetry'
+import type { RunWithPlan } from '../schemas/run'
 
 export const runsRouter = Router()
+let browserExecutionBusy = false
 
 const CreateRunSchema = z.object({ bugReportId: z.string().trim().min(1) }).strict()
 const ApprovalRequestSchema = z.object({ decision: z.enum(['approved', 'rejected']) }).strict()
+
+async function finishClaimedRun(run: RunWithPlan): Promise<void> {
+  try {
+    const evidence = await executeApprovedPlan(run)
+    await markRunVerifying(run.id, evidence)
+    await completeApprovedRun(run.id, evidence.result)
+  } catch (cause) {
+    console.error(`Background browser execution failed for run ${run.id}: ${sanitizeError(cause)}`)
+    try {
+      let current = await runRepository.get(run.id)
+      if (current?.status === 'running') {
+        const timestamp = new Date().toISOString()
+        await markRunVerifying(run.id, {
+          startedAt: run.updatedAt,
+          completedAt: timestamp,
+          result: 'inconclusive',
+          artifactDirectory: path.join(env.RUN_ARTIFACTS_DIR, run.id.replace(/[^a-z0-9-]/gi, '_')),
+          files: [],
+          telemetry: [],
+          error: sanitizeError(cause),
+        })
+        current = await runRepository.get(run.id)
+      }
+      if (current?.status === 'verifying') {
+        await completeApprovedRun(run.id, current.execution?.result ?? 'inconclusive')
+      }
+    } catch (recoveryCause) {
+      console.error(`Could not finalize failed browser execution for run ${run.id}: ${sanitizeError(recoveryCause)}`)
+    }
+  }
+}
 
 runsRouter.get('/', async (_request, response) => {
   response.json(await runRepository.list())
@@ -59,6 +96,96 @@ runsRouter.get('/:id', async (request, response) => {
     return
   }
   response.json(run)
+})
+
+runsRouter.get('/:id/artifacts/:kind/:file', async (request, response) => {
+  const run = await runRepository.get(request.params.id)
+  if (!run?.execution) {
+    response.status(404).json({ error: 'artifact_not_found' })
+    return
+  }
+  const kind = request.params.kind
+  const file = request.params.file
+  if (!['screenshot', 'recording', 'telemetry'].includes(kind)
+    || !/^[a-zA-Z0-9._-]+$/.test(file) || file === '.' || file === '..') {
+    response.status(404).json({ error: 'artifact_not_found' })
+    return
+  }
+  if ((kind === 'screenshot' && !file.endsWith('.png'))
+    || (kind === 'recording' && !file.endsWith('.webm'))
+    || (kind === 'telemetry' && file !== 'telemetry.json')) {
+    response.status(404).json({ error: 'artifact_not_found' })
+    return
+  }
+
+  const subdirectory = kind === 'screenshot' ? 'screenshots' : kind === 'recording' ? 'video' : ''
+  const expectedReference = subdirectory ? path.join(subdirectory, file) : file
+  if (!run.execution.files.some(reference => reference.kind === kind && reference.file === expectedReference)) {
+    response.status(404).json({ error: 'artifact_not_found' })
+    return
+  }
+
+  const safeRunId = run.id.replace(/[^a-z0-9-]/gi, '_')
+  const runDirectory = path.resolve(env.RUN_ARTIFACTS_DIR, safeRunId)
+  const candidate = path.resolve(runDirectory, expectedReference)
+  if (!candidate.startsWith(`${runDirectory}${path.sep}`)) {
+    response.status(404).json({ error: 'artifact_not_found' })
+    return
+  }
+  try {
+    const actual = await realpath(candidate)
+    const actualRunDirectory = await realpath(runDirectory)
+    if (!actual.startsWith(`${actualRunDirectory}${path.sep}`) || !(await stat(actual)).isFile()) {
+      response.status(404).json({ error: 'artifact_not_found' })
+      return
+    }
+    response.setHeader('Cache-Control', 'private, no-store')
+    response.setHeader('X-Content-Type-Options', 'nosniff')
+    response.sendFile(actual, { dotfiles: 'deny' }, error => {
+      if (error && !response.headersSent) response.status(404).json({ error: 'artifact_not_found' })
+    })
+  } catch {
+    response.status(404).json({ error: 'artifact_not_found' })
+  }
+})
+
+runsRouter.post('/:id/execute', async (request, response) => {
+  const runId = request.params.id
+  if (browserExecutionBusy) {
+    response.status(409).json({ error: 'browser_executor_busy' })
+    return
+  }
+  browserExecutionBusy = true
+  let claimed: RunWithPlan
+  try {
+    const existing = await runRepository.get(runId)
+    if (!existing) {
+      browserExecutionBusy = false
+      response.status(404).json({ error: 'run_not_found' })
+      return
+    }
+    claimed = await claimApprovedRun(existing.id)
+  } catch (cause) {
+    browserExecutionBusy = false
+    if (cause instanceof ApprovalError) {
+      const status = cause.code === 'approval_required' || cause.code === 'invalid_run_state' ? 409
+        : cause.code === 'target_invalid' ? 403 : 409
+      response.status(status).json({ error: cause.code })
+      return
+    }
+    if (cause instanceof TargetValidationError) response.status(403).json({ error: cause.code })
+    else {
+      console.error(`Could not start browser execution for run ${runId}: ${sanitizeError(cause)}`)
+      response.status(500).json({ error: 'browser_execution_start_failed' })
+    }
+    return
+  }
+  response.setHeader('Location', `/api/runs/${encodeURIComponent(claimed.id)}`)
+  response.setHeader('Retry-After', '2')
+  response.status(202).json(claimed)
+  setImmediate(() => {
+    void finishClaimedRun(claimed).finally(() => { browserExecutionBusy = false })
+  })
 })
 
 runsRouter.post('/', async (request, response) => {

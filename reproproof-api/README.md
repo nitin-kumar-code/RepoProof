@@ -28,6 +28,28 @@ container or network-level egress restrictions, including blocks for private,
 link-local, and cloud metadata ranges, as a second boundary for the browser
 process.
 
+## Browser execution and evidence
+
+After a run is approved, call `POST /api/runs/:id/execute`. The endpoint
+atomically claims the approved plan and immediately returns `202 Accepted` with
+the run in `running` state. Poll `GET /api/runs/:id` until it reaches a final
+state. The background attempt starts one isolated Chromium context and executes
+the approved typed actions in order; it rejects an unapproved, changed, or
+already claimed plan. Only one browser attempt runs at a time in each API
+process; concurrent execution requests receive `409 browser_executor_busy`.
+Each attempt is limited to 30 actions and two minutes;
+individual page operations have bounded timeouts. A locator waits briefly for
+its first match, then must match exactly one element before interaction, or the
+run is marked inconclusive.
+
+Screenshots, the finalized WebM recording, and sanitized telemetry are written
+under `RUN_ARTIFACTS_DIR` (default `artifacts/runs`). With Compose, the run data
+is mounted at `./reproproof-api/artifacts` on the host. The run response records
+relative file references and telemetry metadata; request headers and bodies are
+not captured. The API serves only files listed in the run's evidence record at
+`GET /api/runs/:id/artifacts/:kind/:file`. Treat screenshots and recordings as
+sensitive because they may contain the approved test app's visible data.
+
 The plan schema accepts only typed browser actions. It rejects extra fields and
 has no JavaScript, shell, or arbitrary-script action. Destructive actions such
 as delete, remove, drop, and reset are converted to clarification-only steps

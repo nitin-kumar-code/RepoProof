@@ -15,6 +15,7 @@ const envSchema = z.object({
     value.split(',').map(origin => origin.trim()).filter(Boolean),
   ),
   ALLOW_INSECURE_LOCAL_TARGETS: z.enum(['true', 'false']).default('false').transform(value => value === 'true'),
+  RUN_ARTIFACTS_DIR: z.string().trim().min(1).default('artifacts/runs'),
   SUPABASE_URL: z.preprocess(value => value === '' ? undefined : value, z.string().url().optional()),
   SUPABASE_SERVICE_ROLE_KEY: z.preprocess(value => value === '' ? undefined : value, z.string().min(1).optional()),
   PLANNER_MODE: z.enum(['mock', 'openai']).default('mock'),

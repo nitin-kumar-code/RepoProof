@@ -3,6 +3,8 @@ import { env } from '../config/env'
 import { runRepository, type ApprovalDecision } from '../db/runRepository'
 import type { AgentPlan } from '../schemas/plan'
 import type { RunWithPlan } from '../schemas/run'
+import type { ExecutionEvidenceSchema } from '../schemas/run'
+import { z } from 'zod'
 import { validateTargetUrl } from './targetValidation'
 
 const approvalLifetimeMs = 24 * 60 * 60 * 1000
@@ -120,13 +122,12 @@ async function requireApprovedPlan(runId: string, expectedStatus: RunWithPlan['s
   if (hashPlan(run.plan) !== run.planHash || run.approval.planHash !== run.planHash) {
     throw new ApprovalError('plan_changed')
   }
-  await assertPlanTargetAllowed(run)
   return run
 }
 
-export async function markRunVerifying(runId: string, now = new Date()): Promise<RunWithPlan> {
+export async function markRunVerifying(runId: string, evidence: z.infer<typeof ExecutionEvidenceSchema>, now = new Date()): Promise<RunWithPlan> {
   const run = await requireApprovedPlan(runId, 'running')
-  const verifying = await runRepository.transition(run.id, 'running', 'verifying', run.planHash, now.toISOString())
+  const verifying = await runRepository.recordExecution(run.id, run.planHash, evidence, now.toISOString())
   if (!verifying) throw new ApprovalError('invalid_run_state')
   return verifying
 }

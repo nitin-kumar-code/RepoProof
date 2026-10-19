@@ -6,6 +6,7 @@ services:
       PORT: 4000
       APP_ENV: ${APP_ENV:-development}
       ALLOW_INSECURE_LOCAL_TARGETS: ${ALLOW_INSECURE_LOCAL_TARGETS:-false}
+      RUN_ARTIFACTS_DIR: /app/artifacts/runs
       CORS_ORIGIN: http://localhost:8080
       ALLOWED_TARGET_ORIGINS: ${ALLOWED_TARGET_ORIGINS:-}
       ALLOWED_RESOURCE_ORIGINS: ${ALLOWED_RESOURCE_ORIGINS:-}
@@ -16,6 +17,8 @@ services:
       APPROVAL_PASSWORD: ${APPROVAL_PASSWORD:-}
     expose:
       - "4000"
+    volumes:
+      - ${RUN_ARTIFACTS_DIR:-./reproproof-api/artifacts}:/app/artifacts
     healthcheck:
       test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:4000/health').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
       interval: 10s
