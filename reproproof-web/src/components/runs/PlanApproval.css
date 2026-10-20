@@ -95,6 +95,12 @@
   color: #b5c5da;
 }
 
+.passport-report-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .passport-top button:disabled {
   margin-left: auto;
   opacity: 0.45;

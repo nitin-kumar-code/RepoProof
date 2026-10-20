@@ -1,4 +1,5 @@
 import { Download, ShieldCheck } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import { baseUrl } from '../../api/client'
 import type { RunRecord } from '../../types/run'
 
@@ -25,7 +26,10 @@ export default function PassportReport({ run }: { run: RunRecord }) {
     </div>
     <div className="passport-footer">
       <span><i /> {reportRecord ? (reportRecord.sanitized ? 'Report sanitized' : 'Report needs review') : 'Evidence pending'}</span>
-      {reportUrl && <a href={reportUrl} download>Download report ↗</a>}
+      <div className="passport-report-actions">
+        <Link to={`/evidence/${encodeURIComponent(run.id)}`}>View passport ↗</Link>
+        {reportUrl && <a href={reportUrl} download>Download report ↗</a>}
+      </div>
     </div>
   </section>
 }
