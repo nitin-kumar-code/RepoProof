@@ -15,7 +15,6 @@ export const RunStatusSchema = z.enum([
   'failed',
   // Retained for records written by the earlier run schema.
   'passed',
-  'failed',
   'error',
 ])
 
@@ -94,6 +93,8 @@ export const RunProgressSchema = z.object({
   phase: z.enum(['queued', 'running_attempt', 'resetting', 'comparing', 'completed']),
   currentAttempt: z.union([z.literal(1), z.literal(2)]).nullable(),
   completedAttempts: z.number().int().min(0).max(2),
+  completedActions: z.number().int().min(0).max(30),
+  totalActions: z.number().int().min(0).max(30),
   message: z.string().max(300),
   updatedAt: z.string().datetime(),
 }).strict()

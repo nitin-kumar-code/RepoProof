@@ -8,7 +8,7 @@ export default function PassportReport({ run }: { run: RunRecord }) {
   const reportUrl = reportRecord
     ? `${baseUrl}/api/runs/${encodeURIComponent(run.id)}/evidence/${encodeURIComponent(reportRecord.id)}`
     : undefined
-  const result = run.execution?.result.replaceAll('_', ' ') ?? 'Not available yet'
+  const result = run.status === 'failed' ? 'Infrastructure failure' : run.execution?.result.replaceAll('_', ' ') ?? 'Not available yet'
 
   return <section className="passport-card">
     <div className="passport-top">

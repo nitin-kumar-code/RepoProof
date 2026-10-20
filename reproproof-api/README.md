@@ -1,5 +1,26 @@
 # ReproProof API
 
+## Frontend API contract
+
+Use the following flow for the UI. API run states are lowercase strings; the
+frontend must use the returned state and verdict instead of treating an HTTP
+success response as proof that a bug reproduced.
+
+| Frontend screen | Request | Expected use |
+| --- | --- | --- |
+| Bug intake | `POST /api/bugs` | Submit `title`, `description`, ordered `steps` (`order`, `instruction`), expected/actual behavior, and `environment` (`targetUrl`, `browser`). A complete report returns `201` with `{ id, status: "created", complete: true, bugReport }`; missing details return `202` with `status: "clarification_required"` and `clarificationRequests`. |
+| Report details | `GET /api/bugs/:id` | Retrieve the saved input and environment. |
+| Proposed plan | `POST /api/runs` with `{ "bugReportId": "…" }` | Create a plan and pending approval run. Returns the run, including `id`, `status`, `plan`, `planHash`, and `approvalExpiresAt`. A retry for a bug with an active run returns that existing run. |
+| Approval | `POST /api/runs/:id/approve` with `{ "decision": "approved" }` or `{ "decision": "rejected" }` | Send the configured server-verified Basic credentials in `Authorization`. Approval records the exact plan hash and identity; rejection moves the run to `cancelled`. |
+| Execution | `POST /api/runs/:id/execute` | Enqueue the approved run and return `202 Accepted` promptly. Poll the run endpoint; do not infer the verdict from `202`. |
+| Live execution | `GET /api/runs/:id` | Poll every 1–2 seconds. `progress` reports phase, current attempt, completed attempts, completed actions, and total actions. After verification, `execution` includes attempts, sanitized telemetry, evidence records, and a result. `status: "failed"` means infrastructure execution failed; it is distinct from `execution.result: "not_reproduced"`. |
+| Results and evidence | `GET /api/runs/:id/evidence` | Returns `{ runId, files }`. Each file includes sanitized metadata and a `downloadUrl`; production links are short-lived signed URLs from the private Storage bucket. |
+
+Typical run states are `awaiting_approval → approved → running → verifying →
+reproduced | not_reproduced | inconclusive`. A rejected plan becomes `cancelled`,
+and infrastructure failures become `failed`. The UI may show recent telemetry
+after attempts have been saved; event text and URLs are sanitized by the API.
+
 ## Target URL allowlist
 
 Set `ALLOWED_TARGET_ORIGINS` to comma-separated exact HTTPS origins for verified,

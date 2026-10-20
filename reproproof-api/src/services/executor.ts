@@ -167,7 +167,11 @@ function approvedTarget(run: RunWithPlan): URL {
   return new URL(value)
 }
 
-export async function executeApprovedPlan(run: RunWithPlan, attemptNumber = 1): Promise<AttemptEvidence> {
+export async function executeApprovedPlan(
+  run: RunWithPlan,
+  attemptNumber = 1,
+  onActionCompleted?: (completed: number) => Promise<void>,
+): Promise<AttemptEvidence> {
   const startedAt = new Date().toISOString()
   const safeRunId = run.id.replace(/[^a-z0-9-]/gi, '_')
   const artifactRoot = path.resolve(env.RUN_ARTIFACTS_DIR)
@@ -202,6 +206,7 @@ export async function executeApprovedPlan(run: RunWithPlan, attemptNumber = 1): 
       if (run.plan.clarifications.length || run.plan.steps.some(step => step.action === null || step.clarification !== null)) {
         throw new ExecutionBlockedError('Plan contains a clarification-only step')
       }
+      let completedActions = 0
       for (const step of run.plan.steps) {
         if (!step.action) throw new ExecutionBlockedError('Plan contains a clarification-only step')
         currentActionNumber = step.stepOrder
@@ -209,6 +214,8 @@ export async function executeApprovedPlan(run: RunWithPlan, attemptNumber = 1): 
         if (step.action.type === 'screenshot') {
           await screenshot(browserRun!.page, runDirectory, files, step.stepOrder, step.action.label)
         }
+        completedActions += 1
+        await onActionCompleted?.(completedActions)
       }
       await screenshot(browserRun!.page, runDirectory, files, run.plan.steps.at(-1)?.stepOrder ?? null, 'final')
     }

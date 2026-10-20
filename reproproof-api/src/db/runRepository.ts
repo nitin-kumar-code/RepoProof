@@ -165,6 +165,8 @@ export const runRepository = {
     const terminal = ['reproduced', 'not_reproduced', 'inconclusive', 'failed'].includes(nextStatus)
     const updated = RunWithPlanSchema.parse({ ...current, status: nextStatus, updatedAt: now,
       ...(terminal ? { progress: { phase: 'completed', currentAttempt: null, completedAttempts: current.execution?.attempts.length ?? 0,
+        completedActions: current.progress?.completedActions ?? 0,
+        totalActions: current.progress?.totalActions ?? current.plan.steps.length,
         message: nextStatus === 'failed' ? 'Execution failed; inspect the error and evidence' : 'Verification complete', updatedAt: now } } : {}),
     })
     if (!supabase) {

@@ -119,6 +119,16 @@ export interface RunExecution {
   error: string | null
 }
 
+export interface RunProgress {
+  phase: 'queued' | 'running_attempt' | 'resetting' | 'comparing' | 'completed'
+  currentAttempt: 1 | 2 | null
+  completedAttempts: number
+  completedActions: number
+  totalActions: number
+  message: string
+  updatedAt: string
+}
+
 export interface RunRecord {
   id: string
   bugReportId: string
@@ -129,6 +139,7 @@ export interface RunRecord {
   planHash: string
   approvalExpiresAt: string
   approval: RunApproval | null
+  progress: RunProgress | null
   execution: RunExecution | null
   plan: AgentPlan
 }

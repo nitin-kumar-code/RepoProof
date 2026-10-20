@@ -145,6 +145,7 @@ begin
   update public.runs set run = jsonb_set(
     coalesce(run, '{}'::jsonb), '{progress}',
     jsonb_build_object('phase', 'queued', 'currentAttempt', null, 'completedAttempts', 0,
+      'completedActions', 0, 'totalActions', jsonb_array_length(coalesce(plan->'steps', '[]'::jsonb)),
       'message', 'Waiting for an available browser worker', 'updatedAt', now()), true
   ), updated_at = now()
   where id = p_run_id and status = 'approved' and plan_hash = p_plan_hash;
@@ -221,7 +222,12 @@ begin
   get diagnostics recovered = row_count;
 
   update public.runs r set status = 'failed', updated_at = now(),
-    run = jsonb_set(coalesce(r.run, '{}'::jsonb), '{status}', '"failed"'::jsonb, true)
+    run = jsonb_set(jsonb_set(coalesce(r.run, '{}'::jsonb), '{status}', '"failed"'::jsonb, true),
+      '{progress}', jsonb_build_object('phase', 'completed', 'currentAttempt', null,
+        'completedAttempts', coalesce(jsonb_array_length(r.run #> '{execution,attempts}'), 0),
+        'completedActions', coalesce((r.run #>> '{progress,completedActions}')::integer, 0),
+        'totalActions', coalesce((r.run #>> '{progress,totalActions}')::integer, 0),
+        'message', 'Worker lease expired; execution failed', 'updatedAt', now()), true)
   where r.status = 'running' and r.updated_at < p_stale_before
     and not exists (select 1 from public.run_jobs j where j.run_id = r.id and j.status = 'processing');
 
