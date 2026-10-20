@@ -39,6 +39,7 @@ export const PlannedStepSchema = z.object({
 
 export const AgentPlanSchema = z.object({
   summary: z.string().trim().min(1).max(1000),
+  verificationMode: z.enum(['read_only', 'reset_required', 'reset']).default('read_only'),
   preconditions: z.array(z.string().trim().min(1).max(500)).max(30),
   clarifications: z.array(z.string().trim().min(1).max(1000)).max(30),
   steps: z.array(PlannedStepSchema).min(1).max(30),

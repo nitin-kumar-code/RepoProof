@@ -70,6 +70,25 @@
   object-fit: contain;
 }
 
+.verification-attempt {
+  display: grid;
+  gap: 5px;
+  margin: 10px 0;
+  padding: 10px;
+  border: 1px solid #e9edf2;
+  border-radius: 7px;
+  font-size: 10px;
+}
+
+.verification-attempt details {
+  color: #66758a;
+}
+
+.verification-attempt code {
+  overflow-wrap: anywhere;
+  font-size: 9px;
+}
+
 .passport-download {
   margin-left: auto;
   display: inline-flex;

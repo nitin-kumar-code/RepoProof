@@ -3,7 +3,7 @@ import { baseUrl } from '../../api/client'
 import type { RunRecord } from '../../types/run'
 
 export default function PassportReport({ run }: { run: RunRecord }) {
-  const reportRecord = run.execution?.evidenceRecords.find(record => record.type === 'report')
+  const reportRecord = run.execution?.evidenceRecords.find(record => record.storageKey.endsWith('/verification-report.json'))
   const reportUrl = reportRecord
     ? `${baseUrl}/api/runs/${encodeURIComponent(run.id)}/evidence/${encodeURIComponent(reportRecord.id)}`
     : undefined

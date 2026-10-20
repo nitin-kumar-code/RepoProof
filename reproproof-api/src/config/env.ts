@@ -17,6 +17,8 @@ const envSchema = z.object({
   ALLOW_INSECURE_LOCAL_TARGETS: z.enum(['true', 'false']).default('false').transform(value => value === 'true'),
   RUN_ARTIFACTS_DIR: z.string().trim().min(1).default('artifacts/runs'),
   EVIDENCE_STORAGE_BUCKET: z.string().trim().min(1).default('reproproof-evidence'),
+  VERIFICATION_RESET_URL: z.preprocess(value => value === '' ? undefined : value, z.string().url().optional()),
+  VERIFICATION_RESET_TOKEN: z.preprocess(value => value === '' ? undefined : value, z.string().min(1).optional()),
   SUPABASE_URL: z.preprocess(value => value === '' ? undefined : value, z.string().url().optional()),
   SUPABASE_SERVICE_ROLE_KEY: z.preprocess(value => value === '' ? undefined : value, z.string().min(1).optional()),
   PLANNER_MODE: z.enum(['mock', 'openai']).default('mock'),
@@ -82,6 +84,13 @@ if (Boolean(env.SUPABASE_URL) !== Boolean(env.SUPABASE_SERVICE_ROLE_KEY)) {
 
 if (env.APP_ENV === 'production' && !env.SUPABASE_URL) {
   throw new Error('Invalid environment configuration: production requires Supabase for private evidence storage')
+}
+
+if (env.VERIFICATION_RESET_URL) {
+  const resetUrl = new URL(env.VERIFICATION_RESET_URL)
+  if (resetUrl.username || resetUrl.password || resetUrl.search || resetUrl.hash) {
+    throw new Error('Invalid environment configuration: VERIFICATION_RESET_URL must not contain credentials, query parameters, or a fragment; use VERIFICATION_RESET_TOKEN for authentication')
+  }
 }
 
 if (env.PLANNER_MODE === 'openai' && !env.OPENAI_API_KEY) {

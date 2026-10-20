@@ -10,7 +10,7 @@ import { RunWithPlanSchema } from '../schemas/run'
 import { ApprovalError, approvalExpiryFrom, claimApprovedRun, completeApprovedRun, decideRunApproval, hashPlan, markRunVerifying, verifyApproverAuthorization } from '../services/approvals'
 import { env } from '../config/env'
 import { TargetValidationError } from '../services/targetValidation'
-import { executeApprovedPlan } from '../services/executor'
+import { verifyApprovedPlan, addResetPrecondition } from '../services/verifier'
 import { sanitizeError } from '../browser/telemetry'
 import { createEvidenceDownloadUrl } from '../services/evidenceStorage'
 import type { RunWithPlan } from '../schemas/run'
@@ -23,7 +23,7 @@ const ApprovalRequestSchema = z.object({ decision: z.enum(['approved', 'rejected
 
 async function finishClaimedRun(run: RunWithPlan): Promise<void> {
   try {
-    const evidence = await executeApprovedPlan(run)
+    const evidence = await verifyApprovedPlan(run)
     await markRunVerifying(run.id, evidence)
     await completeApprovedRun(run.id, evidence.result)
   } catch (cause) {
@@ -40,6 +40,7 @@ async function finishClaimedRun(run: RunWithPlan): Promise<void> {
           files: [],
           evidenceRecords: [],
           telemetry: [],
+          attempts: [],
           error: sanitizeError(cause),
         })
         current = await runRepository.get(run.id)
@@ -122,7 +123,7 @@ runsRouter.get('/:id/evidence/:evidenceId', async (request, response) => {
     response.redirect(302, signedUrl)
     return
   }
-  if (!/^[a-zA-Z0-9_-]+\/(?:screenshots\/[a-zA-Z0-9._-]+\.png|video\/[a-zA-Z0-9._-]+\.webm|console\.json|network\.json|report\.json)$/.test(record.storageKey)) {
+  if (!/^[a-zA-Z0-9_-]+\/(?:attempt-[12]\/(?:screenshots\/[a-zA-Z0-9._-]+\.png|video\/[a-zA-Z0-9._-]+\.webm|console\.json|network\.json|report\.json)|verification-report\.json)$/.test(record.storageKey)) {
     response.status(404).json({ error: 'evidence_not_found' })
     return
   }
@@ -207,7 +208,7 @@ runsRouter.post('/', async (request, response) => {
 
   let plan
   try {
-    plan = await generatePlan(bug)
+    plan = addResetPrecondition(await generatePlan(bug))
   } catch (cause) {
     if (cause instanceof TargetValidationError) {
       response.status(403).json({ error: cause.code, message: 'Target must use an explicitly approved HTTPS origin that resolves only to public addresses.' })

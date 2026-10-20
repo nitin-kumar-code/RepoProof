@@ -40,6 +40,7 @@ export interface PlannedStep {
 /** Structured, non-executable plan contract mirrored by the API Zod schema. */
 export interface AgentPlan {
   summary: string
+  verificationMode: 'read_only' | 'reset_required' | 'reset'
   preconditions: string[]
   clarifications: string[]
   steps: PlannedStep[]
@@ -82,6 +83,30 @@ export interface TelemetryEvent {
   failure?: string
 }
 
+export interface FailureFingerprint {
+  hash: string
+  route: string
+  criterionId: string
+  failureType: 'visible_text' | 'console_error' | 'page_error' | 'request_failed' | 'http_failure'
+  message: string
+  request: { method: string; path: string; status: number | null } | null
+}
+
+export interface VerificationAttempt {
+  attemptNumber: number
+  startedAt: string
+  completedAt: string
+  completed: boolean
+  expectedFailureFound: boolean
+  fingerprint: FailureFingerprint | null
+  result: 'reproduced' | 'not_reproduced' | 'inconclusive'
+  artifactDirectory: string
+  files: EvidenceReference[]
+  evidenceRecords: EvidenceRecord[]
+  telemetry: TelemetryEvent[]
+  error: string | null
+}
+
 export interface RunExecution {
   startedAt: string
   completedAt: string
@@ -90,6 +115,7 @@ export interface RunExecution {
   files: EvidenceReference[]
   evidenceRecords: EvidenceRecord[]
   telemetry: TelemetryEvent[]
+  attempts: VerificationAttempt[]
   error: string | null
 }
 

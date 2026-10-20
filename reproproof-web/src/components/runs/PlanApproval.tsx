@@ -97,6 +97,7 @@ export default function PlanApproval({ run, onUpdated }: { run: RunRecord; onUpd
     <div className="panel-heading"><div><div className="eyebrow">AI GENERATED PLAN</div><h2>Reproduction plan</h2></div><span className="status-pill approval"><CircleDot size={12} /> {status.replaceAll('_', ' ')}</span></div>
     <p className="muted">{plan.summary}</p>
     {destination && <p className="muted"><b>Destination:</b> {destination}</p>}
+    <p className="muted"><b>Verification mode:</b> {plan.verificationMode.replaceAll('_', ' ')}</p>
     <div className="plan-ai"><Sparkles size={15} /><span>{run.execution ? `Browser attempt finished: ${run.execution.result.replaceAll('_', ' ')}.` : status === 'running' || status === 'verifying' ? 'Chromium is running. This page checks for the result automatically.' : 'Review the proposed actions and approve the plan before running Chromium.'}</span></div>
     {plan.preconditions.length > 0 && <><h3>Preconditions</h3><ul>{plan.preconditions.map(item => <li key={item}>{item}</li>)}</ul></>}
     {plan.clarifications.length > 0 && <div className="clarification-box" role="status"><b>Report details to clarify:</b><ul>{plan.clarifications.map(item => <li key={item}>{item}</li>)}</ul></div>}
@@ -116,6 +117,17 @@ export default function PlanApproval({ run, onUpdated }: { run: RunRecord; onUpd
       <h3>Execution evidence</h3>
       <p className="muted">{new Date(run.execution.startedAt).toLocaleString()} – {new Date(run.execution.completedAt).toLocaleString()} · {run.execution.telemetry.length} telemetry events</p>
       {run.execution.error && <p className="error-banner" role="status">{run.execution.error}</p>}
+      {run.execution.attempts.map(attempt => <article className="verification-attempt" key={attempt.attemptNumber}>
+        <b>Attempt {attempt.attemptNumber}</b>
+        <span>{attempt.completed ? 'Completed' : 'Incomplete'} · {attempt.expectedFailureFound ? 'expected failure detected' : 'expected failure absent'}</span>
+        {attempt.fingerprint && <details>
+          <summary>Failure fingerprint · {attempt.fingerprint.failureType}</summary>
+          <code>{attempt.fingerprint.hash}</code>
+          <p>{attempt.fingerprint.route} · {attempt.fingerprint.message}</p>
+          {attempt.fingerprint.request && <small>{attempt.fingerprint.request.method} {attempt.fingerprint.request.path} · {attempt.fingerprint.request.status ?? 'no HTTP status'}</small>}
+        </details>}
+        {attempt.error && <small>{attempt.error}</small>}
+      </article>)}
       <ul className="evidence-files">{run.execution.evidenceRecords.map(record => {
         const href = `${baseUrl}/api/runs/${encodeURIComponent(run.id)}/evidence/${encodeURIComponent(record.id)}`
         return <li key={record.id}>

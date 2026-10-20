@@ -42,6 +42,22 @@ individual page operations have bounded timeouts. A locator waits briefly for
 its first match, then must match exactly one element before interaction, or the
 run is marked inconclusive.
 
+Two-run verification for state-modifying plans requires `VERIFICATION_RESET_URL`. Configure it to a
+dedicated reset endpoint on the exact approved application origin. That endpoint
+must reset only authorized disposable fixtures and return JSON
+`{"reset":true}`; optional `VERIFICATION_RESET_TOKEN` stays server-side. The reset
+procedure is added to the plan preconditions before approval, is called only
+between two fresh browser contexts, and must confirm success before attempt 2.
+Plans containing `click`, `fill`, or `select` require this matching approved
+reset procedure; without it, execution is inconclusive and does not start an
+attempt. Plans containing only navigation, waits, screenshots, and assertions
+are explicitly marked read-only in their approval preconditions and may run
+twice without an endpoint. Use that mode only for apps whose page-load behavior
+is safe to repeat. For deletion scenarios, the configured endpoint must restore
+the disposable fixture to its original state. It receives a JSON body
+containing `runId` and `bugReportId`; keep any reset credential in the
+server-side `VERIFICATION_RESET_TOKEN` setting, never in the URL.
+
 Screenshots, the finalized WebM recording, separate console and network logs,
 and a run report are written under `RUN_ARTIFACTS_DIR` (default
 `artifacts/runs`). With Compose, the run data is mounted at
