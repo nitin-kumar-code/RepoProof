@@ -101,6 +101,13 @@ export async function decideRunApproval(
 export async function claimApprovedRun(runId: string, now = new Date()): Promise<RunWithPlan> {
   const run = await runRepository.get(runId)
   if (!run) throw new ApprovalError('invalid_run_state')
+  await assertApprovedRun(run)
+  const claimed = await runRepository.claimExecution(run.id, run.planHash, now.toISOString())
+  if (!claimed) throw new ApprovalError('invalid_run_state')
+  return claimed
+}
+
+export async function assertApprovedRun(run: RunWithPlan): Promise<void> {
   if (run.status !== 'approved' || run.approval?.decision !== 'approved') {
     throw new ApprovalError('approval_required')
   }
@@ -109,9 +116,6 @@ export async function claimApprovedRun(runId: string, now = new Date()): Promise
     throw new ApprovalError('plan_changed')
   }
   await assertPlanTargetAllowed(run)
-  const claimed = await runRepository.claimExecution(run.id, run.planHash, now.toISOString())
-  if (!claimed) throw new ApprovalError('invalid_run_state')
-  return claimed
 }
 
 async function requireApprovedPlan(runId: string, expectedStatus: RunWithPlan['status']): Promise<RunWithPlan> {
@@ -134,7 +138,7 @@ export async function markRunVerifying(runId: string, evidence: z.infer<typeof E
 
 export async function completeApprovedRun(
   runId: string,
-  result: 'reproduced' | 'not_reproduced' | 'inconclusive',
+  result: 'reproduced' | 'not_reproduced' | 'inconclusive' | 'failed',
   now = new Date(),
 ): Promise<RunWithPlan> {
   const run = await requireApprovedPlan(runId, 'verifying')

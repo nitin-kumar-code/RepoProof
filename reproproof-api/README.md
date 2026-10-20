@@ -31,12 +31,21 @@ process.
 ## Browser execution and evidence
 
 After a run is approved, call `POST /api/runs/:id/execute`. The endpoint
-atomically claims the approved plan and immediately returns `202 Accepted` with
-the run in `running` state. Poll `GET /api/runs/:id` until it reaches a final
-state. The background attempt starts one isolated Chromium context and executes
-the approved typed actions in order; it rejects an unapproved, changed, or
-already claimed plan. Only one browser attempt runs at a time in each API
-process; concurrent execution requests receive `409 browser_executor_busy`.
+atomically adds the approved plan to the shared Supabase `run_jobs` queue and
+immediately returns `202 Accepted`. Poll `GET /api/runs/:id` for its queue,
+attempt, and verification progress. Every API replica runs one queue worker;
+Postgres `FOR UPDATE SKIP LOCKED` claims each job for exactly one worker, and
+each worker processes one browser run at a time. Repeated execution requests
+return the existing run and do not add another job. The worker verifies the
+approved plan hash before execution.
+
+Apply the full `supabase/schema.sql` after deploying this queue implementation.
+It creates the durable queue table and service-role-only RPC functions used for
+atomic enqueueing, claiming, heartbeats, completion, and stale-job recovery.
+Runs whose workers lose their lease are marked `failed` and are not retried
+automatically, because a browser may already have performed a destructive
+action before the worker crashed. Review the saved attempt evidence before
+creating a new approved run.
 Each attempt is limited to 30 actions and two minutes;
 individual page operations have bounded timeouts. A locator waits briefly for
 its first match, then must match exactly one element before interaction, or the
@@ -83,11 +92,12 @@ or a secret store.
 
 ## Storage
 
-For persistent storage, set both `SUPABASE_URL` and
+For persistent storage and browser execution, set both `SUPABASE_URL` and
 `SUPABASE_SERVICE_ROLE_KEY`, then run [`supabase/schema.sql`](supabase/schema.sql)
-in the Supabase SQL editor. Keep the service role key on the API server only.
-If Supabase is not configured, the API uses an in-memory store for local
-development; those reports do not survive restarts.
+in the Supabase SQL editor. The service role key is required by the shared job
+queue and must stay on the API server only. Without Supabase, the API's local
+in-memory report store can support intake development, but durable queueing and
+browser execution are unavailable and reports do not survive restarts.
 
 ## Planner
 

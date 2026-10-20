@@ -12,6 +12,7 @@ export const RunStatusSchema = z.enum([
   'reproduced',
   'not_reproduced',
   'inconclusive',
+  'failed',
   // Retained for records written by the earlier run schema.
   'passed',
   'failed',
@@ -89,6 +90,14 @@ export const ExecutionEvidenceSchema = z.object({
   error: z.string().max(2000).nullable(),
 }).strict()
 
+export const RunProgressSchema = z.object({
+  phase: z.enum(['queued', 'running_attempt', 'resetting', 'comparing', 'completed']),
+  currentAttempt: z.union([z.literal(1), z.literal(2)]).nullable(),
+  completedAttempts: z.number().int().min(0).max(2),
+  message: z.string().max(300),
+  updatedAt: z.string().datetime(),
+}).strict()
+
 export const RunSchema = z.object({
   id: z.string().min(1),
   bugReportId: z.string().min(1),
@@ -99,6 +108,7 @@ export const RunSchema = z.object({
   planHash: z.string().regex(/^[a-f0-9]{64}$/),
   approvalExpiresAt: z.string().datetime(),
   approval: ApprovalRecordSchema.nullable(),
+  progress: RunProgressSchema.nullable().default(null),
   execution: ExecutionEvidenceSchema.nullable().default(null),
 }).strict()
 

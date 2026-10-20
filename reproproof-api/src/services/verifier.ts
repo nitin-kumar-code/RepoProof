@@ -13,6 +13,8 @@ import type { AgentPlan } from '../schemas/plan'
 type Attempt = z.infer<typeof VerificationAttemptSchema>
 type Verification = z.infer<typeof ExecutionEvidenceSchema>
 type ExecuteAttempt = (run: RunWithPlan, attemptNumber: number) => Promise<Attempt>
+type Progress = NonNullable<RunWithPlan['progress']>
+type ProgressCallback = (progress: Progress) => Promise<void>
 
 const resetTimeoutMs = 10_000
 const readOnlyVerificationNote = 'Verification mode: read_only. Run two attempts without reset; approved plan contains no click, fill, or select actions.'
@@ -102,7 +104,11 @@ export function determineVerdict(first: Attempt, second: Attempt): Verification[
   return runResult(first, second)
 }
 
-export async function verifyApprovedPlan(run: RunWithPlan, execute: ExecuteAttempt = executeApprovedPlan): Promise<Verification> {
+export async function verifyApprovedPlan(
+  run: RunWithPlan,
+  execute: ExecuteAttempt = executeApprovedPlan,
+  onProgress?: ProgressCallback,
+): Promise<Verification> {
   const runRoot = path.resolve(env.RUN_ARTIFACTS_DIR, run.id.replace(/[^a-z0-9-]/gi, '_'))
   const startedAt = new Date().toISOString()
   const attempts: Attempt[] = []
@@ -111,13 +117,19 @@ export async function verifyApprovedPlan(run: RunWithPlan, execute: ExecuteAttem
 
   try {
     const resetUrl = await assertResetConfigured(run)
+    await onProgress?.({ phase: 'running_attempt', currentAttempt: 1, completedAttempts: 0, message: 'Running attempt 1 of 2', updatedAt: new Date().toISOString() })
     const first = await execute(run, 1)
     attempts.push(first)
     if (!first.completed) throw new Error('Attempt 1 did not complete; the second attempt was not started')
 
-    if (resetUrl) await resetToKnownState(run)
+    if (resetUrl) {
+      await onProgress?.({ phase: 'resetting', currentAttempt: null, completedAttempts: 1, message: 'Resetting test state before attempt 2', updatedAt: new Date().toISOString() })
+      await resetToKnownState(run)
+    }
+    await onProgress?.({ phase: 'running_attempt', currentAttempt: 2, completedAttempts: 1, message: 'Running attempt 2 of 2', updatedAt: new Date().toISOString() })
     const second = await execute(run, 2)
     attempts.push(second)
+    await onProgress?.({ phase: 'comparing', currentAttempt: null, completedAttempts: 2, message: 'Comparing attempt results and failure fingerprints', updatedAt: new Date().toISOString() })
     result = runResult(first, second)
     if (first.expectedFailureFound && second.expectedFailureFound && result === 'inconclusive') {
       error = 'Both attempts detected expected failures, but their fingerprints differ; review the attempt evidence.'

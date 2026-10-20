@@ -4,6 +4,7 @@ import helmet from 'helmet'
 import { env } from './config/env'
 import { bugsRouter } from './routes/bugs'
 import { runsRouter } from './routes/runs'
+import { recoverInterruptedRuns, startRunWorker } from './services/run-service'
 
 const app = express()
 
@@ -18,6 +19,10 @@ app.get('/health', (_request, response) => {
   response.status(200).json({ status: 'ok', timestamp: new Date().toISOString() })
 })
 
-app.listen(env.PORT, () => {
-  console.log(`Reproproof API listening on http://localhost:${env.PORT}`)
+void recoverInterruptedRuns().then(() => startRunWorker()).catch(cause => {
+  console.error('Could not recover interrupted browser runs:', cause)
+}).finally(() => {
+  app.listen(env.PORT, () => {
+    console.log(`Reproproof API listening on http://localhost:${env.PORT}`)
+  })
 })
