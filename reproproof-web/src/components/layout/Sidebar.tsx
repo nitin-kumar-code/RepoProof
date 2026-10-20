@@ -1,8 +1,8 @@
-import { Activity, Bug, CheckCircle2, ClipboardCheck, LayoutDashboard, SearchCheck, Settings2, ShieldCheck, TerminalSquare } from 'lucide-react'
+import { Activity, CheckCircle2, ClipboardCheck, LayoutDashboard, SearchCheck, Settings2, ShieldCheck, TerminalSquare } from 'lucide-react'
 import { NavLink } from 'react-router-dom'
 
 export default function Sidebar() {
-  return <><NavLink to="/" className="brand"><span className="brand-mark"><Bug size={19}/></span><span>ReproProof<small>DIAGNOSTICS</small></span><b className="brand-version">v1.4.2</b></NavLink><aside className="sidebar">
+  return <><NavLink to="/" className="brand"><span className="brand-mark"><img src="/favicon.svg" alt="" aria-hidden="true" /></span><span>ReproProof<small>Evidence over assumptions</small></span></NavLink><aside className="sidebar">
     <NavLink to="/new-bug" className="sidebar-new-bug"><span>＋</span>New Bug Report</NavLink>
     <nav className="nav-links">
       <NavLink to="/" end><LayoutDashboard size={19}/>Overview / Dashboard</NavLink>
