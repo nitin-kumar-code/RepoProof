@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { ArrowLeft, CircleAlert, RotateCw } from 'lucide-react'
+import { Activity, ArrowLeft, CircleAlert, RotateCw } from 'lucide-react'
 import { Link, useParams } from 'react-router-dom'
 import { getRun } from '../api/runs'
 import PlanApproval from '../components/runs/PlanApproval'
@@ -13,7 +13,6 @@ export default function RunDetails() {
 
   useEffect(() => {
     const controller = new AbortController()
-    setState({ id, run: null, error: '' })
     void getRun(id, controller.signal).then(result => {
       if (!controller.signal.aborted) setState({ id, run: result, error: '' })
     }).catch(cause => {
@@ -51,7 +50,7 @@ export default function RunDetails() {
         <div className="run-load-copy"><span className="eyebrow">RUN DETAILS</span><h1>Loading run plan…</h1><p>Fetching the run record from the ReproProof API.</p></div>
       </section>
         : <>
-          <div className="run-title-row"><div><div className="eyebrow">TEST RUN / {run.id}</div><h1>Reproduction plan</h1><p>Bug report {run.bugReportId} · Chromium · Created {new Date(run.createdAt).toLocaleString()}</p></div></div>
+          <div className="run-title-row"><div><div className="eyebrow">TEST RUN / {run.id}</div><h1>Reproduction plan</h1><p>Bug report {run.bugReportId} · Chromium · Created {new Date(run.createdAt).toLocaleString()}</p></div><Link className="secondary-button" to={`/runs/${encodeURIComponent(run.id)}/execution`}><Activity size={14}/>Live execution</Link></div>
           <div className="run-detail-grid"><div className="run-main-column"><PlanApproval run={run} onUpdated={updateRun} /></div><aside className="run-side-column"><PassportReport run={run} /></aside></div>
         </>}
   </div>

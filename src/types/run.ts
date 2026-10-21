@@ -1,5 +1,13 @@
 export type RunStatus = 'Passed' | 'Failed' | 'Running' | 'Needs approval'
 
+export type ReproductionVerdict = 'reproduced' | 'not_reproduced' | 'inconclusive'
+
+export interface ApiError {
+  error?: string
+  message?: string
+  issues?: Array<{ path?: string | string[]; message?: string }>
+}
+
 export interface TestRun {
   id: string
   title: string
@@ -40,6 +48,7 @@ export interface PlannedStep {
 /** Structured, non-executable plan contract mirrored by the API Zod schema. */
 export interface AgentPlan {
   summary: string
+  verificationMode: 'read_only' | 'reset_required' | 'reset'
   preconditions: string[]
   clarifications: string[]
   steps: PlannedStep[]
@@ -82,6 +91,30 @@ export interface TelemetryEvent {
   failure?: string
 }
 
+export interface FailureFingerprint {
+  hash: string
+  route: string
+  criterionId: string
+  failureType: 'visible_text' | 'console_error' | 'page_error' | 'request_failed' | 'http_failure'
+  message: string
+  request: { method: string; path: string; status: number | null } | null
+}
+
+export interface VerificationAttempt {
+  attemptNumber: number
+  startedAt: string
+  completedAt: string
+  completed: boolean
+  expectedFailureFound: boolean
+  fingerprint: FailureFingerprint | null
+  result: 'reproduced' | 'not_reproduced' | 'inconclusive'
+  artifactDirectory: string
+  files: EvidenceReference[]
+  evidenceRecords: EvidenceRecord[]
+  telemetry: TelemetryEvent[]
+  error: string | null
+}
+
 export interface RunExecution {
   startedAt: string
   completedAt: string
@@ -90,7 +123,18 @@ export interface RunExecution {
   files: EvidenceReference[]
   evidenceRecords: EvidenceRecord[]
   telemetry: TelemetryEvent[]
+  attempts: VerificationAttempt[]
   error: string | null
+}
+
+export interface RunProgress {
+  phase: 'queued' | 'running_attempt' | 'resetting' | 'comparing' | 'completed'
+  currentAttempt: 1 | 2 | null
+  completedAttempts: number
+  completedActions: number
+  totalActions: number
+  message: string
+  updatedAt: string
 }
 
 export interface RunRecord {
@@ -103,6 +147,7 @@ export interface RunRecord {
   planHash: string
   approvalExpiresAt: string
   approval: RunApproval | null
+  progress: RunProgress | null
   execution: RunExecution | null
   plan: AgentPlan
 }

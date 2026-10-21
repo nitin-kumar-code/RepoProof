@@ -2,6 +2,7 @@ services:
   reproproof-api:
     build:
       context: ./reproproof-api
+    shm_size: "2gb"
     environment:
       PORT: 4000
       APP_ENV: ${APP_ENV:-development}
@@ -12,7 +13,7 @@ services:
       VERIFICATION_RESET_TOKEN: ${VERIFICATION_RESET_TOKEN:-}
       SUPABASE_URL: ${SUPABASE_URL:-}
       SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY:-}
-      CORS_ORIGIN: http://localhost:8080
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:8080}
       ALLOWED_TARGET_ORIGINS: ${ALLOWED_TARGET_ORIGINS:-}
       ALLOWED_RESOURCE_ORIGINS: ${ALLOWED_RESOURCE_ORIGINS:-}
       PLANNER_MODE: ${PLANNER_MODE:-mock}
@@ -20,8 +21,8 @@ services:
       OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4o-mini}
       APPROVAL_USERNAME: ${APPROVAL_USERNAME:-}
       APPROVAL_PASSWORD: ${APPROVAL_PASSWORD:-}
-    expose:
-      - "4000"
+    ports:
+      - "4000:4000"
     volumes:
       - ${RUN_ARTIFACTS_DIR:-./reproproof-api/artifacts}:/app/artifacts
     healthcheck:
@@ -32,7 +33,10 @@ services:
 
   reproproof-web:
     build:
-      context: ./reproproof-web
+      context: .
+      dockerfile: reproproof-web/Dockerfile
+      args:
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-}
     ports:
       - "8080:80"
     depends_on:

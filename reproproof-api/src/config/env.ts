@@ -5,7 +5,7 @@ import { z } from 'zod'
 const envSchema = z.object({
   PORT: z.coerce.number().int().min(1).max(65535).default(4000),
   APP_ENV: z.enum(['development', 'test', 'production']).default('development'),
-  CORS_ORIGIN: z.string().url().optional(),
+  CORS_ORIGIN: z.string().url().refine(value => new URL(value).origin === value, 'must be an exact origin without a path').optional(),
   // Exact HTTPS origins, comma-separated. An empty allowlist rejects targets.
   ALLOWED_TARGET_ORIGINS: z.string().default('').transform(value =>
     value.split(',').map(origin => origin.trim()).filter(Boolean),
@@ -84,6 +84,12 @@ if (Boolean(env.SUPABASE_URL) !== Boolean(env.SUPABASE_SERVICE_ROLE_KEY)) {
 
 if (env.APP_ENV === 'production' && !env.SUPABASE_URL) {
   throw new Error('Invalid environment configuration: production requires Supabase for private evidence storage')
+}
+if (env.APP_ENV === 'production' && !env.CORS_ORIGIN) {
+  throw new Error('Invalid environment configuration: production requires CORS_ORIGIN for the deployed frontend')
+}
+if (env.APP_ENV === 'production' && env.CORS_ORIGIN && new URL(env.CORS_ORIGIN).protocol !== 'https:') {
+  throw new Error('Invalid environment configuration: production CORS_ORIGIN must use HTTPS')
 }
 
 if (env.VERIFICATION_RESET_URL) {

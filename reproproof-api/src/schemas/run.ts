@@ -96,7 +96,9 @@ export const RunProgressSchema = z.object({
   completedActions: z.number().int().min(0).max(30),
   totalActions: z.number().int().min(0).max(30),
   message: z.string().max(300),
-  updatedAt: z.string().datetime(),
+  // Postgres JSONB timestamps may use an explicit UTC offset (for example,
+  // +00:00) while API-generated timestamps use the equivalent Z suffix.
+  updatedAt: z.string().datetime({ offset: true }),
 }).strict()
 
 export const RunSchema = z.object({

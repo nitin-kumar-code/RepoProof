@@ -63,7 +63,15 @@ export class BrowserTelemetry {
 }
 
 export function sanitizeError(error: unknown): string {
-  const message = error instanceof Error ? (error.stack ?? error.message) : String(error)
+  const message = error instanceof Error
+    ? (error.stack ?? error.message)
+    : error && typeof error === 'object'
+      ? JSON.stringify(Object.fromEntries(
+        ['name', 'message', 'code', 'details', 'hint']
+          .filter(key => key in error)
+          .map(key => [key, (error as Record<string, unknown>)[key]]),
+      ))
+      : String(error)
   return safeText(message)
 }
 

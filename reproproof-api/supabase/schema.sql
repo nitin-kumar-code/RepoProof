@@ -170,7 +170,9 @@ begin
     update public.runs set status = 'running',
       run = jsonb_set(coalesce(run, '{}'::jsonb), '{status}', '"running"'::jsonb, true),
       updated_at = now()
-      where id = candidate.run_id and status = 'approved' and plan_hash = candidate.plan_hash;
+      where public.runs.id = candidate.run_id
+        and public.runs.status = 'approved'
+        and public.runs.plan_hash = candidate.plan_hash;
     if found then
       return query select candidate.id, candidate.run_id, candidate.plan_hash;
       return;

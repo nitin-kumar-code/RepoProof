@@ -10,7 +10,13 @@ const app = express()
 
 app.disable('x-powered-by')
 app.use(helmet())
-app.use(cors(env.CORS_ORIGIN ? { origin: env.CORS_ORIGIN } : undefined))
+app.use(cors({ origin: (origin, callback) => {
+  if (!origin) return callback(null, false)
+  if (env.CORS_ORIGIN && origin === env.CORS_ORIGIN) return callback(null, true)
+  const localDevelopmentOrigin = env.APP_ENV === 'development'
+    && /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)
+  return callback(null, localDevelopmentOrigin)
+} }))
 app.use(express.json({ limit: '1mb' }))
 app.use('/api/bugs', bugsRouter)
 app.use('/api/runs', runsRouter)
