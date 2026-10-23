@@ -7,14 +7,15 @@ services:
       PORT: 4000
       APP_ENV: ${APP_ENV:-development}
       ALLOW_INSECURE_LOCAL_TARGETS: ${ALLOW_INSECURE_LOCAL_TARGETS:-false}
+      BUGLAB_BASE_URL: ${BUGLAB_BASE_URL:-http://host.docker.internal:4173}
       RUN_ARTIFACTS_DIR: /app/artifacts/runs
       EVIDENCE_STORAGE_BUCKET: ${EVIDENCE_STORAGE_BUCKET:-reproproof-evidence}
-      VERIFICATION_RESET_URL: ${VERIFICATION_RESET_URL:-}
-      VERIFICATION_RESET_TOKEN: ${VERIFICATION_RESET_TOKEN:-}
+      VERIFICATION_RESET_URL: ${VERIFICATION_RESET_URL:-${BUGLAB_BASE_URL:-http://host.docker.internal:4173}/api/sandbox/reset}
+      VERIFICATION_RESET_TOKEN: ${VERIFICATION_RESET_TOKEN:-${BUGLAB_RESET_TOKEN:-}}
       SUPABASE_URL: ${SUPABASE_URL:-}
       SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY:-}
       CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:8080}
-      ALLOWED_TARGET_ORIGINS: ${ALLOWED_TARGET_ORIGINS:-}
+      ALLOWED_TARGET_ORIGINS: ${ALLOWED_TARGET_ORIGINS:-${BUGLAB_BASE_URL:-http://host.docker.internal:4173}}
       ALLOWED_RESOURCE_ORIGINS: ${ALLOWED_RESOURCE_ORIGINS:-}
       PLANNER_MODE: ${PLANNER_MODE:-mock}
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
@@ -23,6 +24,8 @@ services:
       APPROVAL_PASSWORD: ${APPROVAL_PASSWORD:-}
     ports:
       - "4000:4000"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     volumes:
       - ${RUN_ARTIFACTS_DIR:-./reproproof-api/artifacts}:/app/artifacts
     healthcheck:

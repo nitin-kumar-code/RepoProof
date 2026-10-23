@@ -27,6 +27,22 @@ npm run dev
 
 Open `http://localhost:5173`. Vite uses `http://localhost:4000` for API calls in development. For a local app as a browser target, explicitly enable `ALLOW_INSECURE_LOCAL_TARGETS=true` and set `ALLOWED_TARGET_ORIGINS` in the API environment. Keep that option off outside local development.
 
+### BugLab integration demo
+
+BugLab is the supported controlled target for TC1–TC4. The report form loads its configurable origin from `GET /api/demo/buglab`; selecting a scenario fills the normal report fields and marks the report with `environment.demoScenario`. The API accepts that marker only when the URL matches `BUGLAB_BASE_URL` and the documented route. Plans still use the existing planner, hash approval, durable queue, Playwright worker, and Evidence Passport.
+
+For Docker Desktop, run BugLab on the host so its loopback-only API remains private. Configure the same randomly generated reset token in `buglab/.env` and the root `.env`. In root `.env`, allow only `http://host.docker.internal:4173`, set `BUGLAB_BASE_URL` to that origin, set `VERIFICATION_RESET_URL` to its `/api/sandbox/reset` route, and enable `ALLOW_INSECURE_LOCAL_TARGETS=true` only with `APP_ENV=development`. BugLab's Vite web server must bind to `0.0.0.0` for the ReproProof container; its API continues to bind to loopback. Then:
+
+```bash
+cd buglab
+npm ci
+# Terminal 1: configure BUGLAB_RESET_TOKEN and BUGLAB_UI_ORIGINS in buglab/.env
+npm run dev:api
+# Terminal 2: BUGLAB_WEB_HOST=0.0.0.0 npm run dev:web
+```
+
+In another terminal, from the repository root, start the ReproProof stack with `docker compose up --build`, open `http://localhost:8080`, select TC1–TC4 on **New Bug Report**, review the proposed plan, approve it, and run it. TC3 first attempts an unapproved API delete and then requires BugLab's exact record-set approval for the disposable fixture. TC1 and TC3 reset before both attempts. The runner records sanitized screenshots and request/response metadata; video recording is disabled because Playwright does not provide frame-level redaction.
+
 ### Docker Compose
 
 From the repository root:
@@ -73,4 +89,15 @@ npm test
 npm run build
 ```
 
-The UI includes the four acceptance scenario specifications, but these are labeled as not executed until real backend runs exist. A full browser run also requires configured Supabase queue/storage and an allowlisted target; without them, the API intentionally refuses durable execution.
+The QA scenario page reads live report/run state and links each scenario to the report form. Queued browser execution still requires the configured Supabase schema and credentials; the API intentionally refuses to execute an untracked run.
+
+The full local integration test starts BugLab, the ReproProof frontend/API, and the Playwright worker, then submits, approves, executes, and checks all four scenarios. It uses the Supabase credentials and server approval pair already present in the untracked root `.env`; no values are printed by the test:
+
+```bash
+cd reproproof-api
+npm run test:buglab-e2e
+```
+
+Evidence and the result summary are retained under the OS temporary directory printed at the end of the test.
+
+If the worker logs `plan_hash is ambiguous`, apply the existing corrective function migration at `reproproof-api/supabase/migrations/202610210001_fix_claim_run_job_plan_hash_ambiguity.sql` in the configured Supabase project's SQL Editor. The queue schema is already present, but the function migration must also be applied for workers to claim runs. The integration test checks for this known migration drift before it creates test reports.

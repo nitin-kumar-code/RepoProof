@@ -73,8 +73,10 @@ runsRouter.get('/:id/evidence', async (request, response) => {
   }
   const files = await Promise.all((await listEvidenceRecords(run.id)).map(async record => ({
     ...record,
-    downloadUrl: await createEvidenceDownloadUrl(record.storageKey)
-      ?? `/api/runs/${encodeURIComponent(run.id)}/evidence/${encodeURIComponent(record.id)}`,
+    restricted: !record.sanitized,
+    downloadUrl: record.sanitized
+      ? await createEvidenceDownloadUrl(record.storageKey) ?? `/api/runs/${encodeURIComponent(run.id)}/evidence/${encodeURIComponent(record.id)}`
+      : null,
   })))
   response.setHeader('Cache-Control', 'private, no-store')
   response.json({ runId: run.id, files })
@@ -90,6 +92,10 @@ runsRouter.get('/:id/evidence/:evidenceId', async (request, response) => {
   const safeRunId = run.id.replace(/[^a-z0-9-]/gi, '_')
   if (!record || !record.storageKey.startsWith(`${safeRunId}/`)) {
     response.status(404).json({ error: 'evidence_not_found' })
+    return
+  }
+  if (!record.sanitized) {
+    response.status(403).json({ error: 'evidence_restricted', message: 'This evidence has not passed the sanitization policy and cannot be downloaded or shared.' })
     return
   }
   const signedUrl = await createEvidenceDownloadUrl(record.storageKey)

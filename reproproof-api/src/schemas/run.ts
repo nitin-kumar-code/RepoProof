@@ -43,7 +43,7 @@ export const EvidenceRecordSchema = z.object({
 }).strict()
 
 export const TelemetryEventSchema = z.object({
-  type: z.enum(['console_error', 'page_error', 'request_failed', 'http_failure']),
+  type: z.enum(['console_error', 'page_error', 'request', 'response', 'request_failed', 'http_failure']),
   timestamp: z.string().datetime(),
   message: z.string().max(2000).optional(),
   severity: z.string().max(40).optional(),

@@ -29,6 +29,9 @@ export const BugEnvironmentSchema = z.object({
   browser: z.literal('chromium').default('chromium'),
   appVersion: z.string().trim().min(1).max(100).optional(),
   operatingSystem: z.string().trim().min(1).max(100).optional(),
+  // Identifies a controlled BugLab fixture. The API only accepts it when the
+  // URL matches the operator-configured demo origin and scenario path.
+  demoScenario: z.enum(['TC1', 'TC2', 'TC3', 'TC4']).optional(),
 }).strict()
 
 // Request shape intentionally allows missing reproduction details so the API can

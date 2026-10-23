@@ -200,7 +200,9 @@ export async function executeApprovedPlan(
     }
     const target = await validateTargetUrl(approvedTarget(run).href)
     await mkdir(runDirectory, { recursive: true, mode: 0o700 })
-    browserRun = await createBrowserRun(runDirectory)
+    // Screenshots can use Playwright masks. Video frames cannot be reliably
+    // redacted, so don't persist recordings until a frame-safe pipeline exists.
+    browserRun = await createBrowserRun(runDirectory, { recordVideo: false })
     const timedExecution = async () => {
       await screenshot(browserRun!.page, runDirectory, files, null, 'initial')
       if (run.plan.clarifications.length || run.plan.steps.some(step => step.action === null || step.clarification !== null)) {
@@ -249,7 +251,10 @@ export async function executeApprovedPlan(
     expectedFailureFound = matchedCriterion !== null
     if (matchedCriterion) {
       const route = new URL(browserRun.page.url()).pathname
-      const type = matchedEvent?.type ?? 'visible_text'
+      const type: NonNullable<AttemptEvidence['fingerprint']>['failureType'] = matchedEvent
+        && ['console_error', 'page_error', 'request_failed', 'http_failure'].includes(matchedEvent.type)
+        ? matchedEvent.type as NonNullable<AttemptEvidence['fingerprint']>['failureType']
+        : 'visible_text'
       let request: { method: string; path: string; status: number | null } | null = null
       if (matchedEvent?.url) {
         try {
@@ -298,7 +303,7 @@ export async function executeApprovedPlan(
   try {
     await mkdir(runDirectory, { recursive: true, mode: 0o700 })
     const consoleEvents = telemetry.filter(event => event.type === 'console_error' || event.type === 'page_error')
-    const networkEvents = telemetry.filter(event => event.type === 'request_failed' || event.type === 'http_failure')
+    const networkEvents = telemetry.filter(event => ['request', 'response', 'request_failed', 'http_failure'].includes(event.type))
     const createdAt = new Date().toISOString()
     const addRecord = (type: AttemptEvidence['evidenceRecords'][number]['type'], relativePath: string) => {
       evidenceRecords.push({ id: randomUUID(), runId: run.id, attemptNumber, type, storageKey: `${safeRunId}/attempt-${attemptNumber}/${relativePath}`, createdAt, sanitized: type !== 'video' })

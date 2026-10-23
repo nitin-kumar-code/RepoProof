@@ -26,13 +26,19 @@ describe('frontend API contracts', () => {
     expect(evidenceResponseSchema.safeParse({ runId: 'run-1', files: [{ id: 'e1', runId: 'run-1', attemptNumber: 1, type: 'screenshot', storageKey: 'private/key', createdAt: '2026-10-20T00:00:00.000Z', sanitized: true, downloadUrl: 'javascript:alert(1)' }] }).success).toBe(false)
   })
 
-  it('keeps all four official scenarios labeled as unexecuted or safety-blocked until live runs exist', () => {
+  it('accepts evidence restricted from sharing when media was not sanitized', () => {
+    const evidence = evidenceResponseSchema.parse({ runId: 'run-1', files: [{ id: 'e1', runId: 'run-1', attemptNumber: 1, type: 'video', storageKey: 'run-1/attempt-1/video/run.webm', createdAt: '2026-10-20T00:00:00.000Z', sanitized: false, restricted: true, downloadUrl: null }] })
+    expect(evidence.files[0].downloadUrl).toBeNull()
+    expect(evidence.files[0].restricted).toBe(true)
+  })
+
+  it('keeps all four official scenarios labeled as not run until persisted live runs exist', () => {
     expect(officialScenarios.map(scenario => scenario.id)).toEqual(['TC1', 'TC2', 'TC3', 'TC4'])
     expect(officialScenarios[0].checks).toContain('Same failure criteria in both observations')
     expect(officialScenarios[1].detail).toContain('two valid completed attempts')
-    expect(officialScenarios[2].status).toBe('Blocked')
-    expect(officialScenarios[2].bug).toContain('disposable sandbox')
-    expect(officialScenarios[3].checks).toContain('Cookies and API-key patterns covered')
+    expect(officialScenarios[2].status).toBe('Not Run')
+    expect(officialScenarios[2].bug).toContain('synthetic fixtures')
+    expect(officialScenarios[3].checks).toContain('Video capture is disabled without a frame-safe redaction pipeline')
     expect(officialScenarios.filter(scenario => scenario.status !== 'Not Run' && scenario.status !== 'Blocked')).toHaveLength(0)
   })
 })

@@ -37,7 +37,7 @@ export class BugLabStore {
   }
 
   appendSafeLog(type: string, message: string): void {
-    this.safeLogs.unshift({ type, message: safeLogMessage(message), createdAt: '2026-01-15T12:00:00.000Z' })
+    this.safeLogs.unshift({ type: safeLogMessage(type), message: safeLogMessage(message), createdAt: '2026-01-15T12:00:00.000Z' })
     this.safeLogs = this.safeLogs.slice(0, 50)
   }
 }

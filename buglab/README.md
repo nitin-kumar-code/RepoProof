@@ -39,7 +39,7 @@ cd buglab
 npm run dev:web
 ```
 
-Open **http://127.0.0.1:4173**. API health is at **http://127.0.0.1:4317/health**. The API listens on `BUGLAB_HOST` (loopback values only) and `BUGLAB_PORT` (default `4317`). Vite's `/api` proxy uses `VITE_BUGLAB_API_PROXY` (default `http://127.0.0.1:4317`). The optional `BUGLAB_RESET_TOKEN` protects the ReproProof reset route when configured. No value is needed for a loopback-only local demo. `.env.example` contains placeholders only.
+Open **http://127.0.0.1:4173**. API health is at **http://127.0.0.1:4317/health**. The API listens on `BUGLAB_HOST` (loopback values only) and `BUGLAB_PORT` (default `4317`). Vite's `/api` proxy uses `VITE_BUGLAB_API_PROXY` (default `http://127.0.0.1:4317`). Set a unique `BUGLAB_RESET_TOKEN` of at least 32 characters in `buglab/.env` to enable the ReproProof verifier reset route; the example placeholder is rejected and reset returns `503` until a strong value is set. The token must match `VERIFICATION_RESET_TOKEN` in `reproproof-api/.env`. `.env.example` contains placeholders only.
 
 ## Scenarios
 
@@ -54,15 +54,21 @@ The deliberately incorrect cart formula is isolated in `server/fixtures.ts` and 
 
 ## Reset and API
 
-Use the Sandbox page's **Reset sandbox** button, or call the loopback-only UI reset:
+Use the Sandbox page's **Reset sandbox** button, or call the loopback-only UI reset with the exact configured UI origin:
 
 ```bash
-curl -X POST http://127.0.0.1:4317/api/sandbox/ui-reset
+curl -X POST http://127.0.0.1:4317/api/sandbox/ui-reset \
+  -H 'Origin: http://127.0.0.1:4173' \
+  -H 'Sec-Fetch-Site: same-origin' \
+  -H 'Content-Type: application/json' \
+  --data '{}'
 ```
 
-For ReproProof's verifier, `POST /api/sandbox/reset` accepts `{ "runId": "…", "bugReportId": "…" }` and returns `{ "reset": true }`. If `BUGLAB_RESET_TOKEN` is set, send it as `Authorization: Bearer …`. It resets only BugLab's in-memory synthetic store. Other useful local endpoints are `GET /api/scenarios`, `GET /api/sandbox/records`, and `GET /api/test-logs/export`.
+For ReproProof's verifier, `POST /api/sandbox/reset` accepts only `{ "runId": "…", "bugReportId": "…" }` and requires `Authorization: Bearer <BUGLAB_RESET_TOKEN>`. It resets only BugLab's in-memory synthetic store. Other useful local endpoints are `GET /api/scenarios`, `GET /api/sandbox/records`, and `GET /api/test-logs/export`.
 
-TC3 routes are `POST /api/sandbox/deletion-approvals` and `POST /api/sandbox/records/delete`. An approval request must contain the selected `recordIds` and the exact displayed phrase such as `DELETE 1 SANDBOX RECORD`. The follow-up delete request must contain the returned `approvalId` and precisely the same IDs. These routes reject malformed IDs and any request from a non-loopback client. A UI dialog is not the security boundary; the API validates and consumes the approval.
+TC3 routes are `POST /api/sandbox/deletion-approvals` and `POST /api/sandbox/records/delete`. Approval binds the fixed `delete_records` action, exact selected IDs and seeded record contents, current state version, and SHA-256 plan hash. The request requires the exact displayed phrase, such as `DELETE 1 SANDBOX RECORD`; execution must present the returned approval ID, action, IDs, version, and hash. Approval expires after five minutes and is consumed before deletion; reset, changed records, stale versions, mismatched parameters, and replay fail closed. Both browser actions require an exact configured local `Origin`; requests are loopback-only. Records and approvals are process-memory only, so restart discards approvals and restores fixtures. This is a local demo safeguard, not authenticated multi-user approval: a local process can spoof an Origin header, so do not expose the API or treat this as production identity verification.
+
+BugLab has no browser agent/execution endpoint and accepts no arbitrary target URL for navigation. Its UI uses fixed same-origin routes and its API uses fixed local fixtures. There is no external browser target allowlist to configure. If arbitrary target browsing is added later, enforce exact HTTPS origin allowlists and network egress controls in the server-side runner.
 
 ## Automated checks
 
@@ -75,11 +81,28 @@ npx playwright install chromium   # one-time browser download
 npm run test:e2e
 ```
 
-`test:api` checks health, deterministic reset, repeated TC1 failure fingerprints, the clean TC2 behavior, TC3 authorization/staleness/replay/reset, TC4 redaction, and invalid requests. `test:e2e` builds the UI and exercises TC1–TC4 in Chromium against the actual React application and API.
+`test:api` checks health, deterministic reset, repeated TC1 failure fingerprints, the clean TC2 behavior, TC3 approval binding/origin checks/staleness/replay/reset, TC4 redaction, and invalid requests. `test:e2e` builds the UI and exercises TC1–TC4 in Chromium against the actual React application and API, including that evidence under `artifacts/` is not web-served.
 
 ## Connect to the existing ReproProof app
 
-For this loopback-only target, run the ReproProof API/worker directly on the same host as BugLab (`cd reproproof-api && npm run dev`), rather than inside its Docker container. A container's `127.0.0.1` is the container itself and cannot reach BugLab's loopback listener. The ReproProof Playwright worker must be able to reach the BugLab Vite origin at `http://127.0.0.1:4173`; the Vite server proxies API calls and reset requests to BugLab's `4317` API. ReproProof's durable execution queue also requires its Supabase schema and credentials; without them, its execute endpoint intentionally returns `503`. For local development only, add these values to `reproproof-api/.env`:
+BugLab is connected to the existing ReproProof workflow through the normal bug report and run APIs. `GET /api/demo/buglab` exposes the operator-configured demo origin to the intake form. The server accepts scenario markers only for the exact configured origin and documented TC route. ReproProof's planner generates the action plan, its own authenticated approval gate records the plan hash, and its existing durable worker runs it.
+
+For the Docker Compose demo on macOS, keep BugLab's API on host loopback and bind only its Vite web server to all host interfaces. Docker's ReproProof worker reaches the Vite server through `host.docker.internal`; Vite proxies `/api` back to the loopback BugLab API. Configure `BUGLAB_UI_ORIGINS=http://host.docker.internal:4173,http://localhost:4173,http://127.0.0.1:4173` in `buglab/.env`. In the root ReproProof `.env`, set `BUGLAB_BASE_URL` and `ALLOWED_TARGET_ORIGINS` to `http://host.docker.internal:4173`, set `ALLOWED_RESOURCE_ORIGINS` to the same origin, enable `ALLOW_INSECURE_LOCAL_TARGETS=true` only with `APP_ENV=development`, and set `VERIFICATION_RESET_URL=http://host.docker.internal:4173/api/sandbox/reset`. Use the same random `BUGLAB_RESET_TOKEN` in both `buglab/.env` and the root `VERIFICATION_RESET_TOKEN`. The host web server must be reachable from Docker; BugLab's API stays loopback-bound. ReproProof's durable queue still requires its Supabase schema and credentials; without them, execution returns `503`.
+
+Start BugLab's API and UI in separate terminals:
+
+```bash
+cd buglab
+npm ci
+npm run dev:api
+```
+
+```bash
+cd buglab
+BUGLAB_WEB_HOST=0.0.0.0 npm run dev:web
+```
+
+Then start ReproProof from the repository root with `docker compose up --build`. Open `http://localhost:8080`, choose a BugLab scenario on New Bug Report, submit it, inspect the generated plan, approve it, and start the browser run. The frontend and backend APIs remain the existing ReproProof contracts; `environment.demoScenario` is an optional typed marker added to the report environment.
 
 ```dotenv
 APP_ENV=development
@@ -87,8 +110,7 @@ ALLOW_INSECURE_LOCAL_TARGETS=true
 ALLOWED_TARGET_ORIGINS=http://127.0.0.1:4173
 ALLOWED_RESOURCE_ORIGINS=http://127.0.0.1:4173
 VERIFICATION_RESET_URL=http://127.0.0.1:4173/api/sandbox/reset
-# Optional; if set, use the same value in buglab/.env as BUGLAB_RESET_TOKEN.
-# VERIFICATION_RESET_TOKEN=your-local-test-secret
+VERIFICATION_RESET_TOKEN=your-local-test-secret
 ```
 
 Restart the ReproProof API after changing its environment. These settings intentionally allow one local HTTP origin only and must not be used in production. Start BugLab's API and UI, reset the sandbox, then submit a report through ReproProof.
@@ -116,7 +138,7 @@ Create a run with `POST /api/runs` and the returned bug report ID, review and ap
 
 TC2's reproduction uses one add, then **Open cart** and a screenshot. Its reported actual behavior should be `The subtotal resets to zero after adding one item.` The clean UI does not display that phrase, so a fully completed run should return `not_reproduced`.
 
-The current ReproProof planner deliberately turns delete/remove/reset instructions into clarification-only steps. Therefore TC3 is demonstrated through BugLab's own approval UI and API tests; it is not executable as a browser deletion plan through today's ReproProof policy. Do not weaken that safeguard for a demo. TC4 can be inspected through a ReproProof browser run, but only share its evidence after confirming the recording visually masks the output. ReproProof masks `[data-sensitive="true"]` on screenshots; its current video recording is not pixel-redacted after capture. BugLab's downloadable log export is sanitized, but browser recordings must remain private if their visual masking is uncertain.
+TC3's destructive actions remain constrained to the configured BugLab origin and `/sandbox` route, with a second approval at BugLab bound to exact action, record IDs, state version, and plan hash. TC4 uses only its synthetic fixture. ReproProof masks the `[data-sensitive="true"]` element in screenshots and sanitizes text evidence; video recording is disabled because reliable frame-level redaction is unavailable.
 
 ## Safety boundaries and limits
 
@@ -124,6 +146,6 @@ The current ReproProof planner deliberately turns delete/remove/reset instructio
 - Bindings are loopback-only; no remote deployment is configured or claimed. Do not expose this demo publicly. A staging deployment needs an authenticated, network-restricted reverse proxy plus a deployment review of all destructive/reset routes.
 - The reset route can restore only BugLab's in-memory fixtures. It cannot address an external database or target.
 - TC1 is deliberately defective and must not be presented as a production store behavior.
-- TC4's fake token is intentionally returned to the test page DOM. BugLab redacts all log ingestion and log downloads; the raw response itself is only for this controlled local scenario.
-- ReproProof currently refuses to plan destructive browser steps. TC3's backend approval gate remains enforced regardless of UI behavior.
-- There is no public URL, hosted instance, or judge credential. Use a local walkthrough or deploy an isolated copy only after adding an authenticated boundary.
+- TC4's fake token is intentionally rendered in the test page DOM. The API response does not return it. BugLab redacts recognized token patterns and configured secrets from log ingestion, types, and downloads; this does not establish universal redaction for unknown secret formats or recorded pixels.
+- ReproProof permits the narrowly scoped TC3 scenario only when the server-side BugLab origin and route match configuration; BugLab's independent one-time destructive approval remains mandatory.
+- There is no public URL, hosted instance, or judge credential. Evidence is local; BugLab has no remote storage, signed-link, or sharing endpoint. Approval state is in-memory and Origin checking is not authentication. Use a local walkthrough or deploy an isolated copy only after adding server-verified user identity, durable approvals, and a reviewed private evidence store.
