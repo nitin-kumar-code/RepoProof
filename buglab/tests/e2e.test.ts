@@ -13,8 +13,18 @@ let baseUrl: string
 
 before(async () => {
   apiServer = createServer(createBugLabApp())
-  await new Promise<void>(resolve => apiServer.listen(4317, '127.0.0.1', resolve))
-  vite = await createViteServer({ configFile: new URL('../vite.config.ts', import.meta.url).pathname, server: { host: '127.0.0.1', port: 0, strictPort: false } })
+  await new Promise<void>(resolve => apiServer.listen(0, '127.0.0.1', resolve))
+  const apiAddress = apiServer.address()
+  assert.ok(apiAddress && typeof apiAddress !== 'string')
+  vite = await createViteServer({
+    configFile: new URL('../vite.config.ts', import.meta.url).pathname,
+    server: {
+      host: '127.0.0.1',
+      port: 0,
+      strictPort: false,
+      proxy: { '/api': `http://127.0.0.1:${apiAddress.port}` },
+    },
+  })
   await vite.listen()
   const httpServer = vite.httpServer
   assert.ok(httpServer)
