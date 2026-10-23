@@ -4,6 +4,7 @@ import { bugRepository } from '../db/repository'
 import { BugReportSchema, BugReportSubmissionSchema } from '../schemas/bug'
 import { containsCredentialMaterial } from '../services/secretDetection'
 import { TargetValidationError, validateTargetUrl } from '../services/targetValidation'
+import { env } from '../config/env'
 
 export const bugsRouter = Router()
 
@@ -48,6 +49,17 @@ bugsRouter.post('/', async (request, response) => {
   }
 
   const submission = parsed.data
+  if (submission.environment.demoScenario) {
+    const demoBase = env.BUGLAB_BASE_URL ? new URL(env.BUGLAB_BASE_URL) : undefined
+    let target: URL | undefined
+    try { target = submission.environment.targetUrl ? new URL(submission.environment.targetUrl) : undefined } catch { /* reported below */ }
+    const expectedPath = submission.environment.demoScenario === 'TC3' ? '/sandbox'
+      : submission.environment.demoScenario === 'TC4' ? '/scenarios/TC4' : '/'
+    if (!demoBase || !target || target.origin !== demoBase.origin || target.pathname !== expectedPath || target.search || target.hash) {
+      response.status(403).json({ error: 'buglab_demo_not_configured', message: 'The selected BugLab scenario must use the configured demo origin and its documented route.' })
+      return
+    }
+  }
   const reportText = [submission.title, submission.description, ...(submission.steps ?? []).map(step => step.instruction),
     submission.expectedBehavior ?? '', submission.actualBehavior ?? '', submission.environment.targetUrl ?? '',
     submission.environment.appVersion ?? '', submission.environment.operatingSystem ?? '']

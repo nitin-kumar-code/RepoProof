@@ -117,6 +117,10 @@ export async function verifyApprovedPlan(
 
   try {
     const resetUrl = await assertResetConfigured(run)
+    if (resetUrl) {
+      await onProgress?.({ phase: 'resetting', currentAttempt: 1, completedAttempts: 0, completedActions: 0, totalActions: run.plan.steps.length, message: 'Resetting test state before attempt 1', updatedAt: new Date().toISOString() })
+      await resetToKnownState(run)
+    }
     await onProgress?.({ phase: 'running_attempt', currentAttempt: 1, completedAttempts: 0, completedActions: 0, totalActions: run.plan.steps.length, message: 'Running attempt 1 of 2', updatedAt: new Date().toISOString() })
     const first = await execute(run, 1, async completedActions => {
       await onProgress?.({ phase: 'running_attempt', currentAttempt: 1, completedAttempts: 0, completedActions, totalActions: run.plan.steps.length, message: `Attempt 1: completed ${completedActions} of ${run.plan.steps.length} actions`, updatedAt: new Date().toISOString() })

@@ -13,7 +13,7 @@ export interface BrowserRun {
   close: () => Promise<string | undefined>
 }
 
-export async function createBrowserRun(runDirectory: string): Promise<BrowserRun> {
+export async function createBrowserRun(runDirectory: string, options: { recordVideo?: boolean } = {}): Promise<BrowserRun> {
   await mkdir(path.join(runDirectory, 'video'), { recursive: true, mode: 0o700 })
   await mkdir(path.join(runDirectory, 'screenshots'), { recursive: true, mode: 0o700 })
 
@@ -26,12 +26,12 @@ export async function createBrowserRun(runDirectory: string): Promise<BrowserRun
     context = await browser.newContext({
       viewport: { width: 1280, height: 720 },
       serviceWorkers: 'block',
-      recordVideo: { dir: path.join(runDirectory, 'video'), size: { width: 1280, height: 720 } },
+      ...(options.recordVideo ? { recordVideo: { dir: path.join(runDirectory, 'video'), size: { width: 1280, height: 720 } } } : {}),
     })
     const page = await context.newPage()
     page.setDefaultTimeout(10_000)
     page.setDefaultNavigationTimeout(10_000)
-    video = page.video() ?? undefined
+    video = options.recordVideo ? page.video() ?? undefined : undefined
     const telemetry = new BrowserTelemetry()
     telemetry.attach(page)
     await installApprovedRequestGuard(page)

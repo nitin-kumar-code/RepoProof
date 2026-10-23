@@ -149,6 +149,7 @@ export default function PlanApproval({ run, onUpdated }: { run: RunRecord; onUpd
         {attempt.error && <small>{attempt.error}</small>}
       </article>)}
       <ul className="evidence-files">{run.execution.evidenceRecords.map(record => {
+        if (!record.sanitized) return <li key={record.id}><b>{record.type}</b> · attempt {record.attemptNumber}: <span role="note">Restricted — visual redaction unavailable</span></li>
         const href = `${baseUrl}/api/runs/${encodeURIComponent(run.id)}/evidence/${encodeURIComponent(record.id)}`
         return <li key={record.id}>
           <b>{record.type}</b> · attempt {record.attemptNumber}: <a href={href} target="_blank" rel="noreferrer" download>{record.storageKey.split('/').pop()}</a>

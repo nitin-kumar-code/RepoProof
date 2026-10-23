@@ -1,22 +1,33 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { ArrowDown, ArrowRight, Check, Circle, Cpu, LockKeyhole, Plus, ShieldCheck, Sparkles } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 import { createBug } from '../../api/bugs'
 import { ApiRequestError } from '../../api/client'
 import { createRun } from '../../api/runs'
+import { getBugLabConfig, type BugLabConfig } from '../../api/demo'
+import { bugLabScenarioPresets, scenarioTarget, type BugLabScenarioId } from '../../data/buglabScenarios'
 import type { BugReportSubmission } from '../../types/bug'
 
-type Draft={title:string;description:string;targetUrl:string;stepsText:string;expectedBehavior:string;actualBehavior:string;service:string;severity:string;sandbox:string}
-const blankDraft:Draft={title:'',description:'',targetUrl:'',stepsText:'',expectedBehavior:'',actualBehavior:'',service:'',severity:'High',sandbox:'Staging Sandbox'}
+type Draft={title:string;description:string;targetUrl:string;stepsText:string;expectedBehavior:string;actualBehavior:string;service:string;severity:string;sandbox:string;demoScenario:BugLabScenarioId|''}
+const blankDraft:Draft={title:'',description:'',targetUrl:'',stepsText:'',expectedBehavior:'',actualBehavior:'',service:'',severity:'High',sandbox:'Staging Sandbox',demoScenario:''}
 function readDraft():Draft{try{return {...blankDraft,...JSON.parse(localStorage.getItem('reproproof-bug-draft')||'{}') as Partial<Draft>}}catch{return blankDraft}}
 export default function BugReportForm(){
  const [draft,setDraft]=useState<Draft>(readDraft)
+ const [bugLabConfig,setBugLabConfig]=useState<BugLabConfig|null>(null)
  const [message,setMessage]=useState<string[]>([]);const [error,setError]=useState('');const [fieldErrors,setFieldErrors]=useState<Array<{path:string;message:string}>>([]);const [submitting,setSubmitting]=useState(false);const [pendingBugId,setPendingBugId]=useState('');const [draftSaved,setDraftSaved]=useState(false);const navigate=useNavigate()
  const set=(key:keyof Draft,value:string)=>setDraft(prev=>({...prev,[key]:value}))
+ useEffect(()=>{const controller=new AbortController();void getBugLabConfig(controller.signal).then(setBugLabConfig).catch(()=>setBugLabConfig(null));return()=>controller.abort()},[])
+ function selectBugLabScenario(value:string){
+  if(!value){set('demoScenario','');return}
+  const id=value as BugLabScenarioId
+  const preset=bugLabScenarioPresets[id]
+  if(!preset)return
+  setDraft(previous=>({...previous,demoScenario:id,title:preset.title,description:preset.description,targetUrl:scenarioTarget(bugLabConfig!,preset),stepsText:preset.steps.join('\n'),expectedBehavior:preset.expectedBehavior,actualBehavior:preset.actualBehavior,sandbox:'Local Docker'}))
+ }
  async function submit(event:React.FormEvent){
   event.preventDefault();setSubmitting(true);setError('');setMessage([]);setFieldErrors([])
   const steps=draft.stepsText.split('\n').map(instruction=>instruction.trim()).filter(Boolean)
-  const report:BugReportSubmission={title:draft.title,description:draft.description,...(steps.length?{steps:steps.map((instruction,index)=>({order:index+1,instruction}))}:{}),...(draft.expectedBehavior.trim()?{expectedBehavior:draft.expectedBehavior.trim()}:{}),...(draft.actualBehavior.trim()?{actualBehavior:draft.actualBehavior.trim()}:{}),environment:{...(draft.targetUrl.trim()?{targetUrl:draft.targetUrl.trim()}:{}),browser:'chromium'}}
+  const report:BugReportSubmission={title:draft.title,description:draft.description,...(steps.length?{steps:steps.map((instruction,index)=>({order:index+1,instruction}))}:{}),...(draft.expectedBehavior.trim()?{expectedBehavior:draft.expectedBehavior.trim()}:{}),...(draft.actualBehavior.trim()?{actualBehavior:draft.actualBehavior.trim()}:{}),environment:{...(draft.targetUrl.trim()?{targetUrl:draft.targetUrl.trim()}:{}),browser:'chromium',...(draft.demoScenario?{demoScenario:draft.demoScenario}:{})}}
   let savedBugId=pendingBugId
   try{
    if(!savedBugId){
@@ -36,6 +47,7 @@ export default function BugReportForm(){
  return <main className="page form-page intake-page"><div className="intake-heading"><div><div className="intake-kicker"><i/> INTAKE PIPELINE // NODE-09 <span>|</span> API Validation Active</div><h1>New Bug Report</h1><p>Submit a report to generate a reviewable plan. Chromium runs only after a human approves the exact plan.</p></div><code>REPRO-ID: PENDING_SYNTHESIS</code></div>
  <div className="bug-intake-grid"><form className="bug-form intake-form" onSubmit={submit}>
  <section className="intake-section"><div className="intake-section-title"><span>01</span><h2>Target Environment &amp; Bug Topology</h2><b>REQUIRED</b></div>
+  <label><span className="field-label-row"><span>Controlled demo scenario</span><span className="safe-label">TC1–TC4 · EXPLICIT PLAN APPROVAL REQUIRED</span></span><select value={draft.demoScenario} onChange={event=>selectBugLabScenario(event.target.value)}><option value="">Custom report</option>{bugLabConfig?.enabled&&bugLabConfig.scenarios.map(id=><option key={id} value={id}>{id} · {bugLabScenarioPresets[id].title.replace(/^TC[1-4]:\s*/, '')}</option>)}</select><small className="field-hint">{bugLabConfig?.enabled?`BugLab target configured at ${bugLabConfig.baseUrl}. The server still validates the exact origin and scenario route.`:'BugLab scenarios are hidden until the API operator configures BUGLAB_BASE_URL and the target allowlist.'}</small></label>
   <label><span className="field-label-row"><span>Deterministic Bug Title / Summary <i>*</i></span><code>{draft.title.length} / 120 chars</code></span><input required maxLength={120} value={draft.title} onChange={e=>set('title',e.target.value)} placeholder="Summarize the deterministic failure"/></label>
   <div className="form-row"><label>Target Core Service / Repository<select value={draft.service} onChange={e=>set('service',e.target.value)}><option value="">Select service (local context)</option>{['payments-service','identity-auth-service','ledger-reconciliation','notification-dispatcher'].map(x=><option key={x}>{x}</option>)}</select><small className="field-hint">Saved with local draft only; not sent to API.</small></label><fieldset className="severity-field"><legend>Reproduction Severity <span>LOCAL CONTEXT</span></legend><div className="severity-options">{[['Critical','CRIT'],['High','HIGH'],['Medium','MED'],['Low','LOW']].map(([value,label])=><label key={value} className={draft.severity===value?`severity-selected severity-${value.toLowerCase()}`:''}><input type="radio" name="severity" value={value} checked={draft.severity===value} onChange={()=>set('severity',value)}/>{draft.severity===value&&<i/>}{label}</label>)}</div></fieldset></div>
   <label><span className="field-label-row"><span>Target Route / API Ingress Endpoint</span><span className="safe-label">STAGE PERMITTED · VERIFY YOUR TARGET</span></span><div className="endpoint-input"><select aria-label="HTTP method" defaultValue="POST"><option>POST</option><option>GET</option><option>PUT</option><option>DELETE</option></select><input type="url" value={draft.targetUrl} onChange={e=>set('targetUrl',e.target.value)} placeholder="https://staging.example.com/api/route"/></div><small className="field-hint">Only the URL is submitted to the bug API. The selected method is local context.</small></label>

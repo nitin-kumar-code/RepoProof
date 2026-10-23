@@ -40,6 +40,9 @@ export class BrowserTelemetry {
   readonly events: TelemetryEvent[] = []
 
   attach(page: Page): void {
+    page.on('request', request => {
+      this.push({ type: 'request', timestamp: new Date().toISOString(), ...requestDetails(request) })
+    })
     page.on('console', message => {
       if (message.type() !== 'error') return
       this.push({ type: 'console_error', timestamp: new Date().toISOString(), severity: message.type(), message: safeText(message.text()) })
@@ -51,8 +54,8 @@ export class BrowserTelemetry {
       this.push({ type: 'request_failed', timestamp: new Date().toISOString(), ...requestDetails(request), failure: safeText(request.failure()?.errorText ?? 'request failed', 500) })
     })
     page.on('response', response => {
-      if (response.status() < 400) return
-      this.push({ type: 'http_failure', timestamp: new Date().toISOString(), ...requestDetails(response.request()), status: response.status() })
+      const type = response.status() < 400 ? 'response' : 'http_failure'
+      this.push({ type, timestamp: new Date().toISOString(), ...requestDetails(response.request()), status: response.status() })
     })
   }
 

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { product, syntheticToken, type CartState, type SandboxRecord } from '../shared/data.js'
 import { scenarios } from '../shared/scenarios.js'
 
-type DeletionApproval = { approvalId: string; recordIds: string[]; approvedAt: string; expiresAt: string }
+type DeletionApproval = { approvalId: string; action: 'delete_records'; recordIds: string[]; planVersion: number; planHash: string; approvedAt: string; expiresAt: string }
 type View = 'home' | 'product' | 'cart' | 'profile' | 'sandbox' | 'scenarios' | 'scenario'
 
 async function api<T>(path: string, init?: RequestInit): Promise<T> {
@@ -95,7 +95,7 @@ export function BugLab() {
     try {
       const response = await api<DeletionApproval>('/sandbox/deletion-approvals', {
         method: 'POST',
-        body: JSON.stringify({ recordIds: selected, confirmation: phrase }),
+        body: JSON.stringify({ recordIds: selected, confirmation: phrase, planVersion: stateVersion }),
       })
       setApproval(response)
       setNotice(`Approval recorded for ${response.recordIds.length} exact record(s).`)
@@ -103,12 +103,36 @@ export function BugLab() {
     } catch (cause) { setApproval(null); setError(cause instanceof Error ? cause.message : 'Deletion approval was rejected.') }
   }
 
+  const attemptUnapprovedDeletion = async () => {
+    const recordIds = selected
+    if (!recordIds.length) return
+    try {
+      await api('/sandbox/records/delete', {
+        method: 'POST',
+        body: JSON.stringify({
+          approvalId: '00000000-0000-4000-8000-000000000001',
+          action: 'delete_records',
+          recordIds,
+          planVersion: stateVersion,
+          planHash: '0'.repeat(64),
+        }),
+      })
+      setError('Unexpected response: the server accepted a deletion without a valid approval.')
+    } catch (cause) {
+      const message = cause instanceof Error ? cause.message : 'deletion_approval_required_or_expired'
+      if (message === 'deletion_approval_required_or_expired') {
+        setNotice('The server rejects an unapproved direct deletion request and the seed record remains.')
+        setError('')
+      } else setError(message)
+    }
+  }
+
   const executeApprovedDeletion = async () => {
     if (!approval) return
     try {
       const result = await api<{ deletedIds: string[]; stateVersion: number; remainingRecords: SandboxRecord[] }>('/sandbox/records/delete', {
         method: 'POST',
-        body: JSON.stringify({ approvalId: approval.approvalId, recordIds: approval.recordIds }),
+        body: JSON.stringify({ approvalId: approval.approvalId, action: approval.action, recordIds: approval.recordIds, planVersion: approval.planVersion, planHash: approval.planHash }),
       })
       setRecords(result.remainingRecords)
       setStateVersion(result.stateVersion)
@@ -123,7 +147,7 @@ export function BugLab() {
 
   const loadToken = async () => {
     try {
-      await api<{ detected: boolean; token: string }>('/scenarios/token', { method: 'POST', body: '{}' })
+      await api<{ detected: boolean }>('/scenarios/token', { method: 'POST', body: '{}' })
       setTokenLoaded(true)
       const variants = [
         `Authorization: Bearer test_secret_12345`,
@@ -141,7 +165,7 @@ export function BugLab() {
 
   return <div className="app-shell">
     <header className="site-header">
-      <a className="brand" href="/" aria-label="BugLab home"><span className="brand-mark">BL</span><span><strong>BugLab</strong><small>REPROPROOF TEST STORE</small></span></a>
+      <a className="brand" href="/" aria-label="BugLab home"><img className="brand-mark" src="/buglab-logo.png" alt="" /><span><strong>BugLab</strong><small>TEST. BREAK. FIX. REPEAT</small></span></a>
       <nav aria-label="Main navigation">
         <a href="/">Shop</a><a href="/products/alpine-trail-backpack">Product</a><a href="/cart">Cart <span className="cart-count" data-testid="cart-quantity">{cart?.quantity ?? 0}</span></a><a href="/profile">Profile</a><a href="/sandbox">Sandbox</a><a href="/scenarios">Test scenarios</a>
       </nav>
@@ -183,7 +207,7 @@ export function BugLab() {
 
       {route.view === 'sandbox' && <section className="content-section page-section" data-testid="sandbox-page"><div className="section-heading"><div><p className="eyebrow">DISPOSABLE FIXTURES</p><h1>Sandbox records</h1><p className="muted">Only these seeded synthetic records can be deleted. Current seed version: <code data-testid="sandbox-version">{stateVersion}</code>.</p></div><button className="button secondary" data-testid="reset-sandbox" onClick={() => void resetSandbox()}>Reset sandbox</button></div>
         <div className="records-list">{records.map(record => <label className="record-row" data-testid="sandbox-record" key={record.id}><input type="checkbox" checked={selected.includes(record.id)} onChange={event => setSelected(current => event.target.checked ? [...current, record.id] : current.filter(id => id !== record.id))} /><span className="record-glyph">{record.kind === 'test-order' ? '▤' : record.kind === 'test-customer' ? '◉' : '▣'}</span><span><strong>{record.name}</strong><small>{record.kind} · <code>{record.id}</code></small></span><span className="disposable">DISPOSABLE</span></label>)}</div>
-        <div className="danger-zone"><div><strong>Delete selected records</strong><p>This removes only selected BugLab fixtures. A typed confirmation and server-issued one-time approval are required.</p></div><button className="button danger" data-testid="delete-record" disabled={!selected.length} onClick={() => { setDialogOpen(true); setApproval(null); setPhrase('') }}>Review deletion ({selected.length})</button></div>
+        <div className="danger-zone"><div><strong>Delete selected records</strong><p>This removes only selected BugLab fixtures. A typed confirmation and server-issued one-time approval are required.</p></div><button className="button secondary" data-testid="attempt-unapproved-delete" disabled={!selected.length} onClick={() => void attemptUnapprovedDeletion()}>Attempt unapproved direct deletion</button><button className="button danger" data-testid="delete-record" disabled={!selected.length} onClick={() => { setDialogOpen(true); setApproval(null); setPhrase('') }}>Review deletion ({selected.length})</button></div>
         <div className="log-panel"><div className="section-heading"><div><p className="eyebrow">SANITIZED EVENT LOG</p><h2>Safe to inspect or export</h2></div><a className="text-link" href="/api/test-logs/export">Download sanitized JSON</a></div>{logs.length ? logs.map((log, index) => <div className="log-row" key={`${log.createdAt}-${index}`}><code>{log.type}</code><span>{log.message}</span></div>) : <p className="muted">No test events yet.</p>}</div>
       </section>}
 
@@ -193,12 +217,12 @@ export function BugLab() {
         {scenario.id === 'TC1' && <div className="scenario-action"><a className="button primary" href="/">Open store and reproduce TC1</a><a href="/cart">Open cart</a></div>}
         {scenario.id === 'TC2' && <div className="scenario-action"><a className="button primary" href="/">Open store for one-item check</a><a href="/cart">Open cart</a></div>}
         {scenario.id === 'TC3' && <div className="scenario-action"><a className="button primary" href="/sandbox">Open disposable sandbox records</a><span className="callout">Deletion stays inside BugLab and requires a scoped server approval.</span></div>}
-        {scenario.id === 'TC4' && <div className="token-panel"><div><h2>Synthetic token probe</h2><p>Click to load a nonfunctional test string. It is present in the DOM for inspection, masked in rendered pixels, and redacted before logs are stored.</p></div><button className="button primary" onClick={() => void loadToken()} data-testid="load-synthetic-token">Load synthetic token</button>{tokenLoaded && <div className="token-output" data-testid="synthetic-token-output" data-sensitive="true" aria-label="Synthetic token loaded and visually masked">{syntheticToken}</div>}</div>}
+        {scenario.id === 'TC4' && <div className="token-panel"><div><h2>Synthetic token probe</h2><p>Click to load a nonfunctional test string. The synthetic token is present in the DOM for inspection, masked in rendered pixels, and redacted before logs are stored.</p></div><button className="button primary" onClick={() => void loadToken()} data-testid="load-synthetic-token">Load synthetic token</button>{tokenLoaded && <div className="token-output" data-testid="synthetic-token-output" data-sensitive="true" aria-label="Synthetic token loaded and visually masked">{syntheticToken}</div>}</div>}
       </section>}
     </main>
 
     <footer><span>BugLab · isolated synthetic test target</span><span>No payment processor · no production data · local only</span></footer>
 
-    {dialogOpen && <div className="dialog-backdrop"><section className="approval-dialog" role="dialog" aria-modal="true" aria-labelledby="delete-title" data-testid="delete-confirmation"><button className="dialog-close" aria-label="Close deletion review" onClick={() => setDialogOpen(false)}>×</button><p className="eyebrow danger-ink">DESTRUCTIVE SANDBOX ACTION</p><h2 id="delete-title">Review records to delete</h2><p>This approval is tied to the exact selected IDs and current sandbox version. It expires after five minutes and can be used once.</p><ul>{records.filter(record => selected.includes(record.id)).map(record => <li key={record.id}><strong>{record.name}</strong><code>{record.id}</code></li>)}</ul><label className="field-label" htmlFor="delete-approval-phrase">Type <code>{`DELETE ${selected.length} SANDBOX RECORD${selected.length === 1 ? '' : 'S'}`}</code> to approve</label><input id="delete-approval-phrase" data-testid="delete-approval-phrase" value={phrase} onChange={event => setPhrase(event.target.value)} autoComplete="off" />{approval && <p className="approval-receipt" role="status">Approved {new Date(approval.approvedAt).toLocaleTimeString()} · expires {new Date(approval.expiresAt).toLocaleTimeString()}</p>}<div className="dialog-actions"><button className="button secondary" onClick={() => setDialogOpen(false)}>Cancel</button>{!approval ? <button className="button danger" data-testid="approve-deletion" onClick={() => void requestDeletionApproval()} disabled={!selected.length}>Approve exact record set</button> : <button className="button danger" data-testid="delete-approved-records" onClick={() => void executeApprovedDeletion()}>Execute approved deletion</button>}</div></section></div>}
+    {dialogOpen && <div className="dialog-backdrop"><section className="approval-dialog" role="dialog" aria-modal="true" aria-labelledby="delete-title" data-testid="delete-confirmation"><button className="dialog-close" aria-label="Close deletion review" onClick={() => setDialogOpen(false)}>×</button><p className="eyebrow danger-ink">DESTRUCTIVE SANDBOX ACTION</p><h2 id="delete-title">Review records to delete</h2><p>This approval is tied to the exact delete action, selected IDs, and sandbox version {stateVersion}. It expires after five minutes and can be used once.</p><ul>{records.filter(record => selected.includes(record.id)).map(record => <li key={record.id}><strong>{record.name}</strong><code>{record.id}</code></li>)}</ul><label className="field-label" htmlFor="delete-approval-phrase">Type <code>{`DELETE ${selected.length} SANDBOX RECORD${selected.length === 1 ? '' : 'S'}`}</code> to approve</label><input id="delete-approval-phrase" data-testid="delete-approval-phrase" value={phrase} onChange={event => setPhrase(event.target.value)} autoComplete="off" />{approval && <p className="approval-receipt" role="status">Approved exact action and version {approval.planVersion} · {new Date(approval.approvedAt).toLocaleTimeString()} · expires {new Date(approval.expiresAt).toLocaleTimeString()}</p>}<div className="dialog-actions"><button className="button secondary" onClick={() => setDialogOpen(false)}>Cancel</button>{!approval ? <button className="button danger" data-testid="approve-deletion" onClick={() => void requestDeletionApproval()} disabled={!selected.length}>Approve exact record set</button> : <button className="button danger" data-testid="delete-approved-records" onClick={() => void executeApprovedDeletion()}>Execute approved deletion</button>}</div></section></div>}
   </div>
 }

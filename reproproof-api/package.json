@@ -10,7 +10,8 @@
     "dev": "tsx watch src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:buglab-e2e": "tsx --test tests/buglabIntegration.e2e.ts"
   },
   "keywords": [],
   "author": "",

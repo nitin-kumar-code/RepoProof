@@ -3,7 +3,7 @@ import { z } from 'zod'
 // PostgreSQL/Supabase timestamps may serialize with an explicit +00:00 offset.
 const isoDate = z.string().datetime({ offset: true })
 const stepSchema = z.object({ order: z.number().int().positive(), instruction: z.string().min(1) }).strict()
-const environmentSchema = z.object({ targetUrl: z.string().url(), browser: z.literal('chromium'), appVersion: z.string().optional(), operatingSystem: z.string().optional() }).strict()
+const environmentSchema = z.object({ targetUrl: z.string().url(), browser: z.literal('chromium'), appVersion: z.string().optional(), operatingSystem: z.string().optional(), demoScenario: z.enum(['TC1', 'TC2', 'TC3', 'TC4']).optional() }).strict()
 export const bugReportSchema = z.object({
   id: z.string().min(1), title: z.string(), description: z.string(), steps: z.array(stepSchema),
   expectedBehavior: z.string(), actualBehavior: z.string(), environment: environmentSchema, createdAt: isoDate,
@@ -38,7 +38,7 @@ const evidenceRecordSchema = z.object({
   storageKey: z.string(), createdAt: isoDate, sanitized: z.boolean(),
 }).strict()
 const telemetrySchema = z.object({
-  type: z.enum(['console_error', 'page_error', 'request_failed', 'http_failure']), timestamp: isoDate,
+  type: z.enum(['console_error', 'page_error', 'request', 'response', 'request_failed', 'http_failure']), timestamp: isoDate,
   message: z.string().optional(), severity: z.string().optional(), method: z.string().optional(), url: z.string().optional(), status: z.number().optional(), failure: z.string().optional(),
 }).strict()
 const fingerprintSchema = z.object({ hash: z.string(), route: z.string(), criterionId: z.string(), failureType: z.enum(['visible_text', 'console_error', 'page_error', 'request_failed', 'http_failure']), message: z.string(), request: z.object({ method: z.string(), path: z.string(), status: z.number().nullable() }).strict().nullable() }).strict()
@@ -69,7 +69,7 @@ const downloadUrlSchema = z.string().refine(value => {
     return false
   }
 }, 'Evidence download URL must use the API or HTTP(S)')
-export const evidenceResponseSchema = z.object({ runId: z.string(), files: z.array(evidenceRecordSchema.extend({ downloadUrl: downloadUrlSchema })) })
+export const evidenceResponseSchema = z.object({ runId: z.string(), files: z.array(evidenceRecordSchema.extend({ downloadUrl: downloadUrlSchema.nullable(), restricted: z.boolean() })) })
 export const bugCreateResultSchema = z.union([
   z.object({ status: z.literal('clarification_required'), complete: z.literal(false), clarificationRequests: z.array(z.object({ field: z.string(), question: z.string() })) }),
   z.object({ id: z.string(), status: z.literal('created'), complete: z.literal(true), bugReport: bugReportSchema }),

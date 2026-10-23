@@ -8,6 +8,7 @@ export interface BugEnvironment {
   browser: 'chromium'
   appVersion?: string
   operatingSystem?: string
+  demoScenario?: 'TC1' | 'TC2' | 'TC3' | 'TC4'
 }
 
 /** Complete report contract shared with the API and future planner/runner. */
@@ -28,7 +29,7 @@ export interface BugReportSubmission {
   steps?: ReproductionStep[]
   expectedBehavior?: string
   actualBehavior?: string
-  environment: { targetUrl?: string; browser: 'chromium'; appVersion?: string; operatingSystem?: string }
+  environment: { targetUrl?: string; browser: 'chromium'; appVersion?: string; operatingSystem?: string; demoScenario?: 'TC1' | 'TC2' | 'TC3' | 'TC4' }
 }
 
 export type BugCreateResult =

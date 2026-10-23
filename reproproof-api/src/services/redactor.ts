@@ -34,6 +34,7 @@ export function redactText(input: string, knownSecrets: string[] = []): string {
     value = value.split(secret).join(redacted)
   }
   value = value
+    .replace(/\b(?:TEST|SYNTHETIC)_TOKEN_[A-Za-z0-9_-]{6,}\b/gi, redacted)
     .replace(/\b(Bearer|Basic)\s+[A-Za-z0-9._~+/=-]+/gi, `$1 ${redacted}`)
     .replace(/\beyJ[A-Za-z0-9_-]{5,}\.[A-Za-z0-9_-]{5,}\.[A-Za-z0-9_-]{5,}\b/g, redacted)
     .replace(/\b(?:sk|rk|pk|api)[-_](?:live[-_])?[A-Za-z0-9_-]{8,}\b/gi, redacted)

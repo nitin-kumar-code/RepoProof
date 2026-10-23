@@ -14,6 +14,7 @@ const envSchema = z.object({
   ALLOWED_RESOURCE_ORIGINS: z.string().default('').transform(value =>
     value.split(',').map(origin => origin.trim()).filter(Boolean),
   ),
+  BUGLAB_BASE_URL: z.preprocess(value => value === '' ? undefined : value, z.string().url().optional()),
   ALLOW_INSECURE_LOCAL_TARGETS: z.enum(['true', 'false']).default('false').transform(value => value === 'true'),
   RUN_ARTIFACTS_DIR: z.string().trim().min(1).default('artifacts/runs'),
   EVIDENCE_STORAGE_BUCKET: z.string().trim().min(1).default('reproproof-evidence'),
@@ -77,6 +78,17 @@ if (env.ALLOW_INSECURE_LOCAL_TARGETS && env.APP_ENV !== 'development') {
 
 validateOrigins(env.ALLOWED_TARGET_ORIGINS, 'ALLOWED_TARGET_ORIGINS')
 validateOrigins(env.ALLOWED_RESOURCE_ORIGINS, 'ALLOWED_RESOURCE_ORIGINS')
+
+if (env.BUGLAB_BASE_URL) {
+  const demo = new URL(env.BUGLAB_BASE_URL)
+  const configuredOrigin = demo.origin
+  const localDemo = env.APP_ENV === 'development' && env.ALLOW_INSECURE_LOCAL_TARGETS && isDevelopmentLocalHost(demo.hostname)
+  if (demo.pathname !== '/' || demo.search || demo.hash || demo.username || demo.password
+    || (demo.protocol !== 'https:' && !(demo.protocol === 'http:' && localDemo))
+    || !env.ALLOWED_TARGET_ORIGINS.some(origin => new URL(origin).origin === configuredOrigin)) {
+    throw new Error('Invalid environment configuration: BUGLAB_BASE_URL must be an exact origin already present in ALLOWED_TARGET_ORIGINS')
+  }
+}
 
 if (Boolean(env.SUPABASE_URL) !== Boolean(env.SUPABASE_SERVICE_ROLE_KEY)) {
   throw new Error('Invalid environment configuration: SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be configured together')

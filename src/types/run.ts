@@ -81,7 +81,7 @@ export interface EvidenceRecord {
 }
 
 export interface TelemetryEvent {
-  type: 'console_error' | 'page_error' | 'request_failed' | 'http_failure'
+  type: 'console_error' | 'page_error' | 'request' | 'response' | 'request_failed' | 'http_failure'
   timestamp: string
   message?: string
   severity?: string
