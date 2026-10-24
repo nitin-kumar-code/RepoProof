@@ -1,7 +1,7 @@
 .approval-controls {
   margin-top: 22px;
   padding-top: 18px;
-  border-top: 1px solid #e9edf2;
+  border-top: 1px solid #d9e6dd;
 }
 
 .approval-controls h3 {
@@ -30,16 +30,16 @@
 .approval-credentials label {
   display: grid;
   gap: 6px;
-  color: #58667a;
+  color: #202923;
   font-size: 11px;
 }
 
 .approval-credentials input {
   height: 34px;
-  border: 1px solid #e5e9ef;
+  border: 1px solid #d9e6dd;
   border-radius: 6px;
   padding: 0 9px;
-  color: #29364a;
+  color: #202923;
   background: #fff;
 }
 
@@ -64,16 +64,35 @@
   width: min(100%, 720px);
   max-height: 405px;
   margin-top: 8px;
-  border: 1px solid #e5e9ef;
+  border: 1px solid #d9e6dd;
   border-radius: 7px;
-  background: #f7f9fc;
+  background: #f7e2d8;
   object-fit: contain;
+}
+
+.verification-attempt {
+  display: grid;
+  gap: 5px;
+  margin: 10px 0;
+  padding: 10px;
+  border: 1px solid #d9e6dd;
+  border-radius: 7px;
+  font-size: 10px;
+}
+
+.verification-attempt details {
+  color: #202923;
+}
+
+.verification-attempt code {
+  overflow-wrap: anywhere;
+  font-size: 9px;
 }
 
 .passport-download {
   margin-left: auto;
   display: inline-flex;
-  color: #b5c5da;
+  color: #65716a;
 }
 
 .passport-report-actions {

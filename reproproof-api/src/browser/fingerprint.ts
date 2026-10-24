@@ -57,4 +57,3 @@ export function createFailureFingerprint(input: FailureFingerprintInput): Failur
   }
   return { ...normalized, hash: createHash('sha256').update(stableJson(normalized)).digest('hex') }
 }
-

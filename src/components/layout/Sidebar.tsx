@@ -14,6 +14,6 @@ export default function Sidebar() {
       <NavLink to="/qa-test-cases"><ClipboardCheck size={19}/>QA Test Cases</NavLink>
       <NavLink to="/settings"><Settings2 size={19}/>Settings &amp; Diagnostics</NavLink>
     </nav>
-    <div className="sidebar-spacer"/><section className="fixture-vault"><div className="vault-state"><i/> MOCK FIXTURES <b>READ-ONLY</b></div><div className="vault-grid"><span>ENV</span><strong>STAGING · SAFE</strong></div><div className="vault-team"><span>▦</span><div><b>workspace-01</b><small>Eng Team</small></div><span className="vault-chevron">⌃<br/>⌄</span></div></section>
+    <div className="sidebar-spacer"/>
   </aside></>
 }
