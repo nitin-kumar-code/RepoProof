@@ -1,5 +1,13 @@
 export type RunStatus = 'Passed' | 'Failed' | 'Running' | 'Needs approval'
 
+export type ReproductionVerdict = 'reproduced' | 'not_reproduced' | 'inconclusive'
+
+export interface ApiError {
+  error?: string
+  message?: string
+  issues?: Array<{ path?: string | string[]; message?: string }>
+}
+
 export interface TestRun {
   id: string
   title: string
@@ -73,7 +81,7 @@ export interface EvidenceRecord {
 }
 
 export interface TelemetryEvent {
-  type: 'console_error' | 'page_error' | 'request_failed' | 'http_failure'
+  type: 'console_error' | 'page_error' | 'request' | 'response' | 'request_failed' | 'http_failure'
   timestamp: string
   message?: string
   severity?: string

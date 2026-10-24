@@ -12,6 +12,12 @@ describe('evidence redaction', () => {
     expect(output).not.toContain('known-secret-value')
   })
 
+  it('redacts BugLab synthetic token fixtures before text evidence is persisted', () => {
+    const output = redactText('Synthetic value TEST_TOKEN_DO_NOT_USE_1234567890 was loaded.')
+    expect(output).not.toContain('TEST_TOKEN_DO_NOT_USE_1234567890')
+    expect(output).toContain('[REDACTED]')
+  })
+
   it('redacts sensitive header fields and URL query parameters recursively', () => {
     const sanitized = redactValue({
       headers: { Authorization: 'Bearer test_secret_12345', Cookie: 'sid=synthetic_cookie', 'Set-Cookie': 'session=synthetic_cookie' },

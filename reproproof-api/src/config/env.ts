@@ -5,7 +5,7 @@ import { z } from 'zod'
 const envSchema = z.object({
   PORT: z.coerce.number().int().min(1).max(65535).default(4000),
   APP_ENV: z.enum(['development', 'test', 'production']).default('development'),
-  CORS_ORIGIN: z.string().url().optional(),
+  CORS_ORIGIN: z.string().url().refine(value => new URL(value).origin === value, 'must be an exact origin without a path').optional(),
   // Exact HTTPS origins, comma-separated. An empty allowlist rejects targets.
   ALLOWED_TARGET_ORIGINS: z.string().default('').transform(value =>
     value.split(',').map(origin => origin.trim()).filter(Boolean),
@@ -14,9 +14,12 @@ const envSchema = z.object({
   ALLOWED_RESOURCE_ORIGINS: z.string().default('').transform(value =>
     value.split(',').map(origin => origin.trim()).filter(Boolean),
   ),
+  BUGLAB_BASE_URL: z.preprocess(value => value === '' ? undefined : value, z.string().url().optional()),
   ALLOW_INSECURE_LOCAL_TARGETS: z.enum(['true', 'false']).default('false').transform(value => value === 'true'),
   RUN_ARTIFACTS_DIR: z.string().trim().min(1).default('artifacts/runs'),
   EVIDENCE_STORAGE_BUCKET: z.string().trim().min(1).default('reproproof-evidence'),
+  VERIFICATION_RESET_URL: z.preprocess(value => value === '' ? undefined : value, z.string().url().optional()),
+  VERIFICATION_RESET_TOKEN: z.preprocess(value => value === '' ? undefined : value, z.string().min(1).optional()),
   SUPABASE_URL: z.preprocess(value => value === '' ? undefined : value, z.string().url().optional()),
   SUPABASE_SERVICE_ROLE_KEY: z.preprocess(value => value === '' ? undefined : value, z.string().min(1).optional()),
   PLANNER_MODE: z.enum(['mock', 'openai']).default('mock'),
@@ -76,12 +79,36 @@ if (env.ALLOW_INSECURE_LOCAL_TARGETS && env.APP_ENV !== 'development') {
 validateOrigins(env.ALLOWED_TARGET_ORIGINS, 'ALLOWED_TARGET_ORIGINS')
 validateOrigins(env.ALLOWED_RESOURCE_ORIGINS, 'ALLOWED_RESOURCE_ORIGINS')
 
+if (env.BUGLAB_BASE_URL) {
+  const demo = new URL(env.BUGLAB_BASE_URL)
+  const configuredOrigin = demo.origin
+  const localDemo = env.APP_ENV === 'development' && env.ALLOW_INSECURE_LOCAL_TARGETS && isDevelopmentLocalHost(demo.hostname)
+  if (demo.pathname !== '/' || demo.search || demo.hash || demo.username || demo.password
+    || (demo.protocol !== 'https:' && !(demo.protocol === 'http:' && localDemo))
+    || !env.ALLOWED_TARGET_ORIGINS.some(origin => new URL(origin).origin === configuredOrigin)) {
+    throw new Error('Invalid environment configuration: BUGLAB_BASE_URL must be an exact origin already present in ALLOWED_TARGET_ORIGINS')
+  }
+}
+
 if (Boolean(env.SUPABASE_URL) !== Boolean(env.SUPABASE_SERVICE_ROLE_KEY)) {
   throw new Error('Invalid environment configuration: SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be configured together')
 }
 
 if (env.APP_ENV === 'production' && !env.SUPABASE_URL) {
   throw new Error('Invalid environment configuration: production requires Supabase for private evidence storage')
+}
+if (env.APP_ENV === 'production' && !env.CORS_ORIGIN) {
+  throw new Error('Invalid environment configuration: production requires CORS_ORIGIN for the deployed frontend')
+}
+if (env.APP_ENV === 'production' && env.CORS_ORIGIN && new URL(env.CORS_ORIGIN).protocol !== 'https:') {
+  throw new Error('Invalid environment configuration: production CORS_ORIGIN must use HTTPS')
+}
+
+if (env.VERIFICATION_RESET_URL) {
+  const resetUrl = new URL(env.VERIFICATION_RESET_URL)
+  if (resetUrl.username || resetUrl.password || resetUrl.search || resetUrl.hash) {
+    throw new Error('Invalid environment configuration: VERIFICATION_RESET_URL must not contain credentials, query parameters, or a fragment; use VERIFICATION_RESET_TOKEN for authentication')
+  }
 }
 
 if (env.PLANNER_MODE === 'openai' && !env.OPENAI_API_KEY) {

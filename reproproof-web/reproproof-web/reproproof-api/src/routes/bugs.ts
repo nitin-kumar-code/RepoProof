@@ -2,8 +2,14 @@ import { randomUUID } from 'node:crypto'
 import { Router } from 'express'
 import { bugRepository } from '../db/repository'
 import { BugReportSchema, BugReportSubmissionSchema } from '../schemas/bug'
+import { containsCredentialMaterial } from '../services/secretDetection'
+import { TargetValidationError, validateTargetUrl } from '../services/targetValidation'
 
 export const bugsRouter = Router()
+
+function formatZodIssues(issues: Array<{ path: PropertyKey[]; message: string }>) {
+  return issues.map(issue => ({ path: issue.path.map(String).join('.'), message: issue.message }))
+}
 
 const clarificationPrompts: Record<string, string> = {
   'environment.targetUrl': 'What approved test URL should the browser use?',
@@ -18,12 +24,12 @@ function isSpecificStep(instruction: string): boolean {
   return normalized.length >= 3 && !vagueInstructions.has(normalized)
 }
 
-bugsRouter.get('/', (_request, response) => {
-  response.json(bugRepository.list())
+bugsRouter.get('/', async (_request, response) => {
+  response.json(await bugRepository.list())
 })
 
-bugsRouter.get('/:id', (request, response) => {
-  const report = bugRepository.get(request.params.id)
+bugsRouter.get('/:id', async (request, response) => {
+  const report = await bugRepository.get(request.params.id)
   if (!report) {
     response.status(404).json({ error: 'bug_not_found' })
     return
@@ -31,17 +37,41 @@ bugsRouter.get('/:id', (request, response) => {
   response.json(report)
 })
 
-bugsRouter.post('/', (request, response) => {
+bugsRouter.post('/', async (request, response) => {
   const parsed = BugReportSubmissionSchema.safeParse(request.body)
   if (!parsed.success) {
     response.status(400).json({
       error: 'invalid_bug_report',
-      issues: parsed.error.issues.map(issue => ({ path: issue.path.join('.'), message: issue.message })),
+      issues: formatZodIssues(parsed.error.issues),
     })
     return
   }
 
   const submission = parsed.data
+  const reportText = [submission.title, submission.description, ...(submission.steps ?? []).map(step => step.instruction),
+    submission.expectedBehavior ?? '', submission.actualBehavior ?? '', submission.environment.targetUrl ?? '',
+    submission.environment.appVersion ?? '', submission.environment.operatingSystem ?? '']
+  if (containsCredentialMaterial(reportText)) {
+    response.status(400).json({
+      error: 'sensitive_data_detected',
+      message: 'Remove passwords, API keys, access tokens, and credential values. Keep credentials in server-side configuration.',
+    })
+    return
+  }
+  const targetUrl = submission.environment.targetUrl
+  if (targetUrl) {
+    try {
+      await validateTargetUrl(targetUrl)
+    } catch (cause) {
+      const code = cause instanceof TargetValidationError ? cause.code : 'target_private_or_unresolved'
+      response.status(403).json({
+        error: code,
+        message: 'Target must use an explicitly approved HTTPS origin that resolves only to public addresses.',
+      })
+      return
+    }
+  }
+
   const missing: string[] = []
   if (!submission.environment.targetUrl) missing.push('environment.targetUrl')
   if (!submission.steps?.length) missing.push('steps')
@@ -81,10 +111,10 @@ bugsRouter.post('/', (request, response) => {
   })
 
   if (!completeReport.success) {
-    response.status(400).json({ error: 'invalid_bug_report', issues: completeReport.error.issues })
+    response.status(400).json({ error: 'invalid_bug_report', issues: formatZodIssues(completeReport.error.issues) })
     return
   }
 
-  const report = bugRepository.save(completeReport.data)
-  response.status(201).json({ status: 'created', complete: true, bugReport: report })
+  const report = await bugRepository.save(completeReport.data)
+  response.status(201).json({ id: report.id, status: 'created', complete: true, bugReport: report })
 })

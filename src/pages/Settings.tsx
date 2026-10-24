@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { CheckCircle2, CircleHelp, Eraser, HeartPulse, LockKeyhole, Network, Server, ShieldAlert, TimerReset, XCircle } from 'lucide-react'
+import { CheckCircle2, CircleHelp, Eraser, HeartPulse, LockKeyhole, Network, ShieldAlert, TimerReset, XCircle } from 'lucide-react'
 import { baseUrl } from '../api/client'
 
 export default function SettingsPage({ health, onCheck }: { health: 'checking' | 'online' | 'offline'; onCheck: () => void }) {

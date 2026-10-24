@@ -29,22 +29,36 @@ export default function PlanApproval({ run, onUpdated }: { run: RunRecord; onUpd
   const approvalExpired = new Date(run.approvalExpiresAt).getTime() <= clock
   const queuePending = status === 'approved' && run.progress?.phase === 'queued'
   const executionActive = status === 'running' || status === 'verifying' || queuePending
+  const needsApprovalRefresh = status === 'awaiting_approval'
 
   useEffect(() => {
-    if (!executionActive) return
+    if (!executionActive && !needsApprovalRefresh) return
     const controller = new AbortController()
     let timer: number | undefined
+    let failures = 0
     const poll = async () => {
+      if (document.visibilityState === 'hidden') {
+        timer = window.setTimeout(() => void poll(), 5000)
+        return
+      }
       try {
         const latest = await getRun(run.id, controller.signal)
         if (controller.signal.aborted) return
+        failures = 0
         onUpdated(latest)
         if (latest.status === 'running' || latest.status === 'verifying'
-          || latest.status === 'approved' && latest.progress?.phase === 'queued') {
-          timer = window.setTimeout(() => void poll(), 1500)
+          || latest.status === 'approved' && latest.progress?.phase === 'queued'
+          || latest.status === 'awaiting_approval') {
+          timer = window.setTimeout(() => void poll(), latest.status === 'awaiting_approval' ? 5000 : 1500)
         }
       } catch (cause) {
-        if (!controller.signal.aborted) setError(cause instanceof Error ? cause.message : 'Could not refresh run status.')
+        if (controller.signal.aborted) return
+        setError(cause instanceof Error ? cause.message : 'Could not refresh run status.')
+        if (failures < 5) {
+          const delay = Math.min(1000 * 2 ** failures, 8000)
+          failures += 1
+          timer = window.setTimeout(() => void poll(), delay)
+        }
       }
     }
     timer = window.setTimeout(() => void poll(), 1200)
@@ -52,7 +66,7 @@ export default function PlanApproval({ run, onUpdated }: { run: RunRecord; onUpd
       controller.abort()
       if (timer !== undefined) window.clearTimeout(timer)
     }
-  }, [run.id, executionActive, onUpdated])
+  }, [run.id, executionActive, needsApprovalRefresh, onUpdated])
 
   useEffect(() => {
     const remaining = new Date(run.approvalExpiresAt).getTime() - Date.now()
@@ -98,6 +112,7 @@ export default function PlanApproval({ run, onUpdated }: { run: RunRecord; onUpd
 
   return <section className="panel plan-panel">
     <div className="panel-heading"><div><div className="eyebrow">AI GENERATED PLAN</div><h2>Reproduction plan</h2></div><span className="status-pill approval"><CircleDot size={12} /> {status.replaceAll('_', ' ')}</span></div>
+    {approvalExpired && status === 'expired' && <span className="approval-expired-badge" role="status">Approval window expired</span>}
     <p className="muted">{plan.summary}</p>
     {destination && <p className="muted"><b>Destination:</b> {destination}</p>}
     <p className="muted"><b>Verification mode:</b> {plan.verificationMode.replaceAll('_', ' ')}</p>
@@ -134,6 +149,7 @@ export default function PlanApproval({ run, onUpdated }: { run: RunRecord; onUpd
         {attempt.error && <small>{attempt.error}</small>}
       </article>)}
       <ul className="evidence-files">{run.execution.evidenceRecords.map(record => {
+        if (!record.sanitized) return <li key={record.id}><b>{record.type}</b> · attempt {record.attemptNumber}: <span role="note">Restricted — visual redaction unavailable</span></li>
         const href = `${baseUrl}/api/runs/${encodeURIComponent(run.id)}/evidence/${encodeURIComponent(record.id)}`
         return <li key={record.id}>
           <b>{record.type}</b> · attempt {record.attemptNumber}: <a href={href} target="_blank" rel="noreferrer" download>{record.storageKey.split('/').pop()}</a>

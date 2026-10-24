@@ -5,7 +5,6 @@ import {
   Ban,
   CircleHelp,
   Download,
-  Plus,
   RefreshCw,
   Search,
   ShieldAlert,
@@ -86,7 +85,6 @@ export default function Investigations() {
       <div className="investigation-toolbar" aria-label="Investigation actions">
         <button className="secondary-button" onClick={exportCsv}><Download size={14} />Export CSV <small>(Demo)</small></button>
         <button className="secondary-button" onClick={showSyncNotice}><RefreshCw size={14} />Sync Jira / GitHub <small>(Demo)</small></button>
-        <Link className="primary-button" to="/new-bug"><Plus size={15} />New Bug Report</Link>
       </div>
 
       <div className="investigation-page-heading">

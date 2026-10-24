@@ -41,9 +41,11 @@ function assertActionGrounded(action: PlanAction, stepInstruction: string, bug: 
     if (action.url !== bug.environment.targetUrl) {
       throw new Error('Planner proposed a navigation URL other than the approved target URL')
     }
-    const url = new URL(action.url)
-    if (url.protocol !== 'https:') {
-      throw new Error('Approved target URL must use HTTPS')
+    // validateTargetUrl enforces HTTPS except for explicitly enabled local
+    // development origins; duplicating a stricter protocol check here would
+    // make a properly allowlisted local BugLab fixture impossible to plan.
+    if (new URL(action.url).origin !== new URL(bug.environment.targetUrl).origin) {
+      throw new Error('Approved target URL must use the exact report origin')
     }
   }
 
@@ -102,7 +104,11 @@ function validatePlanAgainstBug(plan: AgentPlan, bug: BugReport): AgentPlan {
       step.rationale = 'No action is proposed because the report needs clarification before this step is safe to plan.'
       step.clarification = 'Clarify this step before approval; the planner will not run an action with unresolved details.'
     }
-    if (step.action && destructiveOperation.test(step.instruction)) {
+    const scopedBugLabDeletion = bug.environment.demoScenario === 'TC3'
+      && env.BUGLAB_BASE_URL
+      && new URL(bug.environment.targetUrl).origin === new URL(env.BUGLAB_BASE_URL).origin
+      && new URL(bug.environment.targetUrl).pathname === '/sandbox'
+    if (step.action && destructiveOperation.test(step.instruction) && !scopedBugLabDeletion) {
       step.action = null
       step.rationale = 'Destructive browser operations are disabled until a disposable sandbox and verified reset strategy are configured.'
       step.clarification = 'Use a disposable authorized test record and document a repeatable reset strategy before planning this destructive step.'
@@ -175,6 +181,7 @@ function buildMockPlan(bug: BugReport): PlannerDraft {
     const click = instruction.match(/^click\s+(?:on\s+)?["“]?(.+?)["”]?\s*[.!]?$/i)
     const fill = instruction.match(/^(?:fill|type|enter)\s+(.+?)\s+with\s+["“]?(.+?)["”]?\s*[.!]?$/i)
     const select = instruction.match(/^(?:select|choose)\s+(.+?)\s+(?:as|to)\s+["“]?(.+?)["”]?\s*[.!]?$/i)
+    const verify = instruction.match(/^(?:verify|assert|check|confirm)\b/i)
     const navigation = /^(?:open|visit|navigate to|go to|load)\b/i.test(instruction)
     const screenshot = /\b(?:screenshot|capture|record)\b/i.test(instruction)
     const wait = instruction.match(/\b(\d+)\s*(ms|milliseconds?|s|sec|seconds?)\b/i)
@@ -232,6 +239,15 @@ function buildMockPlan(bug: BugReport): PlannerDraft {
         instruction,
         action: { type: 'screenshot' as const, label: `Step ${step.order} evidence` },
         rationale: 'This captures evidence at the point requested by the reported step.',
+        clarification: null,
+      }
+    }
+    if (verify && includesKnownText(bug.actualBehavior, instruction)) {
+      return {
+        stepOrder: step.order,
+        instruction,
+        action: { type: 'assert' as const, assertion: { type: 'expected_failure_observed' as const, description: bug.actualBehavior } },
+        rationale: 'This checks the reported actual behavior at the point the scenario identifies it.',
         clarification: null,
       }
     }

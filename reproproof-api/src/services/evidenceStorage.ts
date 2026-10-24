@@ -20,8 +20,12 @@ export async function persistEvidenceFiles(runDirectory: string, records: Eviden
   if (env.APP_ENV !== 'production' || !supabase) return records
   const uploaded: EvidenceRecord[] = []
   for (const record of records) {
-    if (!record.storageKey.startsWith(`${record.runId}/`)) throw new Error('Invalid evidence storage key')
-    const relative = record.storageKey.slice(`${record.runId}/`.length)
+    // Unsafe visual media is never copied to private Storage. The evidence API
+    // independently denies access to records marked unsanitized.
+    if (!record.sanitized) continue
+    const prefix = `${record.runId.replace(/[^a-z0-9-]/gi, '_')}/`
+    if (!record.storageKey.startsWith(prefix)) throw new Error('Invalid evidence storage key')
+    const relative = record.storageKey.slice(prefix.length)
     const localPath = path.resolve(runDirectory, relative)
     if (!localPath.startsWith(`${path.resolve(runDirectory)}${path.sep}`)) throw new Error('Invalid evidence storage key')
     const content = await readFile(localPath)

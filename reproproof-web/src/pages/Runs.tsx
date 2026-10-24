@@ -1,13 +1,54 @@
-import { useMemo, useState } from 'react'
-import { Activity, ArrowRight, Ban, CheckCircle2, CircleHelp, Clock3, Filter, Gavel, Play, Search, ShieldAlert } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
+import { Activity, ArrowRight, CircleAlert, Clock3, RefreshCw, Search, ShieldAlert } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { getRuns } from '../api/runs'
+import type { RunRecord } from '../types/run'
 
-type FixtureRun={id:string;bug:string;title:string;environment:string;plan:string;status:string;progress:string;verdict:string;updated:string;action:string}
-const fixtureRuns:FixtureRun[]=[
- {id:'RUN-8821',bug:'BUG-1042',title:'Checkout cart state concurrency probe',environment:'Staging sandbox · fixture',plan:'Not connected',status:'Recorded fixture',progress:'2 attempt records · unverified',verdict:'Not evaluated',updated:'4m ago',action:'Details'},
- {id:'RUN-8822',bug:'BUG-1044',title:'DELETE /api/users organization cascade',environment:'Sandbox fixture · not executed',plan:'Approval unavailable',status:'Gate scenario · mock',progress:'Execution blocked in UI',verdict:'Not evaluated',updated:'12m ago',action:'Review Plan'},
- {id:'RUN-8824',bug:'BUG-1045',title:'SVG render memory leak on zoom cycle',environment:'Recorded VM fixture',plan:'No server plan',status:'Recorded fixture',progress:'No live attempt',verdict:'Not evaluated',updated:'48m ago',action:'Details'},
- {id:'RUN-8820',bug:'BUG-1043',title:'OAuth token refresh concurrency',environment:'Staging sandbox · fixture',plan:'Not connected',status:'Recorded fixture',progress:'No verified attempts',verdict:'Not evaluated',updated:'1h ago',action:'Details'},
- {id:'RUN-8818',bug:'BUG-1046',title:'Synthetic token exposure scenario',environment:'Local fixture',plan:'No execution service',status:'Recorded blocked case',progress:'Sample only',verdict:'Not evaluated',updated:'1h ago',action:'View case'},
-]
-export default function Runs(){const [query,setQuery]=useState('');const [state,setState]=useState('All Runs');const [environment,setEnvironment]=useState('All Environments');const [verdict,setVerdict]=useState('All Verdicts');const states=['All Runs','Recorded Fixtures','Approval Scenarios','Blocked Scenarios'];const filtered=useMemo(()=>fixtureRuns.filter(r=>`${r.id} ${r.bug} ${r.title}`.toLowerCase().includes(query.toLowerCase())&&(state==='All Runs'||state==='Recorded Fixtures'&&r.status==='Recorded fixture'||state==='Approval Scenarios'&&r.id==='RUN-8822'||state==='Blocked Scenarios'&&(r.status.toLowerCase().includes('blocked')||r.status.toLowerCase().includes('gate')))&&(environment==='All Environments'||r.environment.toLowerCase().includes(environment.toLowerCase()))&&(verdict==='All Verdicts'||r.verdict===verdict)),[query,state,environment,verdict]);return <main className="page runs-reference-page"><div className="runs-reference-heading"><div><h1>Test Runs <span>[MOCK_DATA] ACTIVE · RECORDED FIXTURES</span></h1><p>Inspect recorded run examples, plan review states, and attempt information. No live execution is connected.</p></div><div className="page-toolbar"><button className="secondary-button" disabled><Activity size={15}/>Run Diagnostic Batch</button><button className="primary-button" disabled title="Run creation API is unavailable"><Play size={15}/>New Execution</button></div></div><div className="run-summary-grid"><article><small>TOTAL FIXTURES</small><strong>{fixtureRuns.length}<em>records</em></strong><span><Clock3 size={13}/> Recorded examples only</span></article><article><small>PENDING APPROVAL</small><strong>0<em>server plans</em></strong><span><Gavel size={13}/> Approval service unavailable</span></article><article><small>LIVE EXECUTIONS</small><strong>0<em>running</em></strong><span><Activity size={13}/> No runner connected</span></article><article><small>VERIFIED VERDICTS</small><strong>0<em>confirmed</em></strong><span><CheckCircle2 size={13}/> No verdict API</span></article><article><small>BLOCKED / UNKNOWN</small><strong>{fixtureRuns.filter(r=>r.status.includes('blocked')||r.status.includes('Gate')).length}<em>mock states</em></strong><span><ShieldAlert size={13}/> Fixture-only states</span></article></div><section className="run-filter-tabs">{states.map(tab=><button key={tab} className={state===tab?'active':''} onClick={()=>setState(tab)}>{tab}{tab==='All Runs'&&` (${fixtureRuns.length})`}</button>)}<span>Recorded fixture history — not live remote data</span></section><section className="panel run-reference-table-card"><div className="run-filter-row"><label><Search size={15}/><input aria-label="Search runs" placeholder="Search by Run ID, Bug ID, or title" value={query} onChange={e=>setQuery(e.target.value)}/></label><select aria-label="Filter environment" value={environment} onChange={e=>setEnvironment(e.target.value)}><option>All Environments</option><option>Staging</option><option>Local</option><option>VM</option></select><select aria-label="Filter verdict" value={verdict} onChange={e=>setVerdict(e.target.value)}><option>All Verdicts</option><option>Not evaluated</option></select><button className="secondary-button" onClick={()=>{setQuery('');setEnvironment('All Environments');setVerdict('All Verdicts');setState('All Runs')}}><Filter size={14}/>Reset Filters</button></div><div className="runs-table-wrap"><table className="runs-table"><thead><tr><th>RUN ID</th><th>RELATED BUG &amp; TITLE</th><th>TARGET ENVIRONMENT</th><th>PLAN AUTHORIZATION</th><th>STATUS</th><th>CONVERGENCE &amp; ATTEMPT</th><th>FINAL VERDICT</th><th>UPDATED</th><th>ACTIONS</th></tr></thead><tbody>{filtered.map(run=><tr key={run.id} className={run.id==='RUN-8822'?'risk-row':''}><td><b className="run-id">{run.id==='RUN-8822'?<ShieldAlert size={14}/>:<span>⌘</span>} {run.id}</b></td><td><b>{run.bug}</b><small>{run.title}</small><small className="table-provenance">Recorded design fixture</small></td><td><code>{run.environment}</code></td><td><span className="run-table-badge">{run.plan}</span></td><td><span className={`fixture-state ${run.status.includes('blocked')||run.status.includes('Gate')?'blocked':''}`}><i/>{run.status}</span></td><td><code>{run.progress}</code></td><td><span className="not-evaluated"><CircleHelp size={13}/>{run.verdict}</span></td><td>{run.updated}</td><td><Link to={run.id==='RUN-8822'?`/runs/${run.id}`:run.id==='RUN-8821'?`/runs/${run.id}/execution`:`/runs/${run.id}`} className="runs-action">{run.action}<ArrowRight size={13}/></Link>{run.id==='RUN-8821'&&<Link className="runs-action secondary-action" to={`/evidence/${run.id}`}>Evidence</Link>}</td></tr>)}</tbody></table>{filtered.length===0&&<p className="empty-state">No run fixtures match the selected filters.</p>}</div><footer className="run-table-footer">Showing {filtered.length} of {fixtureRuns.length} recorded run fixtures <span>Live run API unavailable</span></footer></section><div className="run-footnote"><Ban size={14}/> Execution success and bug reproduction are separate results. This page contains no server-confirmed status or verdict.</div></main>}
+function isActive(run: RunRecord): boolean {
+  return run.status === 'running' || run.status === 'verifying'
+    || run.status === 'approved' && run.progress?.phase === 'queued'
+}
+
+export default function Runs() {
+  const [runs, setRuns] = useState<RunRecord[]>([])
+  const [query, setQuery] = useState('')
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  const [refreshKey, setRefreshKey] = useState(0)
+
+  useEffect(() => {
+    const controller = new AbortController()
+    let timer: number | undefined
+    const load = async () => {
+      try {
+        const latest = await getRuns(controller.signal)
+        if (controller.signal.aborted) return
+        setRuns(latest)
+        setError('')
+        setLoading(false)
+        if (latest.some(isActive)) timer = window.setTimeout(() => void load(), 2000)
+      } catch (cause) {
+        if (controller.signal.aborted) return
+        setError(cause instanceof Error ? cause.message : 'Could not load run records.')
+        setLoading(false)
+      }
+    }
+    void load()
+    return () => {
+      controller.abort()
+      if (timer !== undefined) window.clearTimeout(timer)
+    }
+  }, [refreshKey])
+
+  const filtered = useMemo(() => runs.filter(run => `${run.id} ${run.bugReportId} ${run.plan.summary}`.toLowerCase().includes(query.toLowerCase())), [runs, query])
+  const pending = runs.filter(run => run.status === 'awaiting_approval').length
+  const live = runs.filter(isActive).length
+  const completed = runs.filter(run => ['reproduced', 'not_reproduced', 'inconclusive'].includes(run.status)).length
+
+  return <main className="page runs-reference-page">
+    <div className="runs-reference-heading"><div><h1>Test Runs</h1><p>Plans, approvals, browser execution progress, verdicts, and evidence from the connected API.</p></div><div className="page-toolbar"><button className="secondary-button" onClick={() => { setLoading(true); setRefreshKey(key => key + 1) }}><RefreshCw size={15}/>Refresh</button></div></div>
+    {error && <div className="error-banner" role="alert"><CircleAlert size={15}/> {error}</div>}
+    <div className="run-summary-grid"><article><small>TOTAL RUNS</small><strong>{runs.length}<em>records</em></strong><span><Clock3 size={13}/> From the backend</span></article><article><small>PENDING APPROVAL</small><strong>{pending}<em>runs</em></strong><span><ShieldAlert size={13}/> Review the proposed plans</span></article><article><small>LIVE / QUEUED</small><strong>{live}<em>active</em></strong><span><Activity size={13}/> Workers report progress</span></article><article><small>COMPLETED VERDICTS</small><strong>{completed}<em>runs</em></strong><span>Reproduced, not reproduced, or inconclusive</span></article></div>
+    <section className="panel run-reference-table-card"><div className="run-filter-row"><label><Search size={15}/><input aria-label="Search runs" placeholder="Search run ID, bug ID, or plan…" value={query} onChange={event => setQuery(event.target.value)}/></label></div><div className="runs-table-wrap"><table className="runs-table"><thead><tr><th>RUN ID</th><th>BUG REPORT / PLAN</th><th>TARGET</th><th>STATUS</th><th>PROGRESS</th><th>VERDICT</th><th>UPDATED</th><th>ACTION</th></tr></thead><tbody>{filtered.map(run=><tr key={run.id}><td><b className="run-id">{run.id.slice(0, 12)}</b></td><td><b>{run.bugReportId}</b><small>{run.plan.summary}</small></td><td><code>{run.plan.preconditions.find(value => value.startsWith('Approved target: '))?.slice('Approved target: '.length) ?? 'Not supplied'}</code></td><td><span className={`fixture-state ${run.status === 'failed' || run.status === 'cancelled' ? 'blocked' : ''}`}><i/>{run.status.replaceAll('_', ' ')}</span></td><td><code>{run.progress?.message ?? (run.execution ? `${run.execution.attempts.length}/2 attempts completed` : run.status === 'awaiting_approval' ? 'Waiting for approval' : '—')}</code></td><td>{run.status === 'failed' ? 'Infrastructure failure' : run.execution?.result.replaceAll('_', ' ') ?? 'Not decided'}</td><td>{new Date(run.updatedAt).toLocaleString()}</td><td><Link to={`/runs/${encodeURIComponent(run.id)}`} className="runs-action">Review <ArrowRight size={13}/></Link></td></tr>)}</tbody></table>{loading && <p className="empty-state" role="status">Loading runs…</p>}{!loading && !error && filtered.length === 0 && <p className="empty-state">No runs match this search.</p>}</div><footer className="run-table-footer">Showing {filtered.length} of {runs.length} API run records</footer></section>
+  </main>
+}

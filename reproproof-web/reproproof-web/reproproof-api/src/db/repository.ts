@@ -1,18 +1,37 @@
+import { supabase } from './client'
 import type { BugReport } from '../schemas/bug'
 
-// Temporary in-process repository for the contract checkpoint. Replace with
-// durable storage before relying on reports across server restarts.
-const bugReports = new Map<string, BugReport>()
+const memoryReports = new Map<string, BugReport>()
 
 export const bugRepository = {
-  list(): BugReport[] {
-    return [...bugReports.values()]
+  async list(): Promise<BugReport[]> {
+    if (!supabase) {
+      return [...memoryReports.values()].sort((a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+      )
+    }
+    const { data, error } = await supabase.from('bug_reports').select('report').order('created_at', { ascending: false })
+    if (error) throw error
+    return (data ?? []).map(row => row.report as BugReport)
   },
-  get(id: string): BugReport | undefined {
-    return bugReports.get(id)
+
+  async get(id: string): Promise<BugReport | undefined> {
+    if (!supabase) return memoryReports.get(id)
+    const { data, error } = await supabase.from('bug_reports').select('report').eq('id', id).maybeSingle()
+    if (error) throw error
+    return data?.report as BugReport | undefined
   },
-  save(report: BugReport): BugReport {
-    bugReports.set(report.id, report)
+
+  async save(report: BugReport): Promise<BugReport> {
+    if (!supabase) {
+      memoryReports.set(report.id, report)
+      return report
+    }
+    const { error } = await supabase.from('bug_reports').insert({
+      id: report.id,
+      report,
+    })
+    if (error) throw error
     return report
   },
 }

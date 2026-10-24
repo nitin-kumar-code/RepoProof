@@ -1,64 +1,48 @@
 import { useState } from 'react'
-import { ArrowLeft, ArrowRight, Paperclip, Sparkles } from 'lucide-react'
+import { ArrowDown, ArrowRight, Check, Circle, Cpu, LockKeyhole, Plus, ShieldCheck, Sparkles } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 import { createBug } from '../../api/bugs'
+import { createRun } from '../../api/runs'
 import type { BugReportSubmission } from '../../types/bug'
 
-export default function BugReportForm() {
-  const [title, setTitle] = useState('')
-  const [description, setDescription] = useState('')
-  const [targetUrl, setTargetUrl] = useState('')
-  const [stepsText, setStepsText] = useState('')
-  const [expectedBehavior, setExpectedBehavior] = useState('')
-  const [actualBehavior, setActualBehavior] = useState('')
-  const [message, setMessage] = useState<string[]>([])
-  const [error, setError] = useState('')
-  const [submitting, setSubmitting] = useState(false)
-  const [submitted, setSubmitted] = useState(false)
-  const navigate = useNavigate()
-
-  async function submit(event: React.FormEvent) {
-    event.preventDefault()
-    setSubmitting(true)
-    setError('')
-    setMessage([])
-    const steps = stepsText.split('\n').map(instruction => instruction.trim()).filter(Boolean)
-    const report: BugReportSubmission = {
-      title,
-      description,
-      ...(steps.length ? { steps: steps.map((instruction, index) => ({ order: index + 1, instruction })) } : {}),
-      ...(expectedBehavior.trim() ? { expectedBehavior: expectedBehavior.trim() } : {}),
-      ...(actualBehavior.trim() ? { actualBehavior: actualBehavior.trim() } : {}),
-      environment: { ...(targetUrl.trim() ? { targetUrl: targetUrl.trim() } : {}), browser: 'chromium' },
-    }
-    try {
-      const result = await createBug(report)
-      if (result.status === 'clarification_required') {
-        setMessage(result.clarificationRequests.map(item => item.question))
-      } else {
-        setSubmitted(true)
-        window.setTimeout(() => navigate('/'), 1300)
-      }
-    } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'Could not submit the bug report. Check that the API is running.')
-    } finally {
-      setSubmitting(false)
-    }
-  }
-
-  return <div className="page form-page"><div className="back-link"><Link to="/"><ArrowLeft size={15} />Back to overview</Link></div><div className="form-heading"><div className="eyebrow">BUG REPORT</div><h1>What went wrong?</h1><p>Share the approved test target and the details needed for a safe, repeatable reproduction.</p></div>
-    {submitted ? <div className="success-banner">✓ Bug report saved. Its structured details are ready for plan review.</div> : <form className="bug-form" onSubmit={submit}>
-      <label>Bug title <span className="required">*</span><input required maxLength={200} value={title} onChange={e => setTitle(e.target.value)} placeholder="e.g. Checkout button does nothing" /></label>
-      <label>Description <span className="required">*</span><textarea required maxLength={5000} rows={3} value={description} onChange={e => setDescription(e.target.value)} placeholder="Describe the issue and any useful context." /></label>
-      <label>Approved test URL<input type="url" value={targetUrl} onChange={e => setTargetUrl(e.target.value)} placeholder="https://staging.example.com" /><small className="field-hint">Use a test environment you are authorized to access. Without a URL, the API will ask for clarification.</small></label>
-      <label>Reproduction steps<textarea rows={4} value={stepsText} onChange={e => setStepsText(e.target.value)} placeholder={'Enter one action per line, for example:\nOpen the profile settings page\nClick the Save profile button'} /><small className="field-hint">Use specific actions. The API asks for clarification when steps are missing or too vague.</small></label>
-      <div className="form-row"><label>Expected behavior<textarea rows={3} value={expectedBehavior} onChange={e => setExpectedBehavior(e.target.value)} placeholder="What should happen?" /></label><label>Actual behavior<textarea rows={3} value={actualBehavior} onChange={e => setActualBehavior(e.target.value)} placeholder="What happened instead?" /></label></div>
-      <label>Browser<select value="chromium" disabled><option value="chromium">Chromium</option></select></label>
-      <button type="button" className="attach-button"><Paperclip size={15} />Attach screenshot or recording</button>
-      <div className="form-note"><Sparkles size={15} />Plans will use validated browser actions and require approval before execution.</div>
-      {message.length > 0 && <div className="clarification-box" role="status"><b>A few details are needed before a plan can be prepared:</b><ul>{message.map(question => <li key={question}>{question}</li>)}</ul></div>}
-      {error && <div className="error-banner" role="alert">{error}</div>}
-      <div className="form-footer"><span>Provide enough detail to make the reproduction unambiguous.</span><button className="primary-button" type="submit" disabled={submitting}>{submitting ? 'Submitting…' : 'Submit bug report'} {!submitting && <ArrowRight size={16} />}</button></div>
-    </form>}
-  </div>
+type Draft={title:string;description:string;targetUrl:string;stepsText:string;expectedBehavior:string;actualBehavior:string;service:string;severity:string;sandbox:string}
+const blankDraft:Draft={title:'',description:'',targetUrl:'',stepsText:'',expectedBehavior:'',actualBehavior:'',service:'',severity:'High',sandbox:'Staging Sandbox'}
+function readDraft():Draft{try{return {...blankDraft,...JSON.parse(localStorage.getItem('reproproof-bug-draft')||'{}') as Partial<Draft>}}catch{return blankDraft}}
+export default function BugReportForm(){
+ const [draft,setDraft]=useState<Draft>(readDraft)
+ const [message,setMessage]=useState<string[]>([]);const [error,setError]=useState('');const [submitting,setSubmitting]=useState(false);const [pendingBugId,setPendingBugId]=useState('');const [draftSaved,setDraftSaved]=useState(false);const navigate=useNavigate()
+ const set=(key:keyof Draft,value:string)=>setDraft(prev=>({...prev,[key]:value}))
+ async function submit(event:React.FormEvent){
+  event.preventDefault();setSubmitting(true);setError('');setMessage([])
+  const steps=draft.stepsText.split('\n').map(instruction=>instruction.trim()).filter(Boolean)
+  const report:BugReportSubmission={title:draft.title,description:draft.description,...(steps.length?{steps:steps.map((instruction,index)=>({order:index+1,instruction}))}:{}),...(draft.expectedBehavior.trim()?{expectedBehavior:draft.expectedBehavior.trim()}:{}),...(draft.actualBehavior.trim()?{actualBehavior:draft.actualBehavior.trim()}:{}),environment:{...(draft.targetUrl.trim()?{targetUrl:draft.targetUrl.trim()}:{}),browser:'chromium'}}
+  let savedBugId=pendingBugId
+  try{
+   if(!savedBugId){
+    const result=await createBug(report)
+    if(result.status==='clarification_required'){setMessage(result.clarificationRequests.map(item=>item.question));return}
+    savedBugId=result.bugReport.id;setPendingBugId(savedBugId);localStorage.removeItem('reproproof-bug-draft')
+   }
+   const run=await createRun(savedBugId)
+   navigate(`/runs/${run.id}`)
+  }catch(cause){
+   const detail=cause instanceof Error?cause.message:'Unknown error.'
+   setError(savedBugId?`Bug report was saved, but plan creation failed: ${detail}`:`Could not submit the bug report: ${detail}`)
+  }finally{setSubmitting(false)}
+ }
+ function saveDraft(){localStorage.setItem('reproproof-bug-draft',JSON.stringify(draft));setDraftSaved(true)}
+ return <main className="page form-page intake-page"><div className="intake-heading"><div><div className="intake-kicker"><i/> INTAKE PIPELINE // NODE-09 <span>|</span> Drafting Mode (Local Validation Active)</div><h1>New Bug Report</h1><p>Describe the deterministic failure criteria so the reproduction agent can prepare a clear, reviewable report. Sandbox selection is informational until an execution service is connected.</p></div><code>REPRO-ID: PENDING_SYNTHESIS</code></div>
+ <div className="bug-intake-grid"><form className="bug-form intake-form" onSubmit={submit}>
+ <section className="intake-section"><div className="intake-section-title"><span>01</span><h2>Target Environment &amp; Bug Topology</h2><b>REQUIRED</b></div>
+  <label><span className="field-label-row"><span>Deterministic Bug Title / Summary <i>*</i></span><code>{draft.title.length} / 120 chars</code></span><input required maxLength={120} value={draft.title} onChange={e=>set('title',e.target.value)} placeholder="Summarize the deterministic failure"/></label>
+  <div className="form-row"><label>Target Core Service / Repository<select value={draft.service} onChange={e=>set('service',e.target.value)}><option value="">Select service (local context)</option>{['payments-service','identity-auth-service','ledger-reconciliation','notification-dispatcher'].map(x=><option key={x}>{x}</option>)}</select><small className="field-hint">Saved with local draft only; not sent to API.</small></label><fieldset className="severity-field"><legend>Reproduction Severity <span>LOCAL CONTEXT</span></legend><div className="severity-options">{[['Critical','CRIT'],['High','HIGH'],['Medium','MED'],['Low','LOW']].map(([value,label])=><label key={value} className={draft.severity===value?`severity-selected severity-${value.toLowerCase()}`:''}><input type="radio" name="severity" value={value} checked={draft.severity===value} onChange={()=>set('severity',value)}/>{draft.severity===value&&<i/>}{label}</label>)}</div></fieldset></div>
+  <label><span className="field-label-row"><span>Target Route / API Ingress Endpoint</span><span className="safe-label">STAGE PERMITTED · VERIFY YOUR TARGET</span></span><div className="endpoint-input"><select aria-label="HTTP method" defaultValue="POST"><option>POST</option><option>GET</option><option>PUT</option><option>DELETE</option></select><input type="url" value={draft.targetUrl} onChange={e=>set('targetUrl',e.target.value)} placeholder="https://staging.example.com/api/route"/></div><small className="field-hint">Only the URL is submitted to the bug API. The selected method is local context.</small></label>
+  <fieldset className="sandbox-field"><legend>Target Sandbox Environment <span>LOCAL SELECTION — DOES NOT AUTHORIZE EXECUTION</span></legend><div className="sandbox-options">{[['Local Docker','Isolated workstation instance','port: 8089-mock'],['Staging Sandbox','Synthetic data only · confirm access first','sandbox availability not connected'],['Ephemeral VM','Clean room virtual machine','provisioning unavailable']].map(([name,description,foot])=><label key={name} className={draft.sandbox===name?'sandbox-selected':''}><input type="radio" name="sandbox" value={name} checked={draft.sandbox===name} onChange={()=>set('sandbox',name)}/><span className="sandbox-check">{draft.sandbox===name?<Check size={14}/>:<Circle size={13}/>}</span><b>{name}</b>{name==='Staging Sandbox'&&<em>RECOMMENDED</em>}<small>{description}</small><code>{foot}</code></label>)}</div></fieldset>
+  <div className="human-gate-note"><ShieldCheck size={17}/><span><b>Human gate enforcement:</b> Environment selection records your requested context only. It does not start a browser or authorize script execution.</span></div><div className="runtime-note"><Cpu size={15}/><code>Browser target: Chromium · Runtime provisioning is not connected</code><b>Plan creation is available; no browser execution service.</b></div>
+ </section>
+ <section className="intake-section protocol-section"><div className="intake-section-title"><span>02</span><h2>Reproduction Protocol &amp; Delta Spec</h2><b className="planner-badge">API VALIDATION</b></div><label><span className="field-label-row"><span>Ordered Steps to Reproduce (Deterministic Sequence)</span><button type="button" className="text-button" onClick={()=>set('stepsText',[draft.stepsText,'Navigate to the approved test page','Perform the action that triggers the reported issue','Record the observed result'].filter(Boolean).join('\n'))}><Plus size={14}/> Prepend Template</button></span><textarea rows={5} value={draft.stepsText} onChange={e=>set('stepsText',e.target.value)} placeholder={'1. Navigate to the relevant page\n2. Perform the action that triggers the issue\n3. Record what happened'} /></label><div className="protocol-stats"><span>Step lines detected: <b>{draft.stepsText.split('\n').filter(x=>x.trim()).length}</b></span><span>Use clear actions; the API requests clarification when required fields are missing.</span></div><label>Bug description<textarea rows={3} maxLength={5000} value={draft.description} onChange={e=>set('description',e.target.value)} placeholder="What is the issue and when does it occur?" required/></label><div className="form-row"><label>Expected behavior<textarea rows={3} value={draft.expectedBehavior} onChange={e=>set('expectedBehavior',e.target.value)} placeholder="What should happen?"/></label><label>Actual behavior<textarea rows={3} value={draft.actualBehavior} onChange={e=>set('actualBehavior',e.target.value)} placeholder="What happened instead?"/></label></div><label>Browser / build context<input value="Chromium (API browser field)" disabled/><small className="field-hint">Build and operating system fields are not supported by the current API.</small></label><button type="button" className="attach-button" disabled><Plus size={14}/> File attachments are not supported by the API</button>
+ {message.length>0&&<div className="clarification-box" role="status"><b>More details are needed:</b><ul>{message.map(item=><li key={item}>{item}</li>)}</ul></div>}{error&&<div className="error-banner" role="alert">{error}</div>}{draftSaved&&<div className="draft-saved" role="status">Local draft saved in this browser only.</div>}
+ </section><div className="intake-submit-row"><span><LockKeyhole size={16}/> Report submission sends supported fields to the configured API. Drafts stay in this browser.</span><div><Link className="intake-cancel" to="/">Cancel</Link><button className="intake-save" type="button" onClick={saveDraft}>Save Draft (Local)</button><button className="primary-button" type="submit" disabled={submitting}><Sparkles size={15}/>{submitting?'Submitting…':'Submit Bug Report'}</button></div></div>
+ </form><aside className="intake-aside"><section className="intake-side-card"><div className="aside-heading"><h3>Repro Compliance</h3><span>NOT VERIFIED</span></div><div className="compliance-status"><span>Target status:</span><b><ShieldCheck size={14}/> Not checked</b></div><div className="compliance-bar"><i/></div><ul><li><Circle size={13}/> API field validation on submit</li><li><Circle size={13}/> Frontend token redaction not verified</li><li><Circle size={13}/> Sandbox service unavailable</li></ul></section><section className="intake-side-card"><div className="aside-heading"><h3>Sandbox Topology</h3><code>NOT CONNECTED</code></div><p>Requested environment context only; no container is configured for this app.</p><div className="topology-map"><div><i/>Bug report form <small>local validation</small></div><ArrowDown size={17}/><div><i/>Bug reports API <small>POST /api/bugs</small></div><ArrowDown size={17}/><div className="topology-offline"><i/>Runner / sandbox <small>not implemented</small></div></div></section><section className="intake-side-card roadmap-card"><h3>Submission Roadmap</h3><div className="roadmap-step"><b>1</b><div><strong>API schema validation</strong><small>Runs when this report is submitted.</small></div></div><div className="roadmap-step pending"><b>2</b><div><strong>Plan synthesis</strong><small>Creates a plan for human review; no actions are executed.</small></div></div><div className="roadmap-step pending"><b>3</b><div><strong>Human approval</strong><small>Required before any future execution.</small></div></div><div className="roadmap-step pending"><b>4</b><div><strong>Sandbox execution</strong><small>Execution service not connected.</small></div></div></section><section className="intake-side-card cluster-card"><div className="aside-heading"><h3>Backend API</h3><span className="backend-indicator">●</span></div><p>Bug reports, plan creation, and approval routes are implemented. Browser execution is not connected.</p><Link to="/settings">Open connection status <ArrowRight size={14}/></Link></section></aside></div>
+ </main>
 }

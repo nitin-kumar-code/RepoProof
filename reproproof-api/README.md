@@ -1,5 +1,26 @@
 # ReproProof API
 
+## Frontend API contract
+
+Use the following flow for the UI. API run states are lowercase strings; the
+frontend must use the returned state and verdict instead of treating an HTTP
+success response as proof that a bug reproduced.
+
+| Frontend screen | Request | Expected use |
+| --- | --- | --- |
+| Bug intake | `POST /api/bugs` | Submit `title`, `description`, ordered `steps` (`order`, `instruction`), expected/actual behavior, and `environment` (`targetUrl`, `browser`). A complete report returns `201` with `{ id, status: "created", complete: true, bugReport }`; missing details return `202` with `status: "clarification_required"` and `clarificationRequests`. |
+| Report details | `GET /api/bugs/:id` | Retrieve the saved input and environment. |
+| Proposed plan | `POST /api/runs` with `{ "bugReportId": "…" }` | Create a plan and pending approval run. Returns the run, including `id`, `status`, `plan`, `planHash`, and `approvalExpiresAt`. A retry for a bug with an active run returns that existing run. |
+| Approval | `POST /api/runs/:id/approve` with `{ "decision": "approved" }` or `{ "decision": "rejected" }` | Send the configured server-verified Basic credentials in `Authorization`. Approval records the exact plan hash and identity; rejection moves the run to `cancelled`. |
+| Execution | `POST /api/runs/:id/execute` | Enqueue the approved run and return `202 Accepted` promptly. Poll the run endpoint; do not infer the verdict from `202`. |
+| Live execution | `GET /api/runs/:id` | Poll every 1–2 seconds. `progress` reports phase, current attempt, completed attempts, completed actions, and total actions. After verification, `execution` includes attempts, sanitized telemetry, evidence records, and a result. `status: "failed"` means infrastructure execution failed; it is distinct from `execution.result: "not_reproduced"`. |
+| Results and evidence | `GET /api/runs/:id/evidence` | Returns `{ runId, files }`. Each file includes sanitized metadata and a `downloadUrl`; production links are short-lived signed URLs from the private Storage bucket. |
+
+Typical run states are `awaiting_approval → approved → running → verifying →
+reproduced | not_reproduced | inconclusive`. A rejected plan becomes `cancelled`,
+and infrastructure failures become `failed`. The UI may show recent telemetry
+after attempts have been saved; event text and URLs are sanitized by the API.
+
 ## Target URL allowlist
 
 Set `ALLOWED_TARGET_ORIGINS` to comma-separated exact HTTPS origins for verified,
@@ -31,16 +52,41 @@ process.
 ## Browser execution and evidence
 
 After a run is approved, call `POST /api/runs/:id/execute`. The endpoint
-atomically claims the approved plan and immediately returns `202 Accepted` with
-the run in `running` state. Poll `GET /api/runs/:id` until it reaches a final
-state. The background attempt starts one isolated Chromium context and executes
-the approved typed actions in order; it rejects an unapproved, changed, or
-already claimed plan. Only one browser attempt runs at a time in each API
-process; concurrent execution requests receive `409 browser_executor_busy`.
+atomically adds the approved plan to the shared Supabase `run_jobs` queue and
+immediately returns `202 Accepted`. Poll `GET /api/runs/:id` for its queue,
+attempt, and verification progress. Every API replica runs one queue worker;
+Postgres `FOR UPDATE SKIP LOCKED` claims each job for exactly one worker, and
+each worker processes one browser run at a time. Repeated execution requests
+return the existing run and do not add another job. The worker verifies the
+approved plan hash before execution.
+
+Apply the full `supabase/schema.sql` after deploying this queue implementation.
+It creates the durable queue table and service-role-only RPC functions used for
+atomic enqueueing, claiming, heartbeats, completion, and stale-job recovery.
+Runs whose workers lose their lease are marked `failed` and are not retried
+automatically, because a browser may already have performed a destructive
+action before the worker crashed. Review the saved attempt evidence before
+creating a new approved run.
 Each attempt is limited to 30 actions and two minutes;
 individual page operations have bounded timeouts. A locator waits briefly for
 its first match, then must match exactly one element before interaction, or the
 run is marked inconclusive.
+
+Two-run verification for state-modifying plans requires `VERIFICATION_RESET_URL`. Configure it to a
+dedicated reset endpoint on the exact approved application origin. That endpoint
+must reset only authorized disposable fixtures and return JSON
+`{"reset":true}`; optional `VERIFICATION_RESET_TOKEN` stays server-side. The reset
+procedure is added to the plan preconditions before approval, is called only
+between two fresh browser contexts, and must confirm success before attempt 2.
+Plans containing `click`, `fill`, or `select` require this matching approved
+reset procedure; without it, execution is inconclusive and does not start an
+attempt. Plans containing only navigation, waits, screenshots, and assertions
+are explicitly marked read-only in their approval preconditions and may run
+twice without an endpoint. Use that mode only for apps whose page-load behavior
+is safe to repeat. For deletion scenarios, the configured endpoint must restore
+the disposable fixture to its original state. It receives a JSON body
+containing `runId` and `bugReportId`; keep any reset credential in the
+server-side `VERIFICATION_RESET_TOKEN` setting, never in the URL.
 
 Screenshots, the finalized WebM recording, separate console and network logs,
 and a run report are written under `RUN_ARTIFACTS_DIR` (default
@@ -67,11 +113,12 @@ or a secret store.
 
 ## Storage
 
-For persistent storage, set both `SUPABASE_URL` and
+For persistent storage and browser execution, set both `SUPABASE_URL` and
 `SUPABASE_SERVICE_ROLE_KEY`, then run [`supabase/schema.sql`](supabase/schema.sql)
-in the Supabase SQL editor. Keep the service role key on the API server only.
-If Supabase is not configured, the API uses an in-memory store for local
-development; those reports do not survive restarts.
+in the Supabase SQL editor. The service role key is required by the shared job
+queue and must stay on the API server only. Without Supabase, the API's local
+in-memory report store can support intake development, but durable queueing and
+browser execution are unavailable and reports do not survive restarts.
 
 ## Planner
 

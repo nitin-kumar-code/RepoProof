@@ -4,3 +4,6 @@ dist-ssr
 .env
 .env.*
 .git
+reproproof-api
+reproproof-web
+design-references

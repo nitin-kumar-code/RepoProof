@@ -27,9 +27,11 @@ export default function PlanApproval({ run, onUpdated }: { run: RunRecord; onUpd
   const [error, setError] = useState('')
   const [clock, setClock] = useState(() => Date.now())
   const approvalExpired = new Date(run.approvalExpiresAt).getTime() <= clock
+  const queuePending = status === 'approved' && run.progress?.phase === 'queued'
+  const executionActive = status === 'running' || status === 'verifying' || queuePending
 
   useEffect(() => {
-    if (status !== 'running' && status !== 'verifying') return
+    if (!executionActive) return
     const controller = new AbortController()
     let timer: number | undefined
     const poll = async () => {
@@ -37,7 +39,8 @@ export default function PlanApproval({ run, onUpdated }: { run: RunRecord; onUpd
         const latest = await getRun(run.id, controller.signal)
         if (controller.signal.aborted) return
         onUpdated(latest)
-        if (latest.status === 'running' || latest.status === 'verifying') {
+        if (latest.status === 'running' || latest.status === 'verifying'
+          || latest.status === 'approved' && latest.progress?.phase === 'queued') {
           timer = window.setTimeout(() => void poll(), 1500)
         }
       } catch (cause) {
@@ -49,7 +52,7 @@ export default function PlanApproval({ run, onUpdated }: { run: RunRecord; onUpd
       controller.abort()
       if (timer !== undefined) window.clearTimeout(timer)
     }
-  }, [run.id, status, onUpdated])
+  }, [run.id, executionActive, onUpdated])
 
   useEffect(() => {
     const remaining = new Date(run.approvalExpiresAt).getTime() - Date.now()
@@ -97,7 +100,9 @@ export default function PlanApproval({ run, onUpdated }: { run: RunRecord; onUpd
     <div className="panel-heading"><div><div className="eyebrow">AI GENERATED PLAN</div><h2>Reproduction plan</h2></div><span className="status-pill approval"><CircleDot size={12} /> {status.replaceAll('_', ' ')}</span></div>
     <p className="muted">{plan.summary}</p>
     {destination && <p className="muted"><b>Destination:</b> {destination}</p>}
-    <div className="plan-ai"><Sparkles size={15} /><span>{run.execution ? `Browser attempt finished: ${run.execution.result.replaceAll('_', ' ')}.` : status === 'running' || status === 'verifying' ? 'Chromium is running. This page checks for the result automatically.' : 'Review the proposed actions and approve the plan before running Chromium.'}</span></div>
+    <p className="muted"><b>Verification mode:</b> {plan.verificationMode.replaceAll('_', ' ')}</p>
+    <div className="plan-ai"><Sparkles size={15} /><span>{run.execution ? `Browser verification finished: ${run.execution.result.replaceAll('_', ' ')}.` : executionActive ? run.progress?.message ?? 'The run is queued or executing. This page refreshes the status automatically.' : status === 'failed' ? 'Execution failed before a valid verdict was available. Review the saved error and evidence.' : 'Review the proposed actions and approve the plan before running Chromium.'}</span></div>
+    {run.progress && executionActive && <p className="muted" role="status">Attempt {run.progress.currentAttempt ?? '—'} · {run.progress.completedAttempts}/2 attempts completed · {run.progress.completedActions}/{run.progress.totalActions} actions completed</p>}
     {plan.preconditions.length > 0 && <><h3>Preconditions</h3><ul>{plan.preconditions.map(item => <li key={item}>{item}</li>)}</ul></>}
     {plan.clarifications.length > 0 && <div className="clarification-box" role="status"><b>Report details to clarify:</b><ul>{plan.clarifications.map(item => <li key={item}>{item}</li>)}</ul></div>}
     <ol className="plan-steps">{plan.steps.map(step => <li key={step.stepOrder}>
@@ -110,12 +115,24 @@ export default function PlanApproval({ run, onUpdated }: { run: RunRecord; onUpd
     {run.approval && <p className="muted">Decision {run.approval.decision} by {run.approval.approver} at {new Date(run.approval.decidedAt).toLocaleString()}.</p>}
     {status === 'approved' && !run.execution && <div className="approval-actions">
       {error && <p className="error-banner" role="alert">{error}</p>}
-      <button type="button" className="primary-button" disabled={executing} onClick={() => void execute()}><Play size={14} /> {executing ? 'Running browser…' : 'Run approved plan'}</button>
+      <button type="button" className="primary-button" disabled={executing || queuePending} onClick={() => void execute()}><Play size={14} /> {queuePending ? 'Queued for browser…' : executing ? 'Queueing…' : 'Run approved plan'}</button>
     </div>}
     {run.execution && <div className="execution-evidence">
       <h3>Execution evidence</h3>
       <p className="muted">{new Date(run.execution.startedAt).toLocaleString()} – {new Date(run.execution.completedAt).toLocaleString()} · {run.execution.telemetry.length} telemetry events</p>
       {run.execution.error && <p className="error-banner" role="status">{run.execution.error}</p>}
+      {run.execution.telemetry.length > 0 && <details className="recent-events"><summary>Recent sanitized events ({run.execution.telemetry.length})</summary><ul>{run.execution.telemetry.slice(-5).reverse().map((event, index) => <li key={`${event.timestamp}-${index}`}><time>{new Date(event.timestamp).toLocaleTimeString()}</time> <b>{event.type.replaceAll('_', ' ')}</b>{event.message && ` · ${event.message}`}{event.failure && ` · ${event.failure}`}{event.status && ` · HTTP ${event.status}`}</li>)}</ul></details>}
+      {run.execution.attempts.map(attempt => <article className="verification-attempt" key={attempt.attemptNumber}>
+        <b>Attempt {attempt.attemptNumber}</b>
+        <span>{attempt.completed ? 'Completed' : 'Incomplete'} · {attempt.expectedFailureFound ? 'expected failure detected' : 'expected failure absent'}</span>
+        {attempt.fingerprint && <details>
+          <summary>Failure fingerprint · {attempt.fingerprint.failureType}</summary>
+          <code>{attempt.fingerprint.hash}</code>
+          <p>{attempt.fingerprint.route} · {attempt.fingerprint.message}</p>
+          {attempt.fingerprint.request && <small>{attempt.fingerprint.request.method} {attempt.fingerprint.request.path} · {attempt.fingerprint.request.status ?? 'no HTTP status'}</small>}
+        </details>}
+        {attempt.error && <small>{attempt.error}</small>}
+      </article>)}
       <ul className="evidence-files">{run.execution.evidenceRecords.map(record => {
         const href = `${baseUrl}/api/runs/${encodeURIComponent(run.id)}/evidence/${encodeURIComponent(record.id)}`
         return <li key={record.id}>

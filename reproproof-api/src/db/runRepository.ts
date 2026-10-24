@@ -1,7 +1,16 @@
 import { supabase } from './client'
-import { ExecutionEvidenceSchema, RunWithPlanSchema, type RunWithPlan } from '../schemas/run'
+import { ExecutionEvidenceSchema, RunProgressSchema, RunWithPlanSchema, type RunWithPlan } from '../schemas/run'
+import { sanitizeError } from '../browser/telemetry'
 
 export type ApprovalDecision = NonNullable<RunWithPlan['approval']>
+
+type EvidenceRecord = NonNullable<RunWithPlan['execution']>['evidenceRecords'][number]
+
+export function mergeEvidenceRecords(indexed: EvidenceRecord[], snapshot: EvidenceRecord[]): EvidenceRecord[] {
+  const records = new Map(indexed.map(record => [record.id, record]))
+  for (const record of snapshot) if (!records.has(record.id)) records.set(record.id, record)
+  return [...records.values()].sort((a, b) => a.createdAt.localeCompare(b.createdAt))
+}
 
 const memoryRuns = new Map<string, RunWithPlan>()
 
@@ -12,14 +21,23 @@ export const runRepository = {
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
       )
     }
-    const { data, error } = await supabase.from('test_runs').select('run, plan').order('created_at', { ascending: false })
+    const { data, error } = await supabase.from('runs').select('run, plan').order('created_at', { ascending: false })
     if (error) throw error
     return (data ?? []).map(row => RunWithPlanSchema.parse({ ...row.run, plan: row.plan }))
   },
 
   async get(id: string): Promise<RunWithPlan | undefined> {
     if (!supabase) return memoryRuns.get(id)
-    const { data, error } = await supabase.from('test_runs').select('run, plan').eq('id', id).maybeSingle()
+    const { data, error } = await supabase.from('runs').select('run, plan').eq('id', id).maybeSingle()
+    if (error) throw error
+    return data ? RunWithPlanSchema.parse({ ...data.run, plan: data.plan }) : undefined
+  },
+
+  async findActiveForBug(bugReportId: string): Promise<RunWithPlan | undefined> {
+    if (!supabase) return [...memoryRuns.values()].find(run => run.bugReportId === bugReportId
+      && ['awaiting_approval', 'approved', 'running', 'verifying'].includes(run.status))
+    const { data, error } = await supabase.from('runs').select('run, plan').eq('bug_report_id', bugReportId)
+      .in('status', ['awaiting_approval', 'approved', 'running', 'verifying']).order('created_at', { ascending: false }).limit(1).maybeSingle()
     if (error) throw error
     return data ? RunWithPlanSchema.parse({ ...data.run, plan: data.plan }) : undefined
   },
@@ -31,7 +49,7 @@ export const runRepository = {
       return validated
     }
     const { plan, ...record } = validated
-    const { error } = await supabase.from('test_runs').insert({
+    const { error } = await supabase.from('runs').insert({
       id: validated.id,
       bug_report_id: validated.bugReportId,
       run: record,
@@ -40,6 +58,7 @@ export const runRepository = {
       plan_hash: validated.planHash,
       approval_expires_at: validated.approvalExpiresAt,
       approval: validated.approval,
+      updated_at: validated.updatedAt,
     })
     if (error) throw error
     return validated
@@ -60,10 +79,11 @@ export const runRepository = {
     }
 
     const { plan, ...record } = updated
-    const { data, error } = await supabase.from('test_runs').update({
+    const { data, error } = await supabase.from('runs').update({
       run: record,
       status: nextStatus,
       approval: decision,
+      updated_at: now,
     }).eq('id', id).eq('status', 'awaiting_approval').eq('plan_hash', expectedPlanHash)
       .gt('approval_expires_at', now).select('run, plan').maybeSingle()
     if (error) throw error
@@ -83,7 +103,7 @@ export const runRepository = {
       return updated
     }
     const { plan, ...record } = updated
-    const { data, error } = await supabase.from('test_runs').update({ run: record, status: 'expired' })
+    const { data, error } = await supabase.from('runs').update({ run: record, status: 'expired', updated_at: now })
       .eq('id', id).eq('status', 'awaiting_approval').eq('plan_hash', expectedPlanHash)
       .lte('approval_expires_at', now).select('run, plan').maybeSingle()
     if (error) throw error
@@ -101,9 +121,27 @@ export const runRepository = {
       return updated
     }
     const { plan, ...record } = updated
-    const { data, error } = await supabase.from('test_runs').update({ run: record, status: 'running' })
+    const { data, error } = await supabase.from('runs').update({ run: record, status: 'running', updated_at: now })
       .eq('id', id).eq('status', 'approved').eq('plan_hash', expectedPlanHash)
       .select('run, plan').maybeSingle()
+    if (error) throw error
+    return data ? RunWithPlanSchema.parse({ ...data.run, plan: data.plan }) : undefined
+  },
+
+  async updateProgress(id: string, expectedPlanHash: string, progress: NonNullable<RunWithPlan['progress']>): Promise<RunWithPlan | undefined> {
+    const validatedProgress = RunProgressSchema.parse(progress)
+    const current = await this.get(id)
+    if (!current || current.status !== 'running' || current.planHash !== expectedPlanHash) return undefined
+    const updated = RunWithPlanSchema.parse({ ...current, progress: validatedProgress, updatedAt: validatedProgress.updatedAt })
+    if (!supabase) {
+      const stillCurrent = memoryRuns.get(id)
+      if (!stillCurrent || stillCurrent.status !== 'running' || stillCurrent.planHash !== expectedPlanHash) return undefined
+      memoryRuns.set(id, updated)
+      return updated
+    }
+    const { plan, ...record } = updated
+    const { data, error } = await supabase.from('runs').update({ run: record, updated_at: validatedProgress.updatedAt })
+      .eq('id', id).eq('status', 'running').eq('plan_hash', expectedPlanHash).select('run, plan').maybeSingle()
     if (error) throw error
     return data ? RunWithPlanSchema.parse({ ...data.run, plan: data.plan }) : undefined
   },
@@ -120,17 +158,44 @@ export const runRepository = {
       return updated
     }
     const { plan, ...record } = updated
-    const { data, error } = await supabase.from('test_runs').update({ run: record, status: 'verifying' })
+    const { data, error } = await supabase.from('runs').update({ run: record, status: 'verifying', updated_at: now })
       .eq('id', id).eq('status', 'running').eq('plan_hash', expectedPlanHash)
       .select('run, plan').maybeSingle()
     if (error) throw error
-    return data ? RunWithPlanSchema.parse({ ...data.run, plan: data.plan }) : undefined
+    if (!data) return undefined
+    let saved = RunWithPlanSchema.parse({ ...data.run, plan: data.plan })
+    try {
+      await persistExecutionRows(saved)
+    } catch (cause) {
+      // The execution snapshot is already durably stored in runs.run. Keep its
+      // truthful verdict and evidence references even if the queryable evidence
+      // index is unavailable; listEvidenceRecords falls back to that snapshot.
+      const detail = sanitizeError(cause)
+      const warning = `Evidence metadata index could not be updated: ${detail}`.replace(/[\r\n\t]+/g, ' ').slice(0, 1500)
+      const previous = saved.execution?.error
+      const execution = saved.execution ? { ...saved.execution, error: previous ? `${previous}; ${warning}` : warning } : null
+      const { plan: savedPlan, ...recordWithWarning } = { ...saved, execution }
+      const { data: warningData, error: warningError } = await supabase.from('runs')
+        .update({ run: recordWithWarning })
+        .eq('id', id).eq('status', 'verifying').eq('plan_hash', expectedPlanHash)
+        .select('run, plan').maybeSingle()
+      if (warningError) console.error(`Could not persist evidence index warning for run ${id}: ${sanitizeError(warningError)}`)
+      if (warningData) saved = RunWithPlanSchema.parse({ ...warningData.run, plan: warningData.plan ?? savedPlan })
+      console.error(`Evidence metadata index update failed for run ${id}: ${warning}`)
+    }
+    return saved
   },
 
   async transition(id: string, expectedStatus: RunWithPlan['status'], nextStatus: RunWithPlan['status'], expectedPlanHash: string, now: string): Promise<RunWithPlan | undefined> {
     const current = await this.get(id)
     if (!current) return undefined
-    const updated = RunWithPlanSchema.parse({ ...current, status: nextStatus, updatedAt: now })
+    const terminal = ['reproduced', 'not_reproduced', 'inconclusive', 'failed'].includes(nextStatus)
+    const updated = RunWithPlanSchema.parse({ ...current, status: nextStatus, updatedAt: now,
+      ...(terminal ? { progress: { phase: 'completed', currentAttempt: null, completedAttempts: current.execution?.attempts.length ?? 0,
+        completedActions: current.progress?.completedActions ?? 0,
+        totalActions: current.progress?.totalActions ?? current.plan.steps.length,
+        message: nextStatus === 'failed' ? 'Execution failed; inspect the error and evidence' : 'Verification complete', updatedAt: now } } : {}),
+    })
     if (!supabase) {
       const stillCurrent = memoryRuns.get(id)
       if (!stillCurrent || stillCurrent.status !== expectedStatus || stillCurrent.planHash !== expectedPlanHash) return undefined
@@ -138,10 +203,82 @@ export const runRepository = {
       return updated
     }
     const { plan, ...record } = updated
-    const { data, error } = await supabase.from('test_runs').update({ run: record, status: nextStatus })
+    const { data, error } = await supabase.from('runs').update({ run: record, status: nextStatus, updated_at: now })
       .eq('id', id).eq('status', expectedStatus).eq('plan_hash', expectedPlanHash)
       .select('run, plan').maybeSingle()
     if (error) throw error
     return data ? RunWithPlanSchema.parse({ ...data.run, plan: data.plan }) : undefined
   },
+}
+
+export async function listRunsInStatus(status: RunWithPlan['status']): Promise<RunWithPlan[]> {
+  if (!supabase) return [...memoryRuns.values()].filter(run => run.status === status)
+  const { data, error } = await supabase.from('runs').select('run, plan').eq('status', status)
+  if (error) throw error
+  return (data ?? []).map(row => RunWithPlanSchema.parse({ ...row.run, plan: row.plan }))
+}
+
+async function persistExecutionRows(run: RunWithPlan): Promise<void> {
+  if (!supabase || !run.execution) return
+  for (const attempt of run.execution.attempts) {
+    const attemptId = `${run.id}:${attempt.attemptNumber}`
+    const { error: attemptError } = await supabase.from('attempts').upsert({
+      id: attemptId,
+      run_id: run.id,
+      attempt_number: attempt.attemptNumber,
+      status: attempt.completed ? 'completed' : attempt.error ? 'failed' : 'inconclusive',
+      result: attempt,
+      fingerprint: attempt.fingerprint,
+      fingerprint_hash: attempt.fingerprint?.hash ?? null,
+      started_at: attempt.startedAt,
+      completed_at: attempt.completedAt,
+    }, { onConflict: 'run_id,attempt_number' })
+    if (attemptError) throw attemptError
+  }
+  const records = run.execution.evidenceRecords
+  if (records.length) {
+    const attemptIds = new Map(run.execution.attempts.map(attempt => [attempt.attemptNumber, `${run.id}:${attempt.attemptNumber}`]))
+    const rows = records.map(record => ({
+      id: record.id,
+      run_id: run.id,
+      attempt_id: attemptIds.get(record.attemptNumber) ?? null,
+      attempt_number: record.attemptNumber,
+      type: record.type,
+      storage_key: record.storageKey,
+      sanitized: record.sanitized,
+      metadata: {},
+      created_at: record.createdAt,
+    }))
+    const { error: evidenceError } = await supabase.from('evidence_files').upsert(rows, { onConflict: 'id' })
+    if (evidenceError) throw evidenceError
+  }
+}
+
+export async function listEvidenceRecords(runId: string): Promise<Array<{
+  id: string; runId: string; attemptNumber: number; type: 'video' | 'screenshot' | 'console' | 'network' | 'report';
+  storageKey: string; createdAt: string; sanitized: boolean;
+}>> {
+  const fromRunSnapshot = async (): Promise<EvidenceRecord[]> => {
+    const run = await runRepository.get(runId)
+    return run?.execution?.evidenceRecords ?? []
+  }
+  if (!supabase) {
+    return fromRunSnapshot()
+  }
+  let data: Array<{ id: string; run_id: string; attempt_number: number; type: EvidenceRecord['type']; storage_key: string; created_at: string; sanitized: boolean }> | null = null
+  try {
+    const result = await supabase.from('evidence_files')
+      .select('id, run_id, attempt_number, type, storage_key, created_at, sanitized')
+      .eq('run_id', runId).order('created_at', { ascending: true })
+    if (result.error) throw result.error
+    data = result.data
+  } catch (cause) {
+    console.error(`Evidence index lookup failed for run ${runId}; using its persisted run snapshot: ${sanitizeError(cause)}`)
+    return fromRunSnapshot()
+  }
+  const indexed = (data ?? []).map(row => ({ id: row.id, runId: row.run_id, attemptNumber: row.attempt_number,
+    type: row.type, storageKey: row.storage_key, createdAt: row.created_at, sanitized: row.sanitized }))
+  // Older runs and failed/partial metadata-index writes may only have some
+  // records embedded in the run JSON. Merge both sources by evidence ID.
+  return mergeEvidenceRecords(indexed, await fromRunSnapshot())
 }

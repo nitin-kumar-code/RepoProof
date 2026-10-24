@@ -14,6 +14,7 @@ import QATestCases from './pages/QATestCases'
 import SettingsPage from './pages/Settings'
 import { checkHealth } from './api/client'
 import './App.css'
+import './archival-theme.css'
 
 function AppShell() {
   const location = useLocation()

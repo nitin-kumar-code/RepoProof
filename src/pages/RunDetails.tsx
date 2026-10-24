@@ -13,7 +13,6 @@ export default function RunDetails() {
 
   useEffect(() => {
     const controller = new AbortController()
-    setState({ id, run: null, error: '' })
     void getRun(id, controller.signal).then(result => {
       if (!controller.signal.aborted) setState({ id, run: result, error: '' })
     }).catch(cause => {
