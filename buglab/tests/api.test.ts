@@ -205,7 +205,8 @@ describe('BugLab HTTP API', () => {
     }
     const typeSecret = await post('/api/test-logs', { type: 'Bearer test_secret_12345', message: 'harmless event' })
     assert.equal(typeSecret.status, 201)
-    assert.equal(redactText(variants[0]), 'Authorization: [REDACTED]')
+    assert.equal(redactText(variants[0]), 'Authorization:[REDACTED]')
+    assert.equal(redactText('?session_id=abc12345&user=1'), '?session_id=[REDACTED]&user=1')
     const logs = await (await fetch(`${baseUrl}/api/test-logs`)).text()
     const download = await (await fetch(`${baseUrl}/api/test-logs/export`)).text()
     assert.ok(logs.includes('[REDACTED_SYNTHETIC_TOKEN]'))

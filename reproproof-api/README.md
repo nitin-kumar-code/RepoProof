@@ -88,19 +88,22 @@ the disposable fixture to its original state. It receives a JSON body
 containing `runId` and `bugReportId`; keep any reset credential in the
 server-side `VERIFICATION_RESET_TOKEN` setting, never in the URL.
 
-Screenshots, the finalized WebM recording, separate console and network logs,
-and a run report are written under `RUN_ARTIFACTS_DIR` (default
-`artifacts/runs`). With Compose, the run data is mounted at
-`./reproproof-api/artifacts` on the host. Every file has a sanitized evidence
-record and can be retrieved at `GET /api/runs/:id/evidence/:evidenceId`. In
-production, create `EVIDENCE_STORAGE_BUCKET` as a **private** Supabase Storage
-bucket; downloads use signed URLs that expire after 60 seconds. Development
-stores evidence locally. Request headers and bodies are not captured. Screenshots
-and recordings can contain visible test data, so use synthetic accounts and
-values in the browser. Screenshot captures mask password fields, fields marked
-`data-sensitive="true"`, and credit-card autocomplete fields. Video recordings
-are not visually redacted; their evidence records explicitly mark them as not
-sanitized.
+Screenshots, separate console and network logs, and a run report are written
+under `RUN_ARTIFACTS_DIR` (default `artifacts/runs`). With Compose, the run data
+is mounted at `./reproproof-api/artifacts` on the host. Sanitized evidence can be
+retrieved at `GET /api/runs/:id/evidence/:evidenceId`. In production, create
+`EVIDENCE_STORAGE_BUCKET` as a **private** Supabase Storage bucket; downloads
+use signed URLs that expire after 60 seconds. Development stores evidence
+locally. Request headers and bodies are not captured. Screenshot captures mask
+password fields, fields marked `data-sensitive="true"`, and credit-card
+autocomplete fields.
+
+Video is recorded only for the approved synthetic TC1 BugLab scenario. Because
+video frames are not visually redacted, these files are marked unsanitized,
+remain local and restricted, are skipped by Supabase Storage uploads, and are
+rejected by the evidence download route. The Evidence Passport identifies them
+as restricted. TC2–TC4 do not record video; TC4 remains video-free to protect the
+synthetic token fixture.
 
 The plan schema accepts only typed browser actions. It rejects extra fields and
 has no JavaScript, shell, or arbitrary-script action. Destructive actions such

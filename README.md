@@ -41,7 +41,7 @@ npm run dev:api
 # Terminal 2: BUGLAB_WEB_HOST=0.0.0.0 npm run dev:web
 ```
 
-In another terminal, from the repository root, start the ReproProof stack with `docker compose up --build`, open `http://localhost:8080`, select TC1–TC4 on **New Bug Report**, review the proposed plan, approve it, and run it. TC3 first attempts an unapproved API delete and then requires BugLab's exact record-set approval for the disposable fixture. TC1 and TC3 reset before both attempts. The runner records sanitized screenshots and request/response metadata; video recording is disabled because Playwright does not provide frame-level redaction.
+In another terminal, from the repository root, start the ReproProof stack with `docker compose up --build`, open `http://localhost:8080`, select TC1–TC4 on **New Bug Report**, review the proposed plan, approve it, and run it. TC3 first attempts an unapproved API delete and then requires BugLab's exact record-set approval for the disposable fixture. TC1 and TC3 reset before both attempts. The runner records masked screenshots and sanitized request/response metadata. It records video only for the approved synthetic TC1 BugLab scenario; those recordings are marked unsanitized, remain local and restricted, are not uploaded to Supabase Storage, and cannot be downloaded or shared until a frame-review pipeline exists. Other scenarios, including TC4, do not record video.
 
 ### Docker Compose
 
@@ -91,7 +91,7 @@ npm run build
 
 The QA scenario page reads live report/run state and links each scenario to the report form. Queued browser execution still requires the configured Supabase schema and credentials; the API intentionally refuses to execute an untracked run.
 
-The full local integration test starts BugLab, the ReproProof frontend/API, and the Playwright worker, then submits, approves, executes, and checks all four scenarios. It uses the Supabase credentials and server approval pair already present in the untracked root `.env`; no values are printed by the test:
+The full local integration test starts BugLab, the ReproProof frontend/API, and the Playwright worker, then submits, approves, executes, and checks all four scenarios. Point the root `.env` only at a dedicated isolated **TEST Supabase project**; the test creates and removes report/run rows and must never use production or customer data. Configure `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `APPROVAL_USERNAME`, and `APPROVAL_PASSWORD` there. Apply `reproproof-api/supabase/schema.sql` and the queue migrations, including `202610210001_fix_claim_run_job_plan_hash_ambiguity.sql`, before running. If the required credentials are missing, the integration test is skipped and does not count as a pass. No values are printed by the test:
 
 ```bash
 cd reproproof-api

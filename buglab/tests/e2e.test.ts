@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict'
 import { after, before, test } from 'node:test'
-import { mkdir, readFile, rm, writeFile } from 'node:fs/promises'
+import { mkdir, readFile, rm, stat, writeFile } from 'node:fs/promises'
 import { randomUUID } from 'node:crypto'
 import path from 'node:path'
 import { tmpdir } from 'node:os'
+import { fileURLToPath } from 'node:url'
 import { createServer, type Server } from 'node:http'
-import { createServer as createTcpServer } from 'node:net'
 import { chromium, type Browser, type Page } from '@playwright/test'
 import { createServer as createViteServer, type ViteDevServer } from 'vite'
 import { createBugLabApp } from '../server/routes.js'
@@ -17,20 +17,6 @@ let vite: ViteDevServer
 let browser: Browser
 let baseUrl: string
 const evidenceRoot = path.join(tmpdir(), 'buglab-evidence', `acceptance-${new Date().toISOString().replace(/[:.]/g, '-')}`)
-
-async function freePort(): Promise<number> {
-  const server = createTcpServer()
-  server.listen(0, '127.0.0.1')
-  await new Promise<void>((resolve, reject) => {
-    server.once('listening', resolve)
-    server.once('error', reject)
-  })
-  const address = server.address()
-  assert.ok(address && typeof address !== 'string')
-  const port = address.port
-  await new Promise<void>((resolve, reject) => server.close(error => error ? reject(error) : resolve()))
-  return port
-}
 
 async function prepareEvidence(caseName: string): Promise<string> {
   const directory = path.join(evidenceRoot, caseName)
@@ -56,20 +42,37 @@ async function saveScreenshot(page: Page, file: string): Promise<void> {
 }
 
 before(async () => {
-  const apiPort = await freePort()
-  process.env.VITE_BUGLAB_API_PROXY = `http://127.0.0.1:${apiPort}`
-  vite = await createViteServer({ configFile: new URL('../vite.config.ts', import.meta.url).pathname, server: { host: '127.0.0.1', port: 0, strictPort: false } })
+  const apiApp: { current?: ReturnType<typeof createBugLabApp> } = {}
+  apiServer = createServer((request, response) => {
+    if (!apiApp.current) {
+      response.statusCode = 503
+      response.end('BugLab API is starting')
+      return
+    }
+    apiApp.current(request, response)
+  })
+  await new Promise<void>((resolve, reject) => {
+    apiServer.once('error', reject)
+    apiServer.listen(0, '127.0.0.1', resolve)
+  })
+  const apiAddress = apiServer.address()
+  assert.ok(apiAddress && typeof apiAddress !== 'string')
+  vite = await createViteServer({
+    configFile: fileURLToPath(new URL('../vite.config.ts', import.meta.url)),
+    server: {
+      host: '127.0.0.1',
+      port: 0,
+      strictPort: false,
+      proxy: { '/api': `http://127.0.0.1:${apiAddress.port}` },
+    },
+  })
   await vite.listen()
   const httpServer = vite.httpServer
   assert.ok(httpServer)
   const address = httpServer.address()
   assert.ok(address && typeof address !== 'string')
   baseUrl = `http://127.0.0.1:${address.port}`
-  apiServer = createServer(createBugLabApp(undefined, Date.now, { allowedUiOrigins: [baseUrl] }))
-  await new Promise<void>((resolve, reject) => {
-    apiServer.once('error', reject)
-    apiServer.listen(apiPort, '127.0.0.1', resolve)
-  })
+  apiApp.current = createBugLabApp(undefined, Date.now, { allowedUiOrigins: [baseUrl] })
   browser = await chromium.launch({ headless: true })
 })
 
@@ -113,6 +116,7 @@ test('TC1 repeats the same cart defect in two fresh browser contexts', async () 
     const video = page.video()
     await context.close()
     const videoPath = await video?.path()
+    assert.ok(videoPath && (await stat(videoPath)).size > 0, 'TC1 must save private recording evidence for the synthetic reproduction')
     attempts.push({ attempt: attempt + 1, resetBeforeAttempt: true, cleanBrowserContext: true, quantity: 2, subtotalCents: cart.subtotalCents, expectedSubtotalCents: cart.expectedSubtotalCents, fingerprint: cart.fingerprint, consoleErrors: consoleObservationsFor(events), events, screenshot, video: videoPath ?? null })
   }
   const first = attempts[0] as { fingerprint: string; subtotalCents: number; expectedSubtotalCents: number; consoleErrors: string[] }
@@ -123,7 +127,7 @@ test('TC1 repeats the same cart defect in two fresh browser contexts', async () 
   assert.equal(second.expectedSubtotalCents, 12800)
   assert.equal(first.fingerprint, second.fingerprint)
   assert.deepEqual(first.consoleErrors, second.consoleErrors)
-  await writeFile(path.join(evidenceDir, 'verification-report.json'), JSON.stringify({ scenario: 'TC1', verdict: 'reproduced', fingerprintComparableFields: ['quantity', 'subtotalCents', 'expectedSubtotalCents', 'fingerprint'], ignoredVolatileFields: ['timestamps', 'random IDs'], attempts }, null, 2))
+  await writeFile(path.join(evidenceDir, 'verification-report.json'), JSON.stringify({ scenario: 'TC1', verdict: 'reproduced', videoPolicy: 'TC1 synthetic-only; local and restricted; unsanitized; not shareable', fingerprintComparableFields: ['quantity', 'subtotalCents', 'expectedSubtotalCents', 'fingerprint'], ignoredVolatileFields: ['timestamps', 'random IDs'], attempts }, null, 2))
 })
 
 function consoleObservationsFor(events: Array<Record<string, unknown>>): string[] {
@@ -132,10 +136,8 @@ function consoleObservationsFor(events: Array<Record<string, unknown>>): string[
 
 test('TC2 completes a clean single-item scenario without the reported failure', async () => {
   const evidenceDir = await prepareEvidence('TC2')
-  const videoDir = path.join(evidenceDir, 'video')
-  await mkdir(videoDir, { recursive: true })
   await reset()
-  const context = await browser.newContext({ recordVideo: { dir: videoDir, size: { width: 1280, height: 720 } } })
+  const context = await browser.newContext()
   const page = await context.newPage()
   const events = observePage(page)
   await page.goto(baseUrl)
@@ -151,10 +153,8 @@ test('TC2 completes a clean single-item scenario without the reported failure', 
   assert.equal(verdict, 'not_reproduced')
   const screenshot = path.join(evidenceDir, 'single-item-cart.png')
   await saveScreenshot(page, screenshot)
-  const video = page.video()
   await context.close()
-  const videoPath = await video?.path()
-  await writeFile(path.join(evidenceDir, 'verification-report.json'), JSON.stringify({ scenario: 'TC2', verdict, claim: 'The reported zero-subtotal behavior was absent in this completed attempt; this does not claim the bug was fixed.', observed: { quantity: cart.quantity, subtotalCents: cart.subtotalCents, expectedSubtotalCents: cart.expectedSubtotalCents, reportedFailureObserved }, events, screenshot, video: videoPath ?? null }, null, 2))
+  await writeFile(path.join(evidenceDir, 'verification-report.json'), JSON.stringify({ scenario: 'TC2', verdict, claim: 'The reported zero-subtotal behavior was absent in this completed attempt; this does not claim the bug was fixed.', observed: { quantity: cart.quantity, subtotalCents: cart.subtotalCents, expectedSubtotalCents: cart.expectedSubtotalCents, reportedFailureObserved }, events, screenshot, video: null }, null, 2))
 })
 
 test('TC3 requires scoped approval in the UI and only deletes the approved synthetic fixture', async () => {
@@ -209,9 +209,7 @@ test('TC3 requires scoped approval in the UI and only deletes the approved synth
 
 test('TC4 keeps the token inspectable in the DOM but redacts persisted text evidence', async () => {
   const evidenceDir = await prepareEvidence('TC4')
-  const videoDir = path.join(evidenceDir, 'video')
-  await mkdir(videoDir, { recursive: true })
-  const context = await browser.newContext({ recordVideo: { dir: videoDir, size: { width: 1280, height: 720 } } })
+  const context = await browser.newContext()
   const page = await context.newPage()
   const events = observePage(page)
   await page.goto(`${baseUrl}/scenarios/TC4`)
@@ -232,14 +230,31 @@ test('TC4 keeps the token inspectable in the DOM but redacts persisted text evid
   assert.ok(!logs.includes('TEST_TOKEN_DO_NOT_USE_1234567890'))
   const screenshot = path.join(evidenceDir, 'token-panel.png')
   await saveScreenshot(page, screenshot)
+  const savedScreenshot = await readFile(screenshot)
+  const pixelPage = await context.newPage()
+  await pixelPage.setContent(`<img id="evidence" src="data:image/png;base64,${savedScreenshot.toString('base64')}" />`)
+  await pixelPage.locator('#evidence').evaluate((element: HTMLImageElement) => element.decode())
+  const opaqueMaskPixels = await pixelPage.locator('#evidence').evaluate((element: HTMLImageElement) => {
+    const canvas = document.createElement('canvas')
+    canvas.width = element.naturalWidth
+    canvas.height = element.naturalHeight
+    const context = canvas.getContext('2d')!
+    context.drawImage(element, 0, 0)
+    const pixels = context.getImageData(0, 0, canvas.width, canvas.height).data
+    let count = 0
+    for (let index = 0; index < pixels.length; index += 4) {
+      if (pixels[index] === 23 && pixels[index + 1] === 61 && pixels[index + 2] === 51) count += 1
+    }
+    return count
+  })
+  assert.ok(opaqueMaskPixels > 100, 'saved TC4 screenshot must contain the opaque Playwright mask pixels')
+  await pixelPage.close()
   const visualMaskScreenshot = path.join(evidenceDir, 'token-panel-css-mask.png')
   await page.screenshot({ path: visualMaskScreenshot, fullPage: true })
   await writeFile(path.join(evidenceDir, 'buglab-sanitized-logs.json'), logs)
-  const video = page.video()
   await context.close()
-  const videoPath = await video?.path()
   const reportPath = path.join(evidenceDir, 'verification-report.json')
-  await writeFile(reportPath, JSON.stringify({ scenario: 'TC4', result: 'pass', rawSyntheticTokenInLogsExportsAndReport: false, mediaSharing: { nativeMaskedScreenshot: 'opaque Playwright locator mask; visually inspected', cssOnlyScreenshot: 'mask glyphs visible; restricted', video: 'restricted-unverified', reason: 'No video evidence route exists; keep the recording local until every frame is independently reviewed.' }, tokenResponseBody: JSON.parse(tokenResponseText), logsExported: true, events, screenshot, visualMaskScreenshot, video: videoPath ?? null, evidenceFiles: [screenshot, visualMaskScreenshot, videoPath, path.join(evidenceDir, 'buglab-sanitized-logs.json')] }, null, 2))
+  await writeFile(reportPath, JSON.stringify({ scenario: 'TC4', result: 'pass', rawSyntheticTokenInLogsExportsAndReport: false, mediaSharing: { nativeMaskedScreenshot: 'opaque Playwright locator mask; saved PNG pixels checked', cssOnlyScreenshot: 'restricted; saved image visually inspected', video: 'disabled' }, tokenResponseBody: JSON.parse(tokenResponseText), logsExported: true, events, screenshot, visualMaskScreenshot, video: null, evidenceFiles: [screenshot, visualMaskScreenshot, path.join(evidenceDir, 'buglab-sanitized-logs.json')] }, null, 2))
   const persistedText = [await readFile(path.join(evidenceDir, 'buglab-sanitized-logs.json')), await readFile(reportPath)]
   for (const file of persistedText) assert.equal(file.includes(Buffer.from('TEST_TOKEN_DO_NOT_USE_1234567890')), false)
 })

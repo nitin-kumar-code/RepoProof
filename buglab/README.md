@@ -138,7 +138,7 @@ Create a run with `POST /api/runs` and the returned bug report ID, review and ap
 
 TC2's reproduction uses one add, then **Open cart** and a screenshot. Its reported actual behavior should be `The subtotal resets to zero after adding one item.` The clean UI does not display that phrase, so a fully completed run should return `not_reproduced`.
 
-TC3's destructive actions remain constrained to the configured BugLab origin and `/sandbox` route, with a second approval at BugLab bound to exact action, record IDs, state version, and plan hash. TC4 uses only its synthetic fixture. ReproProof masks the `[data-sensitive="true"]` element in screenshots and sanitizes text evidence; video recording is disabled because reliable frame-level redaction is unavailable.
+TC3's destructive actions remain constrained to the configured BugLab origin and `/sandbox` route, with a second approval at BugLab bound to exact action, record IDs, state version, and plan hash. TC4 uses only its synthetic fixture. ReproProof masks the `[data-sensitive="true"]` element in screenshots and sanitizes text evidence. The approved synthetic TC1 scenario may record video, but those recordings stay local and restricted because reliable frame-level redaction is unavailable; TC2–TC4 remain video-free.
 
 ## Safety boundaries and limits
 

@@ -13,6 +13,7 @@ import { z } from 'zod'
 import { redactValue } from './redactor'
 import { persistEvidenceFiles } from './evidenceStorage'
 import { createFailureFingerprint } from '../browser/fingerprint'
+import { bugRepository } from '../db/repository'
 
 type AttemptEvidence = z.infer<typeof VerificationAttemptSchema>
 type EvidenceReference = z.infer<typeof EvidenceReferenceSchema>
@@ -167,6 +168,22 @@ function approvedTarget(run: RunWithPlan): URL {
   return new URL(value)
 }
 
+async function shouldRecordRestrictedTc1Video(run: RunWithPlan): Promise<boolean> {
+  if (!env.BUGLAB_BASE_URL) return false
+  const report = await bugRepository.get(run.bugReportId).catch(() => undefined)
+  if (report?.environment.demoScenario !== 'TC1') return false
+  try {
+    const configuredTarget = new URL(env.BUGLAB_BASE_URL)
+    const reportTarget = new URL(report.environment.targetUrl)
+    const planTarget = approvedTarget(run)
+    return reportTarget.origin === configuredTarget.origin && reportTarget.pathname === '/'
+      && planTarget.origin === configuredTarget.origin && planTarget.pathname === '/'
+      && !reportTarget.search && !reportTarget.hash && !planTarget.search && !planTarget.hash
+  } catch {
+    return false
+  }
+}
+
 export async function executeApprovedPlan(
   run: RunWithPlan,
   attemptNumber = 1,
@@ -200,9 +217,9 @@ export async function executeApprovedPlan(
     }
     const target = await validateTargetUrl(approvedTarget(run).href)
     await mkdir(runDirectory, { recursive: true, mode: 0o700 })
-    // Screenshots can use Playwright masks. Video frames cannot be reliably
-    // redacted, so don't persist recordings until a frame-safe pipeline exists.
-    browserRun = await createBrowserRun(runDirectory, { recordVideo: false })
+    // Only the controlled TC1 fixture gets a recording. It stays unsanitized,
+    // local-only, and inaccessible through the evidence download route.
+    browserRun = await createBrowserRun(runDirectory, { recordVideo: await shouldRecordRestrictedTc1Video(run) })
     const timedExecution = async () => {
       await screenshot(browserRun!.page, runDirectory, files, null, 'initial')
       if (run.plan.clarifications.length || run.plan.steps.some(step => step.action === null || step.clarification !== null)) {

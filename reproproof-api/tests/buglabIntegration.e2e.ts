@@ -229,7 +229,12 @@ test('ReproProof completes BugLab TC1–TC4 through report, plan, approval, brow
       assert.ok(finalRun.execution.attempts.every((attempt: Record<string, any>) => attempt.evidenceRecords.some((file: Record<string, any>) => file.type === 'screenshot')))
       assert.ok(finalRun.execution.attempts.every((attempt: Record<string, any>) => attempt.evidenceRecords.some((file: Record<string, any>) => file.type === 'network')))
       assert.ok(finalRun.execution.attempts.every((attempt: Record<string, any>) => attempt.telemetry.some((event: Record<string, any>) => event.type === 'request')))
-      assert.ok(finalRun.execution.attempts.every((attempt: Record<string, any>) => !attempt.evidenceRecords.some((file: Record<string, any>) => file.type === 'video')))
+      const attemptVideos = finalRun.execution.attempts.map((attempt: Record<string, any>) => attempt.evidenceRecords.filter((file: Record<string, any>) => file.type === 'video'))
+      if (scenario.id === 'TC1') {
+        assert.ok(attemptVideos.every((files: Array<Record<string, any>>) => files.length === 1 && files[0].sanitized === false), 'TC1 recording must be present and marked unsanitized in both attempts')
+      } else {
+        assert.ok(attemptVideos.every((files: Array<Record<string, any>>) => files.length === 0), `${scenario.id} must not record video`)
+      }
       if (scenario.id === 'TC1') {
         assert.equal(finalRun.execution.attempts[0].fingerprint.hash, finalRun.execution.attempts[1].fingerprint.hash)
         assert.ok(finalRun.execution.attempts.every((attempt: Record<string, any>) => attempt.telemetry.some((event: Record<string, any>) => event.type === 'console_error' && event.message.includes("Cart subtotal omits the second item's price."))))
@@ -246,6 +251,17 @@ test('ReproProof completes BugLab TC1–TC4 through report, plan, approval, brow
       assert.ok(evidence.files.some(file => file.type === 'report'))
       assert.ok(evidence.files.some(file => file.type === 'screenshot'))
       assert.ok(evidence.files.some(file => file.type === 'network'))
+      if (scenario.id === 'TC1') {
+        const recordings = evidence.files.filter(file => file.type === 'video')
+        assert.equal(recordings.length, 2, 'TC1 must expose restricted recording metadata for both attempts')
+        for (const recording of recordings) {
+          assert.equal(recording.sanitized, false)
+          assert.equal(recording.restricted, true)
+          assert.equal(recording.downloadUrl, null)
+          const download = await fetch(`${apiBase}/api/runs/${encodeURIComponent(runId)}/evidence/${encodeURIComponent(String(recording.id))}`)
+          assert.equal(download.status, 403, 'Raw TC1 video must not be downloadable or shareable')
+        }
+      }
       for (const file of evidence.files.filter(item => ['console', 'network', 'report'].includes(item.type))) {
         const text = (await readEvidence(apiBase, runId, file)).toString('utf8')
         assert.ok(!text.includes('TEST_TOKEN_DO_NOT_USE_1234567890'), `${scenario.id} persisted the synthetic token in text evidence`)
