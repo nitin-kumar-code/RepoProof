@@ -241,7 +241,9 @@ export function createBugLabApp(
     }
     store.records = store.records.filter(record => !approval.recordIds.includes(record.id))
     store.stateVersion += 1
-    approvals.delete(approval.id)
+    // The mutation changes the sandbox snapshot. Invalidate every outstanding
+    // approval, including approvals for different records from the old version.
+    approvals.clear()
     store.appendSafeLog('TC3', `Deleted ${approval.recordIds.length} approved disposable sandbox record(s).`)
     response.json({ deletedIds: approval.recordIds, stateVersion: store.stateVersion, remainingRecords: store.records })
   })

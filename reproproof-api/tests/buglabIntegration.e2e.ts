@@ -43,17 +43,25 @@ const scenarios: Scenario[] = [
   },
   {
     id: 'TC3', title: 'TC3: Server approval gates disposable record deletion',
-    description: 'Attempt an unapproved direct delete, verify the seeded record remains, then approve and delete the exact disposable record.', route: '/sandbox',
+    description: 'Verify direct, stale, replayed, and duplicate deletion requests are rejected; approve and delete only the exact disposable record.', route: '/sandbox',
     steps: ['Navigate to the approved BugLab sandbox page.', 'Click sandbox-order-001.', 'Click Attempt unapproved direct deletion.', 'Verify that the server rejects an unapproved direct deletion request and the seed record remains.', 'Click Review deletion (1).', 'Fill Type DELETE 1 SANDBOX RECORD to approve with DELETE 1 SANDBOX RECORD.', 'Click Approve exact record set.', 'Click Execute approved deletion.'],
-    expectedBehavior: 'Only the explicitly approved synthetic record is deleted.', actualBehavior: 'The server rejects an unapproved direct deletion request and the seed record remains.', result: 'reproduced',
+    expectedBehavior: 'Unapproved, stale, replayed, or duplicate deletion requests are rejected; an approved request deletes only its exact synthetic target.', actualBehavior: 'A direct or stale deletion approval can remove a sandbox record without a current approval for that exact record set.', result: 'not_reproduced',
   },
   {
     id: 'TC4', title: 'TC4: Synthetic token detection and redaction',
     description: 'Load the controlled token fixture, inspect redacted logs and a visually masked screenshot.', route: '/scenarios/TC4',
     steps: ['Navigate to the approved BugLab TC4 token scenario.', 'Click Load synthetic token.', 'Wait 500 milliseconds for the masked output to load.', 'Take a screenshot of the masked synthetic token output.'],
-    expectedBehavior: 'Token-like log values are redacted before sharing and the synthetic value is masked in screenshots.', actualBehavior: 'The synthetic token is present in the DOM for inspection.', result: 'reproduced',
+    expectedBehavior: 'Token-like values are redacted from shareable text and masked or restricted in media.', actualBehavior: 'The synthetic token is exposed unredacted in shareable text or media evidence.', result: 'not_reproduced',
   },
 ]
+
+const selectedScenarioIds = process.env.BUGLAB_E2E_SCENARIOS?.split(',').map(value => value.trim()).filter(Boolean)
+const scenariosToRun = selectedScenarioIds?.length
+  ? scenarios.filter(scenario => selectedScenarioIds.includes(scenario.id))
+  : scenarios
+if (selectedScenarioIds?.some(id => !scenarios.some(scenario => scenario.id === id)) || !scenariosToRun.length) {
+  throw new Error('BUGLAB_E2E_SCENARIOS must contain supported IDs: TC1, TC2, TC3, TC4')
+}
 
 const children: Array<{ name: string; child: ChildProcess; output: string }> = []
 const createdRows: Array<{ runId: string; bugReportId: string }> = []
@@ -193,7 +201,7 @@ test('ReproProof completes BugLab TC1–TC4 through report, plan, approval, brow
 
     const results: Array<Record<string, unknown>> = []
     const observations: Array<Record<string, unknown>> = []
-    for (const scenario of scenarios) {
+    for (const scenario of scenariosToRun) {
       const context = await browser.newContext()
       const page = await context.newPage()
       await page.goto(`${webBase}/new-bug`)
@@ -240,6 +248,57 @@ test('ReproProof completes BugLab TC1–TC4 through report, plan, approval, brow
       if (scenario.id === 'TC3') {
         const remaining = await getJson<{ records: Array<{ id: string }> }>(targetBase, '/api/sandbox/records')
         assert.deepEqual(remaining.records.map(record => record.id), ['sandbox-customer-001', 'sandbox-cart-001'])
+
+        const securityHeaders = { 'Content-Type': 'application/json', Origin: targetBase, 'Sec-Fetch-Site': 'same-origin' }
+        const targetPost = (route: string, body: unknown) => fetch(`${targetBase}/api${route}`, { method: 'POST', headers: securityHeaders, body: JSON.stringify(body) })
+        const resetTarget = async () => {
+          const resetResponse = await fetch(`${targetBase}/api/sandbox/reset`, { method: 'POST', headers: { ...securityHeaders, Authorization: `Bearer ${resetToken}` }, body: JSON.stringify({ runId, bugReportId: finalRun.bugReportId }) })
+          assert.equal(resetResponse.status, 200, 'authorized sandbox reset should restore synthetic fixtures')
+        }
+        await resetTarget()
+        const currentState = await getJson<{ stateVersion: number; records: Array<{ id: string }> }>(targetBase, '/api/sandbox/records')
+        const directDelete = await targetPost('/sandbox/records/delete', { approvalId: randomUUID(), action: 'delete_records', recordIds: ['sandbox-order-001'], planVersion: currentState.stateVersion, planHash: '0'.repeat(64) })
+        assert.equal(directDelete.status, 403)
+        const unseededApproval = await targetPost('/sandbox/deletion-approvals', { recordIds: ['sandbox-order-999'], confirmation: 'DELETE 1 SANDBOX RECORD', planVersion: currentState.stateVersion })
+        assert.equal(unseededApproval.status, 409)
+
+        const approvalResponse = await targetPost('/sandbox/deletion-approvals', { recordIds: ['sandbox-order-001'], confirmation: 'DELETE 1 SANDBOX RECORD', planVersion: currentState.stateVersion })
+        assert.equal(approvalResponse.status, 201)
+        const approval = await approvalResponse.json() as { approvalId: string; action: string; recordIds: string[]; planVersion: number; planHash: string }
+        assert.deepEqual({ action: approval.action, recordIds: approval.recordIds, planVersion: approval.planVersion }, { action: 'delete_records', recordIds: ['sandbox-order-001'], planVersion: currentState.stateVersion })
+        const alteredTarget = await targetPost('/sandbox/records/delete', { approvalId: approval.approvalId, action: approval.action, recordIds: ['sandbox-customer-001'], planVersion: approval.planVersion, planHash: approval.planHash })
+        assert.equal(alteredTarget.status, 409)
+        const alteredPlan = await targetPost('/sandbox/records/delete', { approvalId: approval.approvalId, action: approval.action, recordIds: approval.recordIds, planVersion: approval.planVersion + 1, planHash: approval.planHash })
+        assert.equal(alteredPlan.status, 409)
+
+        const secondApprovalResponse = await targetPost('/sandbox/deletion-approvals', { recordIds: ['sandbox-customer-001'], confirmation: 'DELETE 1 SANDBOX RECORD', planVersion: currentState.stateVersion })
+        const secondApproval = await secondApprovalResponse.json() as { approvalId: string; action: string; recordIds: string[]; planVersion: number; planHash: string }
+        const secondDelete = await targetPost('/sandbox/records/delete', { approvalId: secondApproval.approvalId, action: secondApproval.action, recordIds: secondApproval.recordIds, planVersion: secondApproval.planVersion, planHash: secondApproval.planHash })
+        assert.equal(secondDelete.status, 200)
+        const staleApproval = await targetPost('/sandbox/records/delete', { approvalId: approval.approvalId, action: approval.action, recordIds: approval.recordIds, planVersion: approval.planVersion, planHash: approval.planHash })
+        assert.equal(staleApproval.status, 403)
+
+        await resetTarget()
+        const resetState = await getJson<{ stateVersion: number }>(targetBase, '/api/sandbox/records')
+        const resetBoundApprovalResponse = await targetPost('/sandbox/deletion-approvals', { recordIds: ['sandbox-order-001'], confirmation: 'DELETE 1 SANDBOX RECORD', planVersion: resetState.stateVersion })
+        const resetBoundApproval = await resetBoundApprovalResponse.json() as { approvalId: string; action: string; recordIds: string[]; planVersion: number; planHash: string }
+        await resetTarget()
+        const resetReplay = await targetPost('/sandbox/records/delete', { approvalId: resetBoundApproval.approvalId, action: resetBoundApproval.action, recordIds: resetBoundApproval.recordIds, planVersion: resetBoundApproval.planVersion, planHash: resetBoundApproval.planHash })
+        assert.equal(resetReplay.status, 403)
+
+        const raceState = await getJson<{ stateVersion: number }>(targetBase, '/api/sandbox/records')
+        const raceApprovalResponse = await targetPost('/sandbox/deletion-approvals', { recordIds: ['sandbox-order-001'], confirmation: 'DELETE 1 SANDBOX RECORD', planVersion: raceState.stateVersion })
+        const raceApproval = await raceApprovalResponse.json() as { approvalId: string; action: string; recordIds: string[]; planVersion: number; planHash: string }
+        const raceBody = { approvalId: raceApproval.approvalId, action: raceApproval.action, recordIds: raceApproval.recordIds, planVersion: raceApproval.planVersion, planHash: raceApproval.planHash }
+        const duplicateRequests = await Promise.all([targetPost('/sandbox/records/delete', raceBody), targetPost('/sandbox/records/delete', raceBody)])
+        const duplicateStatuses = duplicateRequests.map(response => response.status).sort()
+        assert.deepEqual(duplicateStatuses, [200, 403])
+        const replay = await targetPost('/sandbox/records/delete', raceBody)
+        assert.equal(replay.status, 403)
+        await resetTarget()
+        const restoredSeed = await getJson<{ records: Array<{ id: string }> }>(targetBase, '/api/sandbox/records')
+        assert.deepEqual(restoredSeed.records.map(record => record.id), ['sandbox-order-001', 'sandbox-customer-001', 'sandbox-cart-001'])
+        observations.push({ scenario: 'TC3', securityChecks: { directDeleteRejected: directDelete.status, unseededTargetRejected: unseededApproval.status, exactApproval: approvalResponse.status, changedTargetRejected: alteredTarget.status, changedPlanRejected: alteredPlan.status, stateChangeRejectedStaleApproval: staleApproval.status, resetInvalidatedApproval: resetReplay.status, duplicateStatuses, replayRejected: replay.status, resetRestoredSeed: restoredSeed.records.map(record => record.id) } })
       }
 
       const evidence = await getJson<{ files: Array<Record<string, any>> }>(apiBase, `/api/runs/${encodeURIComponent(runId)}/evidence`)
@@ -272,14 +331,14 @@ test('ReproProof completes BugLab TC1–TC4 through report, plan, approval, brow
         await pixelPage.close()
       }
 
-      results.push({ scenario: scenario.id, verdict: finalRun.execution.result, status: finalRun.status, attempts: finalRun.execution.attempts.map((attempt: Record<string, any>) => ({ completed: attempt.completed, expectedFailureFound: attempt.expectedFailureFound, fingerprint: attempt.fingerprint?.hash ?? null })), evidenceCount: evidence.files.length })
+      results.push({ scenario: scenario.id, bugReportId: finalRun.bugReportId, runId, verdict: finalRun.execution.result, status: finalRun.status, attempts: finalRun.execution.attempts.map((attempt: Record<string, any>) => ({ completed: attempt.completed, expectedFailureFound: attempt.expectedFailureFound, fingerprint: attempt.fingerprint?.hash ?? null })), evidenceCount: evidence.files.length })
       await page.close()
       await context.close()
     }
 
     const reportPath = path.join(evidenceRoot, 'integration-summary.json')
     await writeFile(reportPath, JSON.stringify({ scenarios: results, observations, evidenceRoot, docker: 'not used by this local Playwright workflow' }, null, 2), { mode: 0o600 })
-    assert.deepEqual(results.map(result => [result.scenario, result.verdict]), scenarios.map(scenario => [scenario.id, scenario.result]))
+    assert.deepEqual(results.map(result => [result.scenario, result.verdict]), scenariosToRun.map(scenario => [scenario.id, scenario.result]))
     workflowCompleted = true
     console.log(`Integrated BugLab workflow evidence: ${reportPath}`)
   } finally {

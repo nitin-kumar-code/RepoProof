@@ -123,7 +123,7 @@ describe('BugLab HTTP API', () => {
     const second = await post('/api/sandbox/deletion-approvals', { recordIds: [store.records[1].id], confirmation: 'DELETE 1 SANDBOX RECORD', planVersion: store.stateVersion })
     const secondApproval = await second.json() as { approvalId: string; action: 'delete_records'; planVersion: number; planHash: string }
     assert.equal((await post('/api/sandbox/records/delete', { approvalId: secondApproval.approvalId, action: secondApproval.action, recordIds: [store.records[1].id], planVersion: secondApproval.planVersion, planHash: secondApproval.planHash })).status, 200)
-    assert.equal((await post('/api/sandbox/records/delete', { approvalId: staleApproval.approvalId, action: staleApproval.action, recordIds: [store.records[0].id], planVersion: staleApproval.planVersion, planHash: staleApproval.planHash })).status, 409)
+    assert.equal((await post('/api/sandbox/records/delete', { approvalId: staleApproval.approvalId, action: staleApproval.action, recordIds: [store.records[0].id], planVersion: staleApproval.planVersion, planHash: staleApproval.planHash })).status, 403)
 
     await post('/api/sandbox/ui-reset', {})
     const approved = await post('/api/sandbox/deletion-approvals', { recordIds: [store.records[0].id], confirmation: 'DELETE 1 SANDBOX RECORD', planVersion: store.stateVersion })

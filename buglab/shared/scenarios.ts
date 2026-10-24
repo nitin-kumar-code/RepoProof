@@ -23,7 +23,7 @@ export const scenarios = [
     initialState: 'Reset the store to its three synthetic records.',
     steps: ['Select one or more sandbox records.', 'Review the affected IDs and type the displayed confirmation phrase.', 'Approve the exact record set.', 'Execute the one-time approval.'],
     expectedResult: 'Only the approved synthetic records are deleted.',
-    actualBehavior: 'Unapproved or stale deletion requests are rejected.',
+    actualBehavior: 'A direct or stale deletion approval can remove a sandbox record without a current approval for that exact record set.',
     evidence: ['record IDs before and after', 'approval timestamp and expiry', 'reset confirmation'],
   },
   {
@@ -32,7 +32,7 @@ export const scenarios = [
     initialState: 'Open the test-only token panel; no real credentials are used.',
     steps: ['Load the synthetic token fixture.', 'Inspect the visually masked output and redacted test logs.'],
     expectedResult: 'A token-like value is detected and redacted before logs are shared.',
-    actualBehavior: 'The synthetic token remains visible in the DOM for controlled inspection.',
+    actualBehavior: 'The synthetic token is exposed unredacted in shareable text or media evidence.',
     evidence: ['redacted API log record', 'screenshot with sensitive-element mask'],
   },
 ] as const

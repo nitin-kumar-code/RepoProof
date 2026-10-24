@@ -276,14 +276,16 @@ body{background:var(--linen);color:var(--ink);font-family:Inter,'DM Sans',sans-s
 .execution-reference-page .execution-header-actions button:disabled,.execution-reference-page .browser-monitor-top button:disabled,.execution-reference-page .browser-monitor-foot button:disabled,.execution-reference-page .execution-log-foot button:disabled{opacity:.67;cursor:not-allowed}
 .execution-reference-page .execution-header-actions button:nth-child(2){border-color:#f0d0cf;background:#fff5f4;color:#b35a56}
 .execution-reference-page .execution-header-actions a{border-color:#2865e8;background:#2865e8;color:#fff;box-shadow:0 1px 2px #2865e82b}
-.execution-reference-page .execution-stepper{position:relative;display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:4px;margin-bottom:16px;padding:15px 11px 12px;overflow:hidden}
+.execution-reference-page .execution-stepper{position:relative;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;margin-bottom:16px;padding:15px 11px 12px;overflow:hidden}
 .execution-reference-page .execution-stepper:before{content:"";position:absolute;z-index:0;left:5%;right:5%;top:32px;height:2px;background:#e7ebf1}
 .execution-reference-page .execution-stepper>div{position:relative;z-index:1;display:flex;min-width:0;align-items:center;flex-direction:column;text-align:center;color:#8792a2}
 .execution-reference-page .execution-stepper>div>span{display:grid;place-items:center;width:27px;height:27px;margin-bottom:5px;border:1px solid #e3e8ef;border-radius:50%;background:#fff;color:#a2adbc}
-.execution-reference-page .execution-stepper>div.step-current>span{border-color:#f1d8aa;background:#fff8ea;color:#ba7a23;box-shadow:0 0 0 3px #fff}
+.execution-reference-page .execution-stepper>div.step-active>span{border-color:#f1d8aa;background:#fff8ea;color:#ba7a23;box-shadow:0 0 0 3px #fff}
+.execution-reference-page .execution-stepper>div.step-complete>span{border-color:#b6d9c0;background:#edf7ef;color:#287044;box-shadow:0 0 0 3px #fff}
 .execution-reference-page .execution-stepper>div>b{max-width:100%;overflow:hidden;color:#657287;font-size:9px;font-weight:650;text-overflow:ellipsis;white-space:nowrap}
 .execution-reference-page .execution-stepper>div>small{margin-top:4px;color:#929daf;font:600 8px var(--mono);white-space:nowrap}
-.execution-reference-page .execution-stepper>div.step-current>small{color:#a66a20}
+.execution-reference-page .execution-stepper>div.step-active>small{color:#a66a20}
+.execution-reference-page .execution-stepper>div.step-complete>small{color:#287044}
 .execution-reference-page .execution-reference-grid{display:grid;grid-template-columns:minmax(0,1.72fr) minmax(300px,.86fr);align-items:start;gap:16px}
 .execution-reference-page .execution-primary-column,.execution-reference-page .execution-side-column{display:grid;min-width:0;gap:15px}
 .execution-reference-page .browser-monitor-card{overflow:hidden}

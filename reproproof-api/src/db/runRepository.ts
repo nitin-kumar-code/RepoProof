@@ -1,7 +1,16 @@
 import { supabase } from './client'
 import { ExecutionEvidenceSchema, RunProgressSchema, RunWithPlanSchema, type RunWithPlan } from '../schemas/run'
+import { sanitizeError } from '../browser/telemetry'
 
 export type ApprovalDecision = NonNullable<RunWithPlan['approval']>
+
+type EvidenceRecord = NonNullable<RunWithPlan['execution']>['evidenceRecords'][number]
+
+export function mergeEvidenceRecords(indexed: EvidenceRecord[], snapshot: EvidenceRecord[]): EvidenceRecord[] {
+  const records = new Map(indexed.map(record => [record.id, record]))
+  for (const record of snapshot) if (!records.has(record.id)) records.set(record.id, record)
+  return [...records.values()].sort((a, b) => a.createdAt.localeCompare(b.createdAt))
+}
 
 const memoryRuns = new Map<string, RunWithPlan>()
 
@@ -154,8 +163,26 @@ export const runRepository = {
       .select('run, plan').maybeSingle()
     if (error) throw error
     if (!data) return undefined
-    const saved = RunWithPlanSchema.parse({ ...data.run, plan: data.plan })
-    await persistExecutionRows(saved)
+    let saved = RunWithPlanSchema.parse({ ...data.run, plan: data.plan })
+    try {
+      await persistExecutionRows(saved)
+    } catch (cause) {
+      // The execution snapshot is already durably stored in runs.run. Keep its
+      // truthful verdict and evidence references even if the queryable evidence
+      // index is unavailable; listEvidenceRecords falls back to that snapshot.
+      const detail = sanitizeError(cause)
+      const warning = `Evidence metadata index could not be updated: ${detail}`.replace(/[\r\n\t]+/g, ' ').slice(0, 1500)
+      const previous = saved.execution?.error
+      const execution = saved.execution ? { ...saved.execution, error: previous ? `${previous}; ${warning}` : warning } : null
+      const { plan: savedPlan, ...recordWithWarning } = { ...saved, execution }
+      const { data: warningData, error: warningError } = await supabase.from('runs')
+        .update({ run: recordWithWarning })
+        .eq('id', id).eq('status', 'verifying').eq('plan_hash', expectedPlanHash)
+        .select('run, plan').maybeSingle()
+      if (warningError) console.error(`Could not persist evidence index warning for run ${id}: ${sanitizeError(warningError)}`)
+      if (warningData) saved = RunWithPlanSchema.parse({ ...warningData.run, plan: warningData.plan ?? savedPlan })
+      console.error(`Evidence metadata index update failed for run ${id}: ${warning}`)
+    }
     return saved
   },
 
@@ -231,14 +258,27 @@ export async function listEvidenceRecords(runId: string): Promise<Array<{
   id: string; runId: string; attemptNumber: number; type: 'video' | 'screenshot' | 'console' | 'network' | 'report';
   storageKey: string; createdAt: string; sanitized: boolean;
 }>> {
-  if (!supabase) {
-    const run = memoryRuns.get(runId)
+  const fromRunSnapshot = async (): Promise<EvidenceRecord[]> => {
+    const run = await runRepository.get(runId)
     return run?.execution?.evidenceRecords ?? []
   }
-  const { data, error } = await supabase.from('evidence_files')
-    .select('id, run_id, attempt_number, type, storage_key, created_at, sanitized')
-    .eq('run_id', runId).order('created_at', { ascending: true })
-  if (error) throw error
-  return (data ?? []).map(row => ({ id: row.id, runId: row.run_id, attemptNumber: row.attempt_number,
+  if (!supabase) {
+    return fromRunSnapshot()
+  }
+  let data: Array<{ id: string; run_id: string; attempt_number: number; type: EvidenceRecord['type']; storage_key: string; created_at: string; sanitized: boolean }> | null = null
+  try {
+    const result = await supabase.from('evidence_files')
+      .select('id, run_id, attempt_number, type, storage_key, created_at, sanitized')
+      .eq('run_id', runId).order('created_at', { ascending: true })
+    if (result.error) throw result.error
+    data = result.data
+  } catch (cause) {
+    console.error(`Evidence index lookup failed for run ${runId}; using its persisted run snapshot: ${sanitizeError(cause)}`)
+    return fromRunSnapshot()
+  }
+  const indexed = (data ?? []).map(row => ({ id: row.id, runId: row.run_id, attemptNumber: row.attempt_number,
     type: row.type, storageKey: row.storage_key, createdAt: row.created_at, sanitized: row.sanitized }))
+  // Older runs and failed/partial metadata-index writes may only have some
+  // records embedded in the run JSON. Merge both sources by evidence ID.
+  return mergeEvidenceRecords(indexed, await fromRunSnapshot())
 }
