@@ -1,6 +1,10 @@
-export interface EvidenceItem {
-  id: string
-  kind: 'Screenshot' | 'Video' | 'Log'
-  label: string
-  time: string
+import type { EvidenceRecord } from './run'
+
+export interface EvidenceFile extends EvidenceRecord {
+  downloadUrl: string
+}
+
+export interface EvidenceResponse {
+  runId: string
+  files: EvidenceFile[]
 }

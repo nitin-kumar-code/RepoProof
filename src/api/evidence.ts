@@ -1,4 +1,4 @@
 import { apiRequest } from './client'
-import type { EvidenceItem } from '../types/evidence'
+import type { EvidenceResponse } from '../types/evidence'
 
-export const getEvidence = (runId: string) => apiRequest<EvidenceItem[]>(`/api/runs/${encodeURIComponent(runId)}/evidence`)
+export const getEvidence = (runId: string, signal?: AbortSignal) => apiRequest<EvidenceResponse>(`/api/runs/${encodeURIComponent(runId)}/evidence`, { signal })

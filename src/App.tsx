@@ -12,8 +12,10 @@ import LiveExecution from './pages/LiveExecution'
 import EvidencePassport from './pages/EvidencePassport'
 import QATestCases from './pages/QATestCases'
 import SettingsPage from './pages/Settings'
+import Profile from './pages/Profile'
 import { checkHealth } from './api/client'
 import './App.css'
+import './archival-theme.css'
 
 function AppShell() {
   const location = useLocation()
@@ -31,6 +33,6 @@ function AppShell() {
     const timer = window.setInterval(updateHealth, 30000)
     return () => { mounted = false; window.clearInterval(timer) }
   }, [])
-  return <div className={`app-shell ${location.pathname === '/new-bug' ? 'newbug-shell' : ''} ${coolRoute ? 'cool-shell' : ''}`}><Sidebar /><div className="main-area"><Header health={health} onCheck={() => void refresh()} /><Routes><Route path="/" element={<Dashboard />} /><Route path="/new-bug" element={<NewBug />} /><Route path="/investigations" element={<Investigations />} /><Route path="/runs" element={<Runs />} /><Route path="/runs/:id" element={<RunDetails />} /><Route path="/runs/:id/execution" element={<LiveExecution />} /><Route path="/evidence/:runId" element={<EvidencePassport />} /><Route path="/qa-test-cases" element={<QATestCases />} /><Route path="/settings" element={<SettingsPage health={health} onCheck={() => void refresh()} />} /><Route path="*" element={<NotFound />} /></Routes></div></div>
+  return <div className={`app-shell ${location.pathname === '/new-bug' ? 'newbug-shell' : ''} ${coolRoute ? 'cool-shell' : ''}`}><Sidebar /><div className="main-area"><Header health={health} onCheck={() => void refresh()} /><Routes><Route path="/" element={<Dashboard />} /><Route path="/new-bug" element={<NewBug />} /><Route path="/investigations" element={<Investigations />} /><Route path="/runs" element={<Runs />} /><Route path="/runs/:id" element={<RunDetails />} /><Route path="/runs/:id/execution" element={<LiveExecution />} /><Route path="/evidence/:runId" element={<EvidencePassport />} /><Route path="/qa-test-cases" element={<QATestCases />} /><Route path="/settings" element={<SettingsPage health={health} onCheck={() => void refresh()} />} /><Route path="/profile" element={<Profile />} /><Route path="*" element={<NotFound />} /></Routes></div></div>
 }
 export default function App() { return <BrowserRouter><AppShell /></BrowserRouter> }

@@ -1,0 +1,285 @@
+/* Color-only adaptation of the supplied ReproProof Evidence Lab reference. */
+:root {
+  --action-blue: #c04b2b;
+  --serif: Inter, 'DM Sans', sans-serif;
+  --sans: Inter, 'DM Sans', sans-serif;
+  --mono: 'JetBrains Mono', monospace;
+  --lab-canvas: #f3f0e8;
+  --lab-paper: #fffefa;
+  --lab-border: #d9d7cc;
+  --lab-forest: #183d33;
+  --lab-forest-hover: #265449;
+  --lab-rust: #c04b2b;
+  --lab-rust-hover: #a83f22;
+  --lab-rust-wash: #f7e2d8;
+  --lab-ink: #202923;
+  --lab-muted: #65716a;
+}
+
+/* Main application surfaces and navigation */
+.app-shell, .main-area { background-color: var(--lab-canvas); }
+.sidebar { background-color: var(--lab-forest); border-color: #31564b; color: #e7f4eb; }
+.brand { background-color: var(--lab-forest); border-color: #31564b; color: var(--lab-paper); }
+.brand-mark { background-color: var(--lab-paper); color: #fff; }
+.brand-mark img { display: block; width: 100%; height: 100%; object-fit: contain; }
+.brand > span:nth-child(2) { flex: 1; min-width: 0; }
+.brand > span:nth-child(2) small { font-size: 11px; letter-spacing: .15px; white-space: nowrap; }
+.brand-light, .brand small, .brand-version, .workspace small, .workspace .chevron,
+.nav-label, .eyebrow, .usage-title span, .usage-card small, .profile small { color: #b9cfc4; }
+.workspace { border-color: #41655a; color: #e7f4eb; }
+.workspace-avatar, .profile-avatar { background-color: #41655a; color: var(--lab-paper); }
+.nav-links > a { color: #d3e1d9; }
+.nav-links > a:hover { background-color: var(--lab-forest-hover); color: #fff; }
+.nav-links > a.active { background-color: #31584c; color: #fffefa; }
+.nav-count { background-color: #41655a; color: #e7f4eb; }
+.usage-card { background-color: #20483c; border-color: #41655a; color: #e7f4eb; }
+.usage-card > a { color: #ffb5a1; }
+.progress { background-color: #41655a; }
+.progress i { background-color: var(--lab-rust); }
+.bottom-links, .profile { border-color: #41655a; }
+.header { background-color: #fffefa; border-color: var(--lab-border); }
+.breadcrumbs { color: var(--lab-muted); }
+.breadcrumbs strong { color: var(--lab-ink); }
+.search-button, .global-search { background-color: var(--lab-paper); border-color: var(--lab-border); }
+.icon-button, .refresh-health { color: var(--lab-muted); }
+.health-pill.online { color: #26734d; background-color: #eaf4ee; border-color: #b7deca; }
+.health-pill.offline { color: #b83a3a; background-color: #fcefee; border-color: #f3c4c4; }
+.notification i { background-color: var(--lab-rust); }
+
+/* Shared panels, controls and interactive accents */
+.stat-card, .panel, .bug-form, .evidence-card,
+.settings-reference-page .settings-reference-card,
+.investigation-reference-page .investigation-kpi,
+.investigation-reference-page .investigation-register { background-color: var(--lab-paper); border-color: var(--lab-border); }
+.primary-button, .sidebar-new-bug, .header-new-bug,
+.investigation-reference-page .investigation-toolbar .primary-button,
+.settings-reference-page .page-toolbar .primary-button { background-color: var(--lab-rust); border-color: #9e3c20; color: #fff; }
+.primary-button:hover, .sidebar-new-bug:hover, .header-new-bug:hover,
+.investigation-reference-page .investigation-toolbar .primary-button:hover,
+.settings-reference-page .page-toolbar .primary-button:hover { background-color: var(--lab-rust-hover); }
+.secondary-button, .attach-button, .page-toolbar button { background-color: var(--lab-paper); border-color: var(--lab-border); color: var(--lab-forest); }
+.secondary-button:hover, .attach-button:hover { background-color: var(--lab-canvas); border-color: var(--lab-muted); }
+.text-button, .cluster-card > a, .investigation-reference-page .investigation-page-heading .eyebrow,
+.investigation-reference-page .investigation-toolbar .primary-button { color: var(--lab-rust); }
+.welcome-row h1, .form-heading h1, .run-title-row h1,
+.investigation-reference-page .investigation-page-heading h1 { color: var(--lab-ink); }
+.welcome-row p, .form-heading p, .run-title-row p, .muted,
+.stat-top, .stat-bottom { color: var(--lab-muted); }
+.bug-form input, .bug-form select, .bug-form textarea { background-color: var(--lab-paper); border-color: var(--lab-border); color: var(--lab-ink); }
+.bug-form input:focus, .bug-form select:focus, .bug-form textarea:focus { border-color: var(--lab-rust); box-shadow: 0 0 0 3px var(--lab-rust-wash); }
+.bug-form input::placeholder, .bug-form textarea::placeholder { color: var(--lab-muted); }
+.form-note, .ai-tip, .plan-ai { background-color: #eaf7ee; border-color: var(--lab-border); color: var(--lab-muted); }
+.ai-tip b { color: var(--lab-forest); }
+.ai-tip a { color: var(--lab-rust); }
+.plan-steps li > span { background-color: var(--lab-rust-wash); color: var(--lab-rust); }
+.plan-steps li, .timeline-line, .bug-row, .run-row, .table-head { border-color: var(--lab-border); }
+.bug-row:hover { background-color: #faf8f2; }
+.bug-name b, .run-copy b { color: var(--lab-ink); }
+.bug-name small, .run-copy small, .project-name, .bug-row time { color: var(--lab-muted); }
+.status-pill.open, .status-pill.running { color: var(--lab-forest); background-color: #eaf7ee; border-color: #c3ebdc; }
+.status-pill.in-progress, .status-pill.needs-approval, .status-pill.approval { color: #946315; background-color: #fbf5eb; border-color: #ecd9b9; }
+.status-pill.resolved, .status-pill.passed { color: #26734d; background-color: #eaf4ee; border-color: #b7deca; }
+.status-pill.failed { color: #b83a3a; background-color: #fcefee; border-color: #f3c4c4; }
+
+/* Replace blue accent treatments with forest/rust tones; status colors remain diagnostic. */
+.blue, .stat-icon.blue, .run-symbol, .run-symbol.open, .run-symbol.running,
+.investigation-reference-page .kpi-tag, .investigation-reference-page .investigation-filter.active,
+.investigation-reference-page .investigation-toolbar .secondary-button,
+.settings-reference-page .settings-card-icon, .settings-reference-page .runtime-mode,
+.settings-reference-page .runtime-record, .settings-reference-page .diagnostic-header,
+.settings-reference-page .privacy-rule, .settings-reference-page .containment-record,
+.qa-reference-page .qa-metadata, .qa-reference-page .qa-proof-panel { background-color: #eaf7ee; color: var(--lab-forest); }
+.blue, .stat-icon.blue { border-color: #c3ebdc; }
+.stat-icon.violet, .stat-icon.rose { background-color: #f7e2d8; color: var(--lab-rust); }
+.run-symbol { color: var(--lab-rust); }
+.roadmap-step > b { background-color: var(--lab-rust); }
+.investigation-reference-page .investigation-register-heading h2 span,
+.settings-reference-page .settings-status-tag { background-color: var(--lab-rust-wash); color: var(--lab-rust); }
+.settings-reference-page .settings-card-icon { color: var(--lab-rust); }
+.settings-reference-page .runtime-mode .active-mode { color: var(--lab-forest); }
+.settings-reference-page .runtime-mode .active-mode > i { background-color: var(--lab-rust); }
+.settings-reference-page .page-toolbar .primary-button { background-color: var(--lab-rust); }
+.settings-reference-page .settings-safe-notice, .settings-reference-page .privacy-guarantee,
+.settings-reference-page .privacy-summary { background-color: #eaf7ee; color: var(--lab-forest); }
+.draft-saved { background-color: #eaf7ee; color: var(--lab-forest); }
+.status-pill, .attempt-tag, .sub-count { color: var(--lab-muted); }
+.status-pill.passed, .attempt-tag.pass { color: #26734d; }
+.status-pill.failed, .attempt-tag.fail { color: #b83a3a; }
+.log-preview, .telemetry-vault, .terminal, .execution-log { background-color: #17211d; border-color: #202923; color: #e1e7e4; }
+.passport-card { background-color: var(--lab-forest); }
+.passport-icon { background-color: #41655a; color: #fffefa; }
+
+/* Blue accents used by the other existing screens */
+.header-new-bug, .dashboard-page .dash-actions .primary-button,
+.dashboard-page .primary-button, .intake-page .primary-button,
+.plan-review-page .primary-button, .runs-reference-page .primary-button,
+.execution-reference-page .primary-button, .passport-reference-page .primary-button,
+.qa-reference-page .primary-button { background-color: var(--lab-rust); border-color: #9e3c20; color: #fff; }
+.header-new-bug:hover, .dashboard-page .primary-button:hover, .intake-page .primary-button:hover,
+.plan-review-page .primary-button:hover, .runs-reference-page .primary-button:hover,
+.execution-reference-page .primary-button:hover, .passport-reference-page .primary-button:hover,
+.qa-reference-page .primary-button:hover { background-color: var(--lab-rust-hover); }
+.data-table a, .empty-state, .execution-reference-page .execution-breadcrumb a,
+.execution-reference-page .execution-breadcrumb b, .execution-reference-page .run-id,
+.passport-reference-page .passport-link, .plan-review-page .plan-run-title > code { color: var(--lab-rust); }
+.sandbox-options label.sandbox-selected { border-color: var(--lab-rust); background-color: var(--lab-rust-wash); }
+.sandbox-check, .intake-section-title > b.planner-badge { background-color: var(--lab-rust-wash); color: var(--lab-rust); }
+.execution-reference-page .execution-tabbar button.active { border-color: var(--lab-border); background-color: #eaf7ee; color: var(--lab-forest); }
+.execution-reference-page .execution-breadcrumb b, .plan-review-page .plan-run-title > code { background-color: #eaf7ee; }
+.dashboard-page .topology-map > div i { background-color: var(--lab-rust); }
+.dashboard-page .roadmap-step > b { background-color: var(--lab-rust); }
+.investigation-reference-page .kpi-tag { background-color: #eaf7ee; color: var(--lab-forest); }
+.execution-reference-page .status-pill.running, .runs-reference-page .status-pill.running { color: var(--lab-forest); background-color: #eaf7ee; border-color: #c3ebdc; }
+
+/* Match the reference's neutral sans interface, technical mono labels and tabular figures. */
+body { font-family: Inter, 'DM Sans', sans-serif; }
+.brand, h1, h2, h3, .welcome-row h1, .form-heading h1, .run-title-row h1,
+.metric-card > strong, .stat-value, .investigation-reference-page .investigation-kpi > strong,
+.settings-reference-page .settings-metrics > article > strong { font-family: Inter, 'DM Sans', sans-serif; }
+.metric-card > strong, .stat-value, .investigation-reference-page .investigation-kpi > strong,
+.settings-reference-page .settings-metrics > article > strong,
+.metric-value, .metrics-grid strong, .run-id, code, time, .attempt-number,
+.execution-reference-page .execution-breadcrumb, .settings-reference-page .settings-metrics > article > span {
+  font-variant-numeric: tabular-nums;
+}
+.eyebrow, .nav-label, .table-head, .status-pill, .run-id, code,
+.investigation-reference-page .investigation-kpi > div small,
+.settings-reference-page .settings-metrics > article > small {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* Readability scale shared by Test Runs, QA, Settings, and bug intake. */
+.runs-reference-page .runs-reference-heading h1,
+.qa-reference-page .qa-reference-heading h1,
+.settings-reference-page .settings-reference-heading h1,
+.intake-page .intake-heading h1 { font-size: 30px; line-height: 1.2; }
+.runs-reference-page .runs-reference-heading p,
+.qa-reference-page .qa-reference-heading p,
+.settings-reference-page .settings-reference-heading p,
+.intake-page .intake-heading p { font-size: 14px; line-height: 1.55; }
+.runs-reference-page .runs-reference-heading h1 span,
+.qa-reference-page .qa-reference-heading h1 > span,
+.settings-reference-page .settings-reference-heading h1 > span { font-size: 10px; }
+.runs-reference-page .page-toolbar button,
+.qa-reference-page .page-toolbar button,
+.settings-reference-page .page-toolbar button { font-size: 13px; }
+
+.runs-reference-page .run-summary-grid article > small,
+.qa-reference-page .qa-summary-grid > article > small,
+.settings-reference-page .settings-metrics > article > small { font-size: 10px; }
+.runs-reference-page .run-summary-grid article > strong,
+.qa-reference-page .qa-summary-grid > article > strong { font-size: 30px; font-variant-numeric: tabular-nums; }
+.runs-reference-page .run-summary-grid article > strong em,
+.qa-reference-page .qa-summary-grid > article > strong em { font-size: 11px; }
+.runs-reference-page .run-summary-grid article > span,
+.qa-reference-page .qa-summary-grid > article > span,
+.settings-reference-page .settings-metrics > article > span { font-size: 11px; line-height: 1.4; }
+.settings-reference-page .settings-metrics > article > strong { font-size: 19px; font-variant-numeric: tabular-nums; }
+
+.runs-reference-page .run-filter-row > label input,
+.runs-reference-page .run-filter-row select,
+.runs-reference-page .run-filter-row > .secondary-button,
+.runs-reference-page .run-filter-tabs button { font-size: 12px; }
+.runs-reference-page .runs-table th { font-size: 10px; }
+.runs-reference-page .runs-table td { font-size: 12px; line-height: 1.45; }
+.runs-reference-page .runs-table td:nth-child(2) > b,
+.runs-reference-page .runs-table td:nth-child(2) > small { font-size: 12px; line-height: 1.4; }
+.runs-reference-page .runs-table td:nth-child(2) > small.table-provenance,
+.runs-reference-page .runs-table code,
+.runs-reference-page .run-id { font-size: 10px; }
+.runs-reference-page .fixture-state,
+.runs-reference-page .runs-table .not-evaluated,
+.runs-reference-page .runs-action,
+.runs-reference-page .run-table-footer { font-size: 11px; }
+
+.qa-reference-page .qa-protocol-heading h2 { font-size: 20px; }
+.qa-reference-page .qa-protocol-heading code { font-size: 10px; }
+.qa-reference-page .qa-scenario-title h3 { font-size: 16px; }
+.qa-reference-page .qa-status { font-size: 10px; }
+.qa-reference-page .qa-scenario-main > p { font-size: 13px; line-height: 1.55; }
+.qa-reference-page .qa-metadata > span { font-size: 10px; }
+.qa-reference-page .qa-metadata > span > b { font-size: 11px; }
+.qa-reference-page .qa-checks > span { font-size: 12px; line-height: 1.5; }
+.qa-reference-page .qa-proof-panel > b,
+.qa-reference-page .qa-proof-panel > span { font-size: 10px; }
+.qa-reference-page .qa-proof-panel > strong { font-size: 14px; }
+.qa-reference-page .qa-proof-panel > small,
+.qa-reference-page .qa-reference-note { font-size: 12px; line-height: 1.5; }
+
+.settings-reference-page .settings-card-heading h2 { font-size: 18px; }
+.settings-reference-page .settings-card-heading p { font-size: 12px; }
+.settings-reference-page .settings-status-tag { font-size: 10px; }
+.settings-reference-page .runtime-mode > div { font-size: 12px; }
+.settings-reference-page .runtime-mode > div > b { font-size: 9px; }
+.settings-reference-page .runtime-record > span { font-size: 12px; }
+.settings-reference-page .runtime-record > code { font-size: 10px; }
+.settings-reference-page .runtime-record > small { font-size: 10px; }
+.settings-reference-page .diagnostic-header { font-size: 10px; }
+.settings-reference-page .diagnostic-table > div:not(.diagnostic-header) { font-size: 12px; line-height: 1.4; }
+.settings-reference-page .diagnostic-table > div > code { font-size: 10px; }
+.settings-reference-page .diagnostic-table > div > b { font-size: 9px; }
+.settings-reference-page .settings-safe-notice,
+.settings-reference-page .privacy-summary,
+.settings-reference-page .privacy-rule > b,
+.settings-reference-page .containment-record > b { font-size: 12px; line-height: 1.5; }
+.settings-reference-page .privacy-rule > span,
+.settings-reference-page .containment-record > span { font-size: 10px; }
+.settings-reference-page .privacy-guarantee b { font-size: 12px; }
+.settings-reference-page .privacy-guarantee small { font-size: 11px; }
+
+.intake-page .intake-kicker { font-size: 11px; }
+.intake-page .intake-heading > code { font-size: 11px; }
+.intake-page .intake-section-title h2 { font-size: 20px; }
+.intake-page .intake-section-title > b,
+.intake-page .intake-form label,
+.intake-page .intake-form legend { font-size: 12px; }
+.intake-page .field-label-row,
+.intake-page .safe-label,
+.intake-page .severity-options label,
+.intake-page .sandbox-options label > b { font-size: 12px; }
+.intake-page .intake-form input,
+.intake-page .intake-form select,
+.intake-page .intake-form textarea { font-size: 13px; line-height: 1.5; }
+.intake-page .field-hint,
+.intake-page .sandbox-options label > small,
+.intake-page .sandbox-options label > code { font-size: 11px; line-height: 1.45; }
+.intake-page .human-gate-note,
+.intake-page .runtime-note,
+.intake-page .intake-submit-row { font-size: 12px; line-height: 1.5; }
+.intake-page .aside-heading h3,
+.intake-page .roadmap-card h3 { font-size: 16px; }
+.intake-page .intake-side-card > p,
+.intake-page .intake-side-card li,
+.intake-page .roadmap-step strong { font-size: 12px; line-height: 1.5; }
+.intake-page .intake-side-card li small,
+.intake-page .roadmap-step small,
+.intake-page .topology-map > div { font-size: 11px; line-height: 1.45; }
+.intake-page .intake-submit-row button,
+.intake-page .intake-submit-row a { font-size: 12px; }
+
+/* Keep header controls evenly aligned and let search use the available space. */
+.header { gap: clamp(14px, 1.8vw, 26px); }
+.breadcrumbs { flex: 0 1 auto; }
+.header-actions { flex: 1 1 auto; justify-content: flex-end; gap: clamp(12px, 1.4vw, 20px); }
+.global-search { width: clamp(320px, 30vw, 440px); max-width: 440px; flex: 1 1 360px; }
+.newbug-shell .header-actions .global-search { width: clamp(320px, 30vw, 440px); max-width: 440px; flex: 1 1 360px; }
+
+@media (max-width: 1050px) {
+  .global-search, .newbug-shell .header-actions .global-search { width: min(34vw, 360px); flex: 1 1 240px; }
+}
+
+@media (max-width: 760px) {
+  .header-actions { gap: 10px; }
+  .global-search, .newbug-shell .header-actions .global-search { width: min(48vw, 360px); max-width: 360px; flex: 1 1 auto; }
+  .runs-reference-page .runs-reference-heading h1,
+  .qa-reference-page .qa-reference-heading h1,
+  .settings-reference-page .settings-reference-heading h1,
+  .intake-page .intake-heading h1 { font-size: 26px; }
+  .runs-reference-page .runs-reference-heading p,
+  .qa-reference-page .qa-reference-heading p,
+  .settings-reference-page .settings-reference-heading p,
+  .intake-page .intake-heading p { font-size: 13px; }
+  .intake-page .intake-form input,
+  .intake-page .intake-form select,
+  .intake-page .intake-form textarea { font-size: 16px; }
+}
