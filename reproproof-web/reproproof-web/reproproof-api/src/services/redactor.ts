@@ -62,4 +62,3 @@ export function redactValue<T>(input: T, knownSecrets: string[] = []): T {
   }
   return visit(input) as T
 }
-

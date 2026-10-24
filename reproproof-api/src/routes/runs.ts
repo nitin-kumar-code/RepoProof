@@ -13,6 +13,7 @@ import { TargetValidationError } from '../services/targetValidation'
 import { addResetPrecondition } from '../services/verifier'
 import { createEvidenceDownloadUrl } from '../services/evidenceStorage'
 import { enqueueApprovedRun } from '../services/run-service'
+import { sanitizeError } from '../browser/telemetry'
 
 export const runsRouter = Router()
 const CreateRunSchema = z.object({ bugReportId: z.string().trim().min(1) }).strict()
@@ -71,13 +72,20 @@ runsRouter.get('/:id/evidence', async (request, response) => {
     response.status(404).json({ error: 'run_not_found' })
     return
   }
-  const files = await Promise.all((await listEvidenceRecords(run.id)).map(async record => ({
-    ...record,
-    restricted: !record.sanitized,
-    downloadUrl: record.sanitized
-      ? await createEvidenceDownloadUrl(record.storageKey) ?? `/api/runs/${encodeURIComponent(run.id)}/evidence/${encodeURIComponent(record.id)}`
-      : null,
-  })))
+  const files = await Promise.all((await listEvidenceRecords(run.id)).map(async record => {
+    let downloadUrl: string | null = null
+    if (record.sanitized) {
+      downloadUrl = `/api/runs/${encodeURIComponent(run.id)}/evidence/${encodeURIComponent(record.id)}`
+      try {
+        downloadUrl = await createEvidenceDownloadUrl(record.storageKey) ?? downloadUrl
+      } catch (cause) {
+        // Keep the API file route available when Storage signing is temporarily
+        // unavailable or the private bucket has not been set up.
+        console.error(`Could not sign evidence download for run ${run.id}: ${sanitizeError(cause)}`)
+      }
+    }
+    return { ...record, restricted: !record.sanitized, downloadUrl }
+  }))
   response.setHeader('Cache-Control', 'private, no-store')
   response.json({ runId: run.id, files })
 })
@@ -98,7 +106,12 @@ runsRouter.get('/:id/evidence/:evidenceId', async (request, response) => {
     response.status(403).json({ error: 'evidence_restricted', message: 'This evidence has not passed the sanitization policy and cannot be downloaded or shared.' })
     return
   }
-  const signedUrl = await createEvidenceDownloadUrl(record.storageKey)
+  let signedUrl: string | undefined
+  try {
+    signedUrl = await createEvidenceDownloadUrl(record.storageKey)
+  } catch (cause) {
+    console.error(`Could not sign evidence download for run ${run.id}: ${sanitizeError(cause)}`)
+  }
   if (signedUrl) {
     response.setHeader('Cache-Control', 'private, no-store')
     response.redirect(302, signedUrl)

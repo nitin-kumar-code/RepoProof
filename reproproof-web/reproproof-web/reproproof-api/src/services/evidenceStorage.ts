@@ -42,4 +42,3 @@ export async function createEvidenceDownloadUrl(storageKey: string): Promise<str
   if (error) throw error
   return data.signedUrl
 }
-

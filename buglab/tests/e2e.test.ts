@@ -9,6 +9,7 @@ import { createServer, type Server } from 'node:http'
 import { chromium, type Browser, type Page } from '@playwright/test'
 import { createServer as createViteServer, type ViteDevServer } from 'vite'
 import { createBugLabApp } from '../server/routes.js'
+import { BugLabStore, seededRecords } from '../server/fixtures.js'
 import { product } from '../shared/data.js'
 import { redactText } from '../server/redaction.js'
 
@@ -16,6 +17,7 @@ let apiServer: Server
 let vite: ViteDevServer
 let browser: Browser
 let baseUrl: string
+let store: BugLabStore
 const evidenceRoot = path.join(tmpdir(), 'buglab-evidence', `acceptance-${new Date().toISOString().replace(/[:.]/g, '-')}`)
 
 async function prepareEvidence(caseName: string): Promise<string> {
@@ -72,7 +74,16 @@ before(async () => {
   const address = httpServer.address()
   assert.ok(address && typeof address !== 'string')
   baseUrl = `http://127.0.0.1:${address.port}`
+<<<<<<< HEAD
   apiApp.current = createBugLabApp(undefined, Date.now, { allowedUiOrigins: [baseUrl] })
+=======
+  store = new BugLabStore()
+  apiServer = createServer(createBugLabApp(store, Date.now, { allowedUiOrigins: [baseUrl] }))
+  await new Promise<void>((resolve, reject) => {
+    apiServer.once('error', reject)
+    apiServer.listen(apiPort, '127.0.0.1', resolve)
+  })
+>>>>>>> cb06554f291a62c9ebd455e57ec3b9ae815edf8a
   browser = await chromium.launch({ headless: true })
 })
 
@@ -164,8 +175,12 @@ test('TC3 requires scoped approval in the UI and only deletes the approved synth
   const ids = ['sandbox-order-001']
   const noApproval = await apiPost('/sandbox/records/delete', { approvalId: '00000000-0000-4000-8000-000000000000', action: 'delete_records', recordIds: ids, planVersion: state.stateVersion, planHash: '0'.repeat(64) })
   assert.equal(noApproval.status, 403)
+  const directApiWithoutBrowserOrigin = await fetch(`${baseUrl}/api/sandbox/records/delete`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ approvalId: '00000000-0000-4000-8000-000000000000', action: 'delete_records', recordIds: ids, planVersion: state.stateVersion, planHash: '0'.repeat(64) }) })
+  assert.equal(directApiWithoutBrowserOrigin.status, 403)
+  const unseededTarget = await apiPost('/sandbox/deletion-approvals', { recordIds: ['sandbox-order-999'], confirmation: 'DELETE 1 SANDBOX RECORD', planVersion: state.stateVersion })
+  assert.equal(unseededTarget.status, 409)
   const approvalResponse = await apiPost('/sandbox/deletion-approvals', { recordIds: ids, confirmation: 'DELETE 1 SANDBOX RECORD', planVersion: state.stateVersion })
-  const approval = await approvalResponse.json() as { approvalId: string; action: 'delete_records'; planVersion: number; planHash: string }
+  const approval = await approvalResponse.json() as { approvalId: string; action: 'delete_records'; recordIds: string[]; planVersion: number; planHash: string }
   assert.equal(approvalResponse.status, 201)
   const actionTamper = await apiPost('/sandbox/deletion-approvals', { recordIds: ids, confirmation: 'DELETE 1 SANDBOX RECORD', planVersion: state.stateVersion, action: 'delete-all' })
   assert.equal(actionTamper.status, 400)
@@ -180,8 +195,43 @@ test('TC3 requires scoped approval in the UI and only deletes the approved synth
   const deleteOther = await apiPost('/sandbox/records/delete', { approvalId: otherApproval.approvalId, action: otherApproval.action, recordIds: ['sandbox-customer-001'], planVersion: otherApproval.planVersion, planHash: otherApproval.planHash })
   assert.equal(deleteOther.status, 200)
   const staleApproval = await apiPost('/sandbox/records/delete', { approvalId: approval.approvalId, action: approval.action, recordIds: ids, planVersion: approval.planVersion, planHash: approval.planHash })
-  assert.equal(staleApproval.status, 409)
+  assert.equal(staleApproval.status, 403)
   assert.equal(((await (await fetch(`${baseUrl}/api/sandbox/records`)).json()) as { records: unknown[] }).records.length, 2)
+
+  // A target snapshot changed out-of-band must invalidate the plan even if its
+  // ID and caller-supplied plan hash are unchanged.
+  await reset()
+  const targetState = await (await fetch(`${baseUrl}/api/sandbox/records`)).json() as { stateVersion: number }
+  const targetApprovalResponse = await apiPost('/sandbox/deletion-approvals', { recordIds: ids, confirmation: 'DELETE 1 SANDBOX RECORD', planVersion: targetState.stateVersion })
+  const targetApproval = await targetApprovalResponse.json() as { approvalId: string; action: 'delete_records'; planVersion: number; planHash: string }
+  store.records[0].name = 'Modified synthetic record'
+  const changedTarget = await apiPost('/sandbox/records/delete', { approvalId: targetApproval.approvalId, action: targetApproval.action, recordIds: ids, planVersion: targetApproval.planVersion, planHash: targetApproval.planHash })
+  assert.equal(changedTarget.status, 409)
+  assert.equal(store.records.length, 3)
+
+  // Reset both restores exactly the documented synthetic seed and invalidates
+  // outstanding approvals bound to the prior version.
+  await reset()
+  const resetState = await (await fetch(`${baseUrl}/api/sandbox/records`)).json() as { stateVersion: number; records: Array<{ id: string }> }
+  assert.deepEqual(resetState.records, seededRecords())
+  const beforeResetApprovalResponse = await apiPost('/sandbox/deletion-approvals', { recordIds: ids, confirmation: 'DELETE 1 SANDBOX RECORD', planVersion: resetState.stateVersion })
+  const beforeResetApproval = await beforeResetApprovalResponse.json() as { approvalId: string; action: 'delete_records'; planVersion: number; planHash: string }
+  await reset()
+  const resetReplay = await apiPost('/sandbox/records/delete', { approvalId: beforeResetApproval.approvalId, action: beforeResetApproval.action, recordIds: ids, planVersion: beforeResetApproval.planVersion, planHash: beforeResetApproval.planHash })
+  assert.equal(resetReplay.status, 403)
+
+  // Two simultaneous submissions using one approval can cause only one delete.
+  const raceState = await (await fetch(`${baseUrl}/api/sandbox/records`)).json() as { stateVersion: number }
+  const raceApprovalResponse = await apiPost('/sandbox/deletion-approvals', { recordIds: ids, confirmation: 'DELETE 1 SANDBOX RECORD', planVersion: raceState.stateVersion })
+  const raceApproval = await raceApprovalResponse.json() as { approvalId: string; action: 'delete_records'; planVersion: number; planHash: string }
+  const racePayload = { approvalId: raceApproval.approvalId, action: raceApproval.action, recordIds: ids, planVersion: raceApproval.planVersion, planHash: raceApproval.planHash }
+  const duplicateResults = await Promise.all([apiPost('/sandbox/records/delete', racePayload), apiPost('/sandbox/records/delete', racePayload)])
+  assert.deepEqual(duplicateResults.map(result => result.status).sort(), [200, 403])
+  const replay = await apiPost('/sandbox/records/delete', racePayload)
+  assert.equal(replay.status, 403)
+  await reset()
+  const restoredAfterChecks = await (await fetch(`${baseUrl}/api/sandbox/records`)).json() as { records: Array<{ id: string }> }
+  assert.deepEqual(restoredAfterChecks.records, seededRecords())
 
   // Exercise the same scoped delete path through the human-facing UI.
   await reset()
@@ -203,7 +253,7 @@ test('TC3 requires scoped approval in the UI and only deletes the approved synth
   await reset()
   const restored = await (await fetch(`${baseUrl}/api/sandbox/records`)).json() as { records: Array<{ id: string }> }
   assert.deepEqual(restored.records.map(record => record.id), ['sandbox-order-001', 'sandbox-customer-001', 'sandbox-cart-001'])
-  await writeFile(path.join(evidenceDir, 'verification-report.json'), JSON.stringify({ scenario: 'TC3', verdict: 'pass', checks: { directDeleteWithoutApproval: noApproval.status, approvalIssuedForExactIds: { status: approvalResponse.status, recordIds: ids, action: approval.action, planVersion: approval.planVersion, planHash: approval.planHash }, actionTamperingRejectedAtApprovalAndExecution: [actionTamper.status, executeActionTamper.status], targetTamperingRejectedAtApprovalAndExecution: [targetTamper.status, executeTargetTamper.status], stateChangedByDeletingDifferentRecord: deleteOther.status, staleApprovalRejected: staleApproval.status, uiApprovalAndDeletion: 'passed', resetRestoredSeedIds: restored.records.map(record => record.id) } }, null, 2))
+  await writeFile(path.join(evidenceDir, 'verification-report.json'), JSON.stringify({ scenario: 'TC3', verdict: 'pass', checks: { directDeleteWithoutApproval: noApproval.status, directApiWithoutBrowserOrigin: directApiWithoutBrowserOrigin.status, unseededSyntheticTargetRejected: unseededTarget.status, approvalIssuedForExactIds: { status: approvalResponse.status, recordIds: approval.recordIds ?? ids, action: approval.action, planVersion: approval.planVersion, planHash: approval.planHash }, actionTamperingRejectedAtApprovalAndExecution: [actionTamper.status, executeActionTamper.status], targetTamperingRejectedAtApprovalAndExecution: [targetTamper.status, executeTargetTamper.status], changedTargetSnapshotRejected: changedTarget.status, stateChangeInvalidatedOldPlan: { stateChange: deleteOther.status, staleExecution: staleApproval.status }, resetInvalidatedApproval: resetReplay.status, concurrentDuplicateExecution: duplicateResults.map(result => result.status), postSuccessReplay: replay.status, exactSyntheticSeedRestored: restoredAfterChecks.records.map(record => record.id), uiApprovalAndDeletion: 'passed', uiResetRestoredSeedIds: restored.records.map(record => record.id) } }, null, 2))
   await page.close()
 })
 

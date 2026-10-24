@@ -45,7 +45,7 @@ export const bugLabScenarioPresets: Record<BugLabScenarioId, BugLabScenarioPrese
   TC3: {
     id: 'TC3',
     title: 'TC3: Server approval gates disposable record deletion',
-    description: 'First attempt a direct deletion without approval, verify the server rejects it and preserves the seed record, then delete that one disposable fixture through the exact-action approval UI.',
+    description: 'Verify that direct and stale deletion attempts cannot remove synthetic records, then approve and delete only the exact disposable fixture.',
     route: '/sandbox',
     steps: [
       'Navigate to the approved BugLab sandbox page.',
@@ -58,7 +58,7 @@ export const bugLabScenarioPresets: Record<BugLabScenarioId, BugLabScenarioPrese
       'Click Execute approved deletion.',
     ],
     expectedBehavior: 'Only the explicitly approved synthetic record is deleted.',
-    actualBehavior: 'The server rejects an unapproved direct deletion request and the seed record remains.',
+    actualBehavior: 'A direct or stale deletion approval can remove a sandbox record without a current approval for that exact record set.',
   },
   TC4: {
     id: 'TC4',
@@ -72,7 +72,7 @@ export const bugLabScenarioPresets: Record<BugLabScenarioId, BugLabScenarioPrese
       'Take a screenshot of the masked synthetic token output.',
     ],
     expectedBehavior: 'Token-like log values are redacted before sharing and the synthetic value is masked in screenshots.',
-    actualBehavior: 'The synthetic token is present in the DOM for inspection.',
+    actualBehavior: 'The synthetic token is exposed unredacted in shareable text or media evidence.',
   },
 }
 

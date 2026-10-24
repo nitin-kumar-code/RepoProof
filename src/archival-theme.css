@@ -283,3 +283,6 @@ body { font-family: Inter, 'DM Sans', sans-serif; }
   .intake-page .intake-form select,
   .intake-page .intake-form textarea { font-size: 16px; }
 }
+
+.header-profile-link { display: flex; align-items: center; gap: 8px; color: inherit; }
+.header-profile-link:hover .user-copy b { color: var(--rust); }

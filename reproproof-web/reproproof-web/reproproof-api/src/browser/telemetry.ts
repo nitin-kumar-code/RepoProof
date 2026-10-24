@@ -66,5 +66,3 @@ export function sanitizeError(error: unknown): string {
   const message = error instanceof Error ? (error.stack ?? error.message) : String(error)
   return safeText(message)
 }
-
-

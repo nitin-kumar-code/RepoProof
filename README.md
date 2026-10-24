@@ -1,39 +1,40 @@
 # ReproProof
 
-ReproProof collects bug reports, generates a reviewable browser plan, requires a server-recorded human decision, and runs approved plans through the Playwright worker. The frontend treats the API's run state and verification verdict as authoritative.
+ReproProof turns a bug report into a reviewable browser plan, requires a server-recorded human approval, then runs the approved plan and records a verdict with evidence. `buglab/` is the repository's controlled synthetic target for the four hackathon scenarios.
 
-## Run locally
+## Hackathon judging demo
 
-### Frontend and API in development
+Use the complete setup, scenario walkthrough, reset steps, evidence locations, test commands, and troubleshooting guide in [`buglab/README.md`](buglab/README.md).
 
-In one terminal, start the API:
+Verified local URL defaults:
+
+- ReproProof Compose UI: `http://localhost:8080`
+- ReproProof API: `http://localhost:4000`
+- BugLab UI: `http://127.0.0.1:4173`
+- BugLab API health: `http://127.0.0.1:4317/health`
+
+No deployed/public URL is configured or verified. Compose configuration parses successfully, but the full Docker stack was not launched during this verification because Docker Desktop was unavailable. The configured Supabase project also needs the corrective queue-function migration before the worker can claim queued runs; see the guide for the exact file and setup steps.
+
+## Quick start
+
+From repository root, configure the ignored `.env` files using placeholder-only examples in `.env.example` and `buglab/.env.example`. Create a private Supabase Storage bucket and apply `reproproof-api/supabase/schema.sql` plus `reproproof-api/supabase/migrations/202610210001_fix_claim_run_job_plan_hash_ambiguity.sql` in the Supabase SQL Editor. Use a matching random reset token in the root and BugLab env files, plus locally created approval credentials. Never commit real secrets.
+
+Start BugLab:
 
 ```bash
-cd reproproof-api
-npm ci
-cp .env.example .env
-npm run dev
+cd buglab && npm ci && npm run dev:api
 ```
 
-Set `APPROVAL_USERNAME` and `APPROVAL_PASSWORD` in `reproproof-api/.env` to test approvals. Reports and plans can use the in-memory store without Supabase; queued browser execution requires Supabase credentials and the SQL schema in `reproproof-api/supabase/schema.sql`.
-
-In another terminal, from the repository root:
+In another terminal:
 
 ```bash
-npm ci
-cp .env.example .env
-npm run dev
+cd buglab && BUGLAB_WEB_HOST=0.0.0.0 npm run dev:web
 ```
 
-Open `http://localhost:5173`. Vite uses `http://localhost:4000` for API calls in development. For a local app as a browser target, explicitly enable `ALLOW_INSECURE_LOCAL_TARGETS=true` and set `ALLOWED_TARGET_ORIGINS` in the API environment. Keep that option off outside local development.
-
-### BugLab integration demo
-
-BugLab is the supported controlled target for TC1–TC4. The report form loads its configurable origin from `GET /api/demo/buglab`; selecting a scenario fills the normal report fields and marks the report with `environment.demoScenario`. The API accepts that marker only when the URL matches `BUGLAB_BASE_URL` and the documented route. Plans still use the existing planner, hash approval, durable queue, Playwright worker, and Evidence Passport.
-
-For Docker Desktop, run BugLab on the host so its loopback-only API remains private. Configure the same randomly generated reset token in `buglab/.env` and the root `.env`. In root `.env`, allow only `http://host.docker.internal:4173`, set `BUGLAB_BASE_URL` to that origin, set `VERIFICATION_RESET_URL` to its `/api/sandbox/reset` route, and enable `ALLOW_INSECURE_LOCAL_TARGETS=true` only with `APP_ENV=development`. BugLab's Vite web server must bind to `0.0.0.0` for the ReproProof container; its API continues to bind to loopback. Then:
+Then from the repository root, with Docker running:
 
 ```bash
+<<<<<<< HEAD
 cd buglab
 npm ci
 # Terminal 1: configure BUGLAB_RESET_TOKEN and BUGLAB_UI_ORIGINS in buglab/.env
@@ -50,54 +51,48 @@ From the repository root:
 ```bash
 cp .env.example .env
 # Edit .env with approved target origins, approval credentials, and Supabase values as needed.
+=======
+>>>>>>> cb06554f291a62c9ebd455e57ec3b9ae815edf8a
 docker compose up --build
 ```
 
-Open `http://localhost:8080`. Nginx proxies `/api` and `/health` to the API container, so the frontend uses same-origin requests. Set the Supabase URL and service role key in the untracked root `.env` for durable reports, the queue, and private evidence storage. Never put server credentials in a `VITE_` variable.
+Open `http://localhost:8080`. The ReproProof API container reaches BugLab through `http://host.docker.internal:4173`; the host browser uses `http://127.0.0.1:4173` for BugLab directly.
 
-## API workflow
+## Application contracts
 
-| Screen/action | Endpoint | Behavior |
-| --- | --- | --- |
-| Submit a report | `POST /api/bugs` | Saves validated fields or returns clarification requests. |
-| Load a report | `GET /api/bugs/:id` | Returns saved report details and environment. |
-| Generate a plan | `POST /api/runs` with `{ "bugReportId": "…" }` | Returns the plan, hash, expiry, and `awaiting_approval` state. |
-| Approve or reject | `POST /api/runs/:id/approve` | Uses configured HTTP Basic credentials; rejection cancels the run. |
-| Queue execution | `POST /api/runs/:id/execute` | Returns `202`; the frontend polls for state and evidence. |
-| Monitor a run | `GET /api/runs/:id` | Returns progress, attempts, sanitized telemetry, and the backend verdict. |
-| Inspect evidence | `GET /api/runs/:id/evidence` | Returns metadata and authorized download URLs. |
+| Workflow | Endpoint | Behavior |
+|---|---|---|
+| Submit a report | `POST /api/bugs` | Validates and stores report. Optional `environment.demoScenario` supports `TC1`–`TC4` for the configured BugLab target. |
+| Read report | `GET /api/bugs/:id` | Returns validated report/environment. |
+| Generate plan | `POST /api/runs` | Saves plan/hash and returns `awaiting_approval`. |
+| Approve/reject | `POST /api/runs/:id/approve` | Records server-verified configured Basic credentials and decision against plan hash. |
+| Queue execution | `POST /api/runs/:id/execute` | Returns accepted response; client polls run state. |
+| Read progress/verdict | `GET /api/runs/:id` | Returns progress, attempts, sanitized telemetry, and final result. |
+| Read evidence | `GET /api/runs/:id/evidence` | Returns evidence metadata and authorized download URLs where configured. |
 
-Verdicts are `reproduced`, `not_reproduced`, or `inconclusive`. An infrastructure failure remains a separate `failed` run state; a successful HTTP response does not mean a bug was reproduced.
+Verdicts are `reproduced`, `not_reproduced`, or `inconclusive`. Infrastructure errors use `failed`. A successful request alone does not establish reproduction.
 
-## Configuration and safety
-
-- `VITE_API_BASE_URL` is optional for local Vite development. For a separately hosted API, set it at frontend build time. The Docker Compose setup uses the Nginx same-origin proxy by default.
-- Configure `ALLOWED_TARGET_ORIGINS` and any necessary `ALLOWED_RESOURCE_ORIGINS` with exact approved origins. The default empty target allowlist rejects submissions.
-- Production requires `APP_ENV=production`, HTTPS `CORS_ORIGIN`, and both Supabase settings. Keep approval credentials, model keys, and the Supabase service role key on the API server.
-- Use synthetic accounts and approved sandbox targets. Mutating plans require the configured reset procedure before repeatability verification.
-
-## Verification
+## Checks
 
 ```bash
-# Frontend, from repository root
+npm ci
 npm run build
 npm run lint
-
-# API
-cd reproproof-api
-npm test
-npm run build
+cd reproproof-api && npm ci && npm run build && npm test
+cd ../buglab && npm ci && npm run build && npm run test:api && npm run test:e2e
 ```
 
+<<<<<<< HEAD
 The QA scenario page reads live report/run state and links each scenario to the report form. Queued browser execution still requires the configured Supabase schema and credentials; the API intentionally refuses to execute an untracked run.
 
 The full local integration test starts BugLab, the ReproProof frontend/API, and the Playwright worker, then submits, approves, executes, and checks all four scenarios. Point the root `.env` only at a dedicated isolated **TEST Supabase project**; the test creates and removes report/run rows and must never use production or customer data. Configure `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `APPROVAL_USERNAME`, and `APPROVAL_PASSWORD` there. Apply `reproproof-api/supabase/schema.sql` and the queue migrations, including `202610210001_fix_claim_run_job_plan_hash_ambiguity.sql`, before running. If the required credentials are missing, the integration test is skipped and does not count as a pass. No values are printed by the test:
+=======
+The full integrated workflow is exercised with:
+>>>>>>> cb06554f291a62c9ebd455e57ec3b9ae815edf8a
 
 ```bash
 cd reproproof-api
 npm run test:buglab-e2e
 ```
 
-Evidence and the result summary are retained under the OS temporary directory printed at the end of the test.
-
-If the worker logs `plan_hash is ambiguous`, apply the existing corrective function migration at `reproproof-api/supabase/migrations/202610210001_fix_claim_run_job_plan_hash_ambiguity.sql` in the configured Supabase project's SQL Editor. The queue schema is already present, but the function migration must also be applied for workers to claim runs. The integration test checks for this known migration drift before it creates test reports.
+This integration test needs valid root `.env` Supabase and approval settings, applied schema and queue migration, and locally installed Playwright Chromium. See [`buglab/README.md`](buglab/README.md) for detailed prerequisites, E2E evidence outputs, troubleshooting, and current readiness limits.
