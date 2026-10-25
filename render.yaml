@@ -49,7 +49,7 @@ services:
     name: buglab-api
     runtime: node
     rootDir: buglab
-    plan: 0.5c-1g
+    plan: 0.5c-512mb
     region: oregon
     numInstances: 1
     buildCommand: npm ci && npm run build
