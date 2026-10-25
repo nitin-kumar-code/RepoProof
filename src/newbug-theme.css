@@ -1,0 +1,159 @@
+/* Keep New Bug Report accents aligned with ReproProof's rust palette. */
+.newbug-shell {
+  --newbug-accent: #c34b2b;
+  --newbug-accent-hover: #a83e22;
+  --newbug-accent-soft: #f7e2d8;
+}
+
+.newbug-shell .brand-mark,
+.newbug-shell .sidebar-new-bug,
+.newbug-shell .header-new-bug {
+  background: var(--newbug-accent);
+}
+
+.newbug-shell .sidebar-new-bug:hover,
+.newbug-shell .header-new-bug:hover,
+.newbug-shell .intake-submit-row .primary-button:hover {
+  background: var(--newbug-accent-hover);
+}
+
+.newbug-shell .intake-kicker,
+.newbug-shell .intake-kicker > i,
+.newbug-shell .intake-section-title > span,
+.newbug-shell .intake-submit-row .primary-button,
+.newbug-shell .topology-map > div i,
+.newbug-shell .roadmap-step > b,
+.newbug-shell .cluster-card > a {
+  color: var(--newbug-accent);
+}
+
+.newbug-shell .intake-kicker > i,
+.newbug-shell .intake-submit-row .primary-button,
+.newbug-shell .roadmap-step > b {
+  background: var(--newbug-accent);
+}
+
+.newbug-shell .intake-section-title > span {
+  background: var(--newbug-accent-soft);
+}
+
+.newbug-shell .intake-section-title > b.planner-badge {
+  color: var(--newbug-accent);
+  background: var(--newbug-accent-soft);
+}
+
+.newbug-shell .intake-form input:focus,
+.newbug-shell .intake-form select:focus,
+.newbug-shell .intake-form textarea:focus {
+  border-color: var(--newbug-accent);
+  box-shadow: 0 0 0 2px var(--newbug-accent-soft);
+}
+
+.newbug-shell .endpoint-input select {
+  color: var(--newbug-accent);
+}
+
+.newbug-shell .sandbox-options label.sandbox-selected {
+  border-color: var(--newbug-accent);
+  background: #fff7f3;
+  box-shadow: 0 0 0 1px var(--newbug-accent);
+}
+
+.newbug-shell .sandbox-selected .sandbox-check,
+.newbug-shell .sandbox-options label > em {
+  background: var(--newbug-accent);
+}
+
+.newbug-shell .sandbox-options label.sandbox-selected > b,
+.newbug-shell .sandbox-options .sandbox-selected > code,
+.newbug-shell .human-gate-note svg,
+.newbug-shell .protocol-stats b {
+  color: var(--newbug-accent);
+}
+
+.newbug-shell .human-gate-note {
+  background: #fbf2ed;
+}
+
+.newbug-shell .topology-map > div i {
+  background: var(--newbug-accent);
+}
+
+.newbug-shell .intake-submit-row .primary-button {
+  color: #fff;
+}
+
+.newbug-shell .intake-save:focus-visible,
+.newbug-shell button:focus-visible,
+.newbug-shell a:focus-visible {
+  outline-color: var(--newbug-accent);
+}
+
+/* Dashboard: convert blue interface accents while preserving status colors. */
+.dashboard-page .pipeline-banner {
+  border-left-color: var(--lab-rust);
+}
+
+.dashboard-page .metric-icon.blue,
+.dashboard-page .metric-icon.soft-blue {
+  color: var(--lab-rust);
+  background: var(--lab-rust-wash);
+}
+
+.dashboard-page .metric-line:before,
+.dashboard-page .env-chip i {
+  background-color: var(--lab-rust);
+}
+
+.dashboard-page .pipeline-banner .pipeline-blue,
+.dashboard-page .pipeline-banner a {
+  color: var(--lab-rust);
+}
+
+.dashboard-page .table-action {
+  background: var(--lab-rust);
+}
+
+.dashboard-page .run-state-chip {
+  background: var(--lab-rust-wash);
+  color: var(--lab-rust);
+}
+
+.dashboard-page .run-state-chip.failed {
+  background: #ffe0de;
+  color: #a9211d;
+}
+
+/* Live Execution: use the same orange for interactive and selected states. */
+.execution-reference-page .execution-header-actions a {
+  border-color: var(--lab-rust);
+  background: var(--lab-rust);
+  box-shadow: 0 1px 2px #c34b2b2b;
+}
+
+.execution-reference-page .execution-header-actions a:hover {
+  background: var(--lab-rust-hover);
+}
+
+.execution-reference-page .execution-log-tabs > button.active {
+  border-color: var(--lab-border);
+  background: var(--lab-rust-wash);
+  color: var(--lab-rust);
+}
+
+.execution-reference-page .preview-empty > svg,
+.execution-reference-page .browser-monitor-foot span:first-child,
+.execution-reference-page .timing-empty svg {
+  color: var(--lab-rust);
+}
+
+.execution-reference-page button:focus-visible,
+.execution-reference-page a:focus-visible,
+.execution-reference-page input:focus-visible {
+  outline-color: var(--lab-rust);
+}
+
+/* Header profile avatar uses the shared orange action accent. */
+.header-user {
+  background: var(--lab-rust);
+}

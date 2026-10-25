@@ -16,6 +16,7 @@ import Profile from './pages/Profile'
 import { checkHealth } from './api/client'
 import './App.css'
 import './archival-theme.css'
+import './newbug-theme.css'
 
 function AppShell() {
   const location = useLocation()
