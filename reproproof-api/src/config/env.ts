@@ -15,6 +15,7 @@ const envSchema = z.object({
     value.split(',').map(origin => origin.trim()).filter(Boolean),
   ),
   BUGLAB_BASE_URL: z.preprocess(value => value === '' ? undefined : value, z.string().url().optional()),
+  BUGLAB_API_BASE_URL: z.preprocess(value => value === '' ? undefined : value, z.string().url().optional()),
   ALLOW_INSECURE_LOCAL_TARGETS: z.enum(['true', 'false']).default('false').transform(value => value === 'true'),
   RUN_ARTIFACTS_DIR: z.string().trim().min(1).default('artifacts/runs'),
   EVIDENCE_STORAGE_BUCKET: z.string().trim().min(1).default('reproproof-evidence'),
@@ -87,6 +88,19 @@ if (env.BUGLAB_BASE_URL) {
     || (demo.protocol !== 'https:' && !(demo.protocol === 'http:' && localDemo))
     || !env.ALLOWED_TARGET_ORIGINS.some(origin => new URL(origin).origin === configuredOrigin)) {
     throw new Error('Invalid environment configuration: BUGLAB_BASE_URL must be an exact origin already present in ALLOWED_TARGET_ORIGINS')
+  }
+}
+
+if (env.BUGLAB_API_BASE_URL) {
+  const api = new URL(env.BUGLAB_API_BASE_URL)
+  const localApi = env.APP_ENV === 'development' && env.ALLOW_INSECURE_LOCAL_TARGETS && isDevelopmentLocalHost(api.hostname)
+  if (api.pathname !== '/' || api.search || api.hash || api.username || api.password
+    || (api.protocol !== 'https:' && !(api.protocol === 'http:' && localApi))
+    || !env.ALLOWED_RESOURCE_ORIGINS.some(origin => new URL(origin).origin === api.origin)) {
+    throw new Error('Invalid environment configuration: BUGLAB_API_BASE_URL must be an exact allowed resource origin')
+  }
+  if (!env.APPROVAL_USERNAME || !env.APPROVAL_PASSWORD) {
+    throw new Error('Invalid environment configuration: BugLab API authentication requires approval credentials')
   }
 }
 

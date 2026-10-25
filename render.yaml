@@ -1,0 +1,76 @@
+services:
+  - type: web
+    name: reproproof-api
+    runtime: docker
+    plan: 2c-4g
+    region: oregon
+    numInstances: 1
+    dockerfilePath: ./reproproof-api/Dockerfile
+    dockerContext: ./reproproof-api
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: APP_ENV
+        value: production
+      - key: PORT
+        value: "10000"
+      - key: RUN_ARTIFACTS_DIR
+        value: /tmp/reproproof-artifacts
+      - key: EVIDENCE_STORAGE_BUCKET
+        value: reproproof-evidence
+      - key: PLANNER_MODE
+        value: mock
+      - key: OPENAI_MODEL
+        value: gpt-4o-mini
+      - key: CORS_ORIGIN
+        sync: false
+      - key: BUGLAB_BASE_URL
+        sync: false
+      - key: BUGLAB_API_BASE_URL
+        sync: false
+      - key: ALLOWED_TARGET_ORIGINS
+        sync: false
+      - key: ALLOWED_RESOURCE_ORIGINS
+        sync: false
+      - key: VERIFICATION_RESET_URL
+        sync: false
+      - key: VERIFICATION_RESET_TOKEN
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: APPROVAL_USERNAME
+        sync: false
+      - key: APPROVAL_PASSWORD
+        sync: false
+  - type: web
+    name: buglab-api
+    runtime: node
+    rootDir: buglab
+    plan: 0.5c-1g
+    region: oregon
+    numInstances: 1
+    buildCommand: npm ci && npm run build
+    startCommand: npm run start:api
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: APP_ENV
+        value: production
+      - key: PORT
+        value: "10000"
+      - key: BUGLAB_PUBLIC_DEPLOYMENT
+        value: "true"
+      - key: BUGLAB_HOST
+        value: 0.0.0.0
+      - key: BUGLAB_UI_ORIGINS
+        sync: false
+      - key: BUGLAB_RESET_TOKEN
+        sync: false
+      - key: BUGLAB_APPROVAL_USERNAME
+        sync: false
+      - key: BUGLAB_APPROVAL_PASSWORD
+        sync: false

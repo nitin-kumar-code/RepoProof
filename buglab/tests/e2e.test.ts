@@ -19,6 +19,8 @@ let browser: Browser
 let baseUrl: string
 let store: BugLabStore
 const evidenceRoot = path.join(tmpdir(), 'buglab-evidence', `acceptance-${new Date().toISOString().replace(/[:.]/g, '-')}`)
+const testApprover = { username: 'judge', password: 'buglab-test-approval-secret' }
+const testApproverHeader = `Basic ${Buffer.from(`${testApprover.username}:${testApprover.password}`).toString('base64')}`
 
 async function prepareEvidence(caseName: string): Promise<string> {
   const directory = path.join(evidenceRoot, caseName)
@@ -74,16 +76,12 @@ before(async () => {
   const address = httpServer.address()
   assert.ok(address && typeof address !== 'string')
   baseUrl = `http://127.0.0.1:${address.port}`
-<<<<<<< HEAD
-  apiApp.current = createBugLabApp(undefined, Date.now, { allowedUiOrigins: [baseUrl] })
-=======
   store = new BugLabStore()
-  apiServer = createServer(createBugLabApp(store, Date.now, { allowedUiOrigins: [baseUrl] }))
-  await new Promise<void>((resolve, reject) => {
-    apiServer.once('error', reject)
-    apiServer.listen(apiPort, '127.0.0.1', resolve)
+  apiApp.current = createBugLabApp(store, Date.now, {
+    allowedUiOrigins: [baseUrl],
+    approvalUsername: testApprover.username,
+    approvalPassword: testApprover.password,
   })
->>>>>>> cb06554f291a62c9ebd455e57ec3b9ae815edf8a
   browser = await chromium.launch({ headless: true })
 })
 
@@ -94,7 +92,7 @@ after(async () => {
 })
 
 async function apiPost(pathname: string, body: unknown): Promise<Response> {
-  return fetch(`${baseUrl}/api${pathname}`, { method: 'POST', headers: { 'Content-Type': 'application/json', Origin: baseUrl, 'Sec-Fetch-Site': 'same-origin' }, body: JSON.stringify(body) })
+  return fetch(`${baseUrl}/api${pathname}`, { method: 'POST', headers: { 'Content-Type': 'application/json', Origin: baseUrl, 'Sec-Fetch-Site': 'same-origin', Authorization: testApproverHeader }, body: JSON.stringify(body) })
 }
 
 async function reset(): Promise<void> {
@@ -175,7 +173,7 @@ test('TC3 requires scoped approval in the UI and only deletes the approved synth
   const ids = ['sandbox-order-001']
   const noApproval = await apiPost('/sandbox/records/delete', { approvalId: '00000000-0000-4000-8000-000000000000', action: 'delete_records', recordIds: ids, planVersion: state.stateVersion, planHash: '0'.repeat(64) })
   assert.equal(noApproval.status, 403)
-  const directApiWithoutBrowserOrigin = await fetch(`${baseUrl}/api/sandbox/records/delete`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ approvalId: '00000000-0000-4000-8000-000000000000', action: 'delete_records', recordIds: ids, planVersion: state.stateVersion, planHash: '0'.repeat(64) }) })
+  const directApiWithoutBrowserOrigin = await fetch(`${baseUrl}/api/sandbox/records/delete`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: testApproverHeader }, body: JSON.stringify({ approvalId: '00000000-0000-4000-8000-000000000000', action: 'delete_records', recordIds: ids, planVersion: state.stateVersion, planHash: '0'.repeat(64) }) })
   assert.equal(directApiWithoutBrowserOrigin.status, 403)
   const unseededTarget = await apiPost('/sandbox/deletion-approvals', { recordIds: ['sandbox-order-999'], confirmation: 'DELETE 1 SANDBOX RECORD', planVersion: state.stateVersion })
   assert.equal(unseededTarget.status, 409)
@@ -244,6 +242,8 @@ test('TC3 requires scoped approval in the UI and only deletes the approved synth
   assert.equal(((await (await fetch(`${baseUrl}/api/sandbox/records`)).json()) as { records: unknown[] }).records.length, 3)
   await page.getByTestId('delete-record').click()
   await assert.doesNotReject(() => page.getByTestId('delete-confirmation').waitFor())
+  await page.getByTestId('delete-approver').fill(testApprover.username)
+  await page.getByTestId('delete-approver-password').fill(testApprover.password)
   await page.getByTestId('delete-approval-phrase').fill('DELETE 1 SANDBOX RECORD')
   await page.getByTestId('approve-deletion').click()
   await page.getByTestId('delete-approved-records').click()

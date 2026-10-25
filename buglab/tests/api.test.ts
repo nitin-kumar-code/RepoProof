@@ -11,11 +11,14 @@ let baseUrl: string
 let store: BugLabStore
 let clock: number
 const TEST_RESET_TOKEN = 'buglab-test-reset-secret-9a2b-8f4e6d2c1a'
+const TEST_APPROVAL_USERNAME = 'judge'
+const TEST_APPROVAL_PASSWORD = 'buglab-test-approval-secret'
+const TEST_APPROVAL_HEADER = `Basic ${Buffer.from(`${TEST_APPROVAL_USERNAME}:${TEST_APPROVAL_PASSWORD}`).toString('base64')}`
 
 beforeEach(async () => {
   store = new BugLabStore()
   clock = Date.now()
-  server = createServer(createBugLabApp(store, () => clock, { resetToken: TEST_RESET_TOKEN }))
+  server = createServer(createBugLabApp(store, () => clock, { resetToken: TEST_RESET_TOKEN, approvalUsername: TEST_APPROVAL_USERNAME, approvalPassword: TEST_APPROVAL_PASSWORD }))
   await new Promise<void>(resolve => server.listen(0, '127.0.0.1', resolve))
   const address = server.address()
   assert.ok(address && typeof address !== 'string')
@@ -25,7 +28,7 @@ beforeEach(async () => {
 afterEach(async () => new Promise<void>((resolve, reject) => server.close(error => error ? reject(error) : resolve())))
 
 async function post(path: string, body: unknown) {
-  return fetch(`${baseUrl}${path}`, { method: 'POST', headers: { 'Content-Type': 'application/json', Origin: 'http://127.0.0.1:4173', 'Sec-Fetch-Site': 'same-origin' }, body: JSON.stringify(body) })
+  return fetch(`${baseUrl}${path}`, { method: 'POST', headers: { 'Content-Type': 'application/json', Origin: 'http://127.0.0.1:4173', 'Sec-Fetch-Site': 'same-origin', Authorization: TEST_APPROVAL_HEADER }, body: JSON.stringify(body) })
 }
 
 describe('BugLab HTTP API', () => {
@@ -78,6 +81,23 @@ describe('BugLab HTTP API', () => {
     }
   })
 
+  it('allows credentialed browser preflight only from the configured BugLab frontend origin', async () => {
+    const allowed = await fetch(`${baseUrl}/api/sandbox/deletion-approvals`, {
+      method: 'OPTIONS',
+      headers: { Origin: 'http://127.0.0.1:4173', 'Access-Control-Request-Method': 'POST', 'Access-Control-Request-Headers': 'authorization,content-type' },
+    })
+    assert.equal(allowed.status, 204)
+    assert.equal(allowed.headers.get('access-control-allow-origin'), 'http://127.0.0.1:4173')
+    assert.match(allowed.headers.get('access-control-allow-headers') ?? '', /authorization/i)
+
+    const rejected = await fetch(`${baseUrl}/api/sandbox/deletion-approvals`, {
+      method: 'OPTIONS',
+      headers: { Origin: 'https://attacker.example', 'Access-Control-Request-Method': 'POST', 'Access-Control-Request-Headers': 'authorization,content-type' },
+    })
+    assert.equal(rejected.status, 403)
+    assert.equal(rejected.headers.get('access-control-allow-origin'), null)
+  })
+
   it('reproduces the same cart defect and fingerprint after two clean resets (TC1)', async () => {
     const runs: Array<{ actual: number; expected: number; fingerprint: string | null }> = []
     for (let run = 0; run < 2; run += 1) {
@@ -107,6 +127,13 @@ describe('BugLab HTTP API', () => {
 
   it('rejects unapproved deletion, mismatched records, stale approvals, and replay (TC3)', async () => {
     const ids = [store.records[0].id]
+    const unauthenticated = await fetch(`${baseUrl}/api/sandbox/deletion-approvals`, { method: 'POST', headers: { 'Content-Type': 'application/json', Origin: 'http://127.0.0.1:4173' }, body: JSON.stringify({ recordIds: ids, confirmation: 'DELETE 1 SANDBOX RECORD', planVersion: store.stateVersion }) })
+    assert.equal(unauthenticated.status, 401)
+    const unauthenticatedDelete = await fetch(`${baseUrl}/api/sandbox/records/delete`, { method: 'POST', headers: { 'Content-Type': 'application/json', Origin: 'http://127.0.0.1:4173' }, body: JSON.stringify({ approvalId: '00000000-0000-4000-8000-000000000000', action: 'delete_records', recordIds: ids, planVersion: store.stateVersion, planHash: '0'.repeat(64) }) })
+    assert.equal(unauthenticatedDelete.status, 401)
+    assert.equal(store.records.length, 3)
+    const wrongCredentials = await fetch(`${baseUrl}/api/sandbox/deletion-approvals`, { method: 'POST', headers: { 'Content-Type': 'application/json', Origin: 'http://127.0.0.1:4173', Authorization: `Basic ${Buffer.from('judge:wrong-password').toString('base64')}` }, body: JSON.stringify({ recordIds: ids, confirmation: 'DELETE 1 SANDBOX RECORD', planVersion: store.stateVersion }) })
+    assert.equal(wrongCredentials.status, 401)
     const noApproval = await post('/api/sandbox/records/delete', { approvalId: '00000000-0000-4000-8000-000000000000', action: 'delete_records', recordIds: ids, planVersion: store.stateVersion, planHash: '0'.repeat(64) })
     assert.equal(noApproval.status, 403)
 
@@ -137,7 +164,7 @@ describe('BugLab HTTP API', () => {
   })
 
   it('binds destructive approval to the exact action, target snapshot, version, and one-time use', async () => {
-    const crossOrigin = await fetch(`${baseUrl}/api/sandbox/deletion-approvals`, { method: 'POST', headers: { Origin: 'https://attacker.example', 'Content-Type': 'application/json' }, body: JSON.stringify({ recordIds: [store.records[0].id], confirmation: 'DELETE 1 SANDBOX RECORD', planVersion: store.stateVersion }) })
+    const crossOrigin = await fetch(`${baseUrl}/api/sandbox/deletion-approvals`, { method: 'POST', headers: { Origin: 'https://attacker.example', 'Content-Type': 'application/json', Authorization: TEST_APPROVAL_HEADER }, body: JSON.stringify({ recordIds: [store.records[0].id], confirmation: 'DELETE 1 SANDBOX RECORD', planVersion: store.stateVersion }) })
     assert.equal(crossOrigin.status, 403)
     const approvalResponse = await post('/api/sandbox/deletion-approvals', { recordIds: [store.records[0].id], confirmation: 'DELETE 1 SANDBOX RECORD', planVersion: store.stateVersion })
     const approval = await approvalResponse.json() as { approvalId: string; action: string; recordIds: string[]; planVersion: number; planHash: string }
@@ -169,9 +196,9 @@ describe('BugLab HTTP API', () => {
 
   it('fails closed when destructive browser requests omit an allowed Origin', async () => {
     const body = { recordIds: [store.records[0].id], confirmation: 'DELETE 1 SANDBOX RECORD', planVersion: store.stateVersion }
-    const approval = await fetch(`${baseUrl}/api/sandbox/deletion-approvals`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+    const approval = await fetch(`${baseUrl}/api/sandbox/deletion-approvals`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: TEST_APPROVAL_HEADER }, body: JSON.stringify(body) })
     assert.equal(approval.status, 403)
-    const deletion = await fetch(`${baseUrl}/api/sandbox/records/delete`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ approvalId: '00000000-0000-4000-8000-000000000000', action: 'delete_records', recordIds: [store.records[0].id], planVersion: store.stateVersion, planHash: '0'.repeat(64) }) })
+    const deletion = await fetch(`${baseUrl}/api/sandbox/records/delete`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: TEST_APPROVAL_HEADER }, body: JSON.stringify({ approvalId: '00000000-0000-4000-8000-000000000000', action: 'delete_records', recordIds: [store.records[0].id], planVersion: store.stateVersion, planHash: '0'.repeat(64) }) })
     assert.equal(deletion.status, 403)
     assert.equal(store.records.length, 3)
   })

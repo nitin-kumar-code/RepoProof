@@ -4,8 +4,6 @@ import {
   ArrowRight,
   Ban,
   CircleHelp,
-  Download,
-  RefreshCw,
   Search,
   ShieldAlert,
 } from 'lucide-react'
@@ -17,10 +15,6 @@ import type { RunRecord } from '../types/run'
 
 const filters = ['All', 'Has runs', 'No runs'] as const
 
-function escapeCsv(value: string) {
-  return `"${value.replaceAll('"', '""')}"`
-}
-
 export default function Investigations() {
   const [query, setQuery] = useState('')
   const [status, setStatus] = useState<(typeof filters)[number]>('All')
@@ -28,7 +22,6 @@ export default function Investigations() {
   const [runs, setRuns] = useState<RunRecord[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [notice, setNotice] = useState('')
   const [refreshKey, setRefreshKey] = useState(0)
 
   useEffect(() => {
@@ -54,48 +47,20 @@ export default function Investigations() {
     && (status === 'All' || (status === 'Has runs' ? runs.some(run => run.bugReportId === bug.id) : !runs.some(run => run.bugReportId === bug.id)))
   )), [records, runs, query, status])
 
-  const exportCsv = () => {
-    const rows = [
-      ['Bug ID', 'Title', 'Target', 'Created', 'Latest run status', 'Verdict'],
-      ...filtered.map(bug => {
-        const run = runs.find(item => item.bugReportId === bug.id)
-        return [bug.id, bug.title, bug.environment.targetUrl, bug.createdAt, run?.status ?? 'No run', run?.execution?.result ?? 'Not evaluated']
-      }),
-    ]
-    const csv = `\uFEFF${rows.map(row => row.map(escapeCsv).join(',')).join('\r\n')}`
-    const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }))
-    const anchor = document.createElement('a')
-    anchor.href = url
-    anchor.download = 'reproproof-investigations.csv'
-    document.body.append(anchor)
-    anchor.click()
-    anchor.remove()
-    URL.revokeObjectURL(url)
-    setNotice(`Exported ${filtered.length} live ${filtered.length === 1 ? 'record' : 'records'} as CSV.`)
-  }
-
-  const showSyncNotice = () => setNotice('Jira / GitHub sync is not connected in this workspace.')
   const pendingApprovals = runs.filter(run => run.status === 'awaiting_approval').length
   const evaluated = runs.filter(run => run.execution).length
 
   return (
     <main className="page investigation-reference-page">
-      <div className="investigation-toolbar" aria-label="Investigation actions">
-        <button className="secondary-button" onClick={exportCsv}><Download size={14} />Export CSV <small>(Demo)</small></button>
-        <button className="secondary-button" onClick={showSyncNotice}><RefreshCw size={14} />Sync Jira / GitHub <small>(Demo)</small></button>
-      </div>
-
       <div className="investigation-page-heading">
         <div>
           <div className="eyebrow">TELEMETRIC RECORDS &amp; STATE PROOFS <span>· Connected API</span></div>
           <h1>Investigations</h1>
           <p>Track reported bugs, reproduction history, and deterministic state checks across staging environments.</p>
         </div>
-        <span className="mock-stamp"><i />LIVE API DATA</span>
       </div>
 
       {error && <div className="investigation-notice is-warning" role="alert">{error} <button type="button" onClick={() => { setLoading(true); setRefreshKey(value => value + 1) }}>Try again</button></div>}
-      {notice && <div className="investigation-notice" role="status">{notice}</div>}
       {loading && <p className="investigation-loading" role="status">Loading API reports…</p>}
 
       <section className="investigation-kpi-grid" aria-label="Investigation summary">
@@ -133,7 +98,7 @@ export default function Investigations() {
           <div className="register-filters" role="group" aria-label="Filter by report status">
             {filters.map(filter => <button key={filter} type="button" className={status === filter ? 'active' : ''} aria-pressed={status === filter} onClick={() => setStatus(filter)}>{filter}{filter === 'All' ? ` (${records.length})` : ''}</button>)}
           </div>
-          <span className="sample-source"><Activity size={13} />LIVE BUG &amp; RUN API</span>
+          <span className="sample-source"><Activity size={13} />INVESTIGATION RECORDS</span>
         </div>
         <div className="investigation-table-scroll">
           <table className="investigation-record-table">
@@ -141,7 +106,7 @@ export default function Investigations() {
             <tbody>{filtered.map((bug, index) => (
               <tr key={bug.id} className={index % 2 ? '' : 'record-alt'}>
                 <td><b className="bug-id">{bug.id}</b></td>
-                <td className="investigation-title-cell"><b>{bug.title}</b><small>API report · verdict depends on completed verification</small></td>
+                <td className="investigation-title-cell"><b>{bug.title}</b></td>
                 <td><span className="service-tag">API report</span></td>
                 <td><span className="severity-badge">Not supplied</span></td>
                 <td><span className="environment-label"><i />{bug.environment.targetUrl}</span></td>

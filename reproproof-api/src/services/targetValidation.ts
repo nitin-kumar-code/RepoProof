@@ -169,12 +169,20 @@ export async function assertAllowedResourceUrl(value: string, isNavigation = fal
 }
 
 /** Install before any page navigation. Every HTTP(S) request, including redirects, is checked. */
-export async function installApprovedRequestGuard(page: Page): Promise<void> {
+export async function installApprovedRequestGuard(page: Page, requestAuthorization?: { origin: string; header: string }): Promise<void> {
   const cache: DnsCacheContext = { entries: new Map(), inFlight: new Map() }
   await page.route('**/*', async route => {
     try {
-      await assertAllowedResourceUrl(route.request().url(), route.request().isNavigationRequest(), cache)
-      await route.continue()
+      const requestUrl = route.request().url()
+      await assertAllowedResourceUrl(requestUrl, route.request().isNavigationRequest(), cache)
+      if (requestAuthorization && new URL(requestUrl).origin === requestAuthorization.origin) {
+        const headers = { ...route.request().headers() }
+        for (const key of Object.keys(headers)) if (key.toLowerCase() === 'authorization') delete headers[key]
+        headers.authorization = requestAuthorization.header
+        await route.continue({ headers })
+      } else {
+        await route.continue()
+      }
     } catch {
       await route.abort('blockedbyclient')
     }

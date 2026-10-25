@@ -167,6 +167,7 @@ test('ReproProof completes BugLab TC1–TC4 through report, plan, approval, brow
   start('BugLab API', bugLabRoot, path.join(bugLabRoot, 'node_modules/tsx/dist/cli.mjs'), ['server/index.ts'], {
     BUGLAB_HOST: '127.0.0.1', BUGLAB_PORT: String(targetApiPort), BUGLAB_RESET_TOKEN: resetToken,
     BUGLAB_UI_ORIGINS: targetBase, BUGLAB_WEB_PORT: String(targetPort), BUGLAB_WEB_HOST: '127.0.0.1',
+    BUGLAB_APPROVAL_USERNAME: process.env.APPROVAL_USERNAME!, BUGLAB_APPROVAL_PASSWORD: process.env.APPROVAL_PASSWORD!,
   })
   start('BugLab web', bugLabRoot, path.join(bugLabRoot, 'node_modules/vite/bin/vite.js'), ['--host', '127.0.0.1', '--port', String(targetPort), '--strictPort'], {
     BUGLAB_WEB_HOST: '127.0.0.1', BUGLAB_WEB_PORT: String(targetPort), VITE_BUGLAB_API_PROXY: `http://127.0.0.1:${targetApiPort}`,
@@ -175,6 +176,7 @@ test('ReproProof completes BugLab TC1–TC4 through report, plan, approval, brow
     APP_ENV: 'development', PORT: String(apiPort), CORS_ORIGIN: webBase,
     ALLOW_INSECURE_LOCAL_TARGETS: 'true', ALLOWED_TARGET_ORIGINS: targetBase,
     ALLOWED_RESOURCE_ORIGINS: targetBase, BUGLAB_BASE_URL: targetBase,
+    BUGLAB_API_BASE_URL: targetBase,
     VERIFICATION_RESET_URL: `${targetBase}/api/sandbox/reset`, VERIFICATION_RESET_TOKEN: resetToken,
     PLANNER_MODE: 'mock', RUN_ARTIFACTS_DIR: evidenceRoot,
   })

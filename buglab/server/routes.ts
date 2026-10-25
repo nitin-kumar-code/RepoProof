@@ -27,21 +27,9 @@ interface DeletionApproval {
   planVersion: number
   planHash: string
   targetDigest: string
+  approver: string
   expiresAt: number
   approvedAt: string
-}
-
-function localRequest(request: Request): boolean {
-  const address = request.socket.remoteAddress?.replace(/^::ffff:/, '')
-  return address === '127.0.0.1' || address === '::1'
-}
-
-function loopbackOnly(request: Request, response: Response, next: NextFunction): void {
-  if (!localRequest(request)) {
-    response.status(403).json({ error: 'loopback_only', message: 'BugLab is restricted to local requests.' })
-    return
-  }
-  next()
 }
 
 function digestRecords(records: SandboxRecord[], version: number): string {
@@ -86,6 +74,8 @@ function configuredUiOrigins(values: string[]): Set<string> {
 export interface BugLabAppOptions {
   resetToken?: string
   allowedUiOrigins?: string[]
+  approvalUsername?: string
+  approvalPassword?: string
 }
 
 export function createBugLabApp(
@@ -96,11 +86,50 @@ export function createBugLabApp(
   const app = express()
   const approvals = new Map<string, DeletionApproval>()
   const resetToken = options.resetToken ?? process.env.BUGLAB_RESET_TOKEN
+  const approvalUsername = options.approvalUsername ?? process.env.BUGLAB_APPROVAL_USERNAME
+  const approvalPassword = options.approvalPassword ?? process.env.BUGLAB_APPROVAL_PASSWORD
   const resetTokenConfigured = Boolean(resetToken && resetToken.length >= 32 && resetToken !== RESET_TOKEN_PLACEHOLDER)
   const allowedUiOrigins = configuredUiOrigins(options.allowedUiOrigins ?? (process.env.BUGLAB_UI_ORIGINS || 'http://127.0.0.1:4173,http://localhost:4173').split(',').map(origin => origin.trim()).filter(Boolean))
   app.disable('x-powered-by')
   app.use(express.json({ limit: '16kb', strict: true }))
-  app.use('/api', loopbackOnly)
+  app.use('/api', (request, response, next) => {
+    const origin = request.header('origin')
+    if (origin && allowedUiOrigins.has(origin)) {
+      response.setHeader('Access-Control-Allow-Origin', origin)
+      response.setHeader('Vary', 'Origin')
+      response.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+      response.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+    }
+    if (request.method === 'OPTIONS') {
+      response.status(origin && allowedUiOrigins.has(origin) ? 204 : 403).end()
+      return
+    }
+    next()
+  })
+
+  function verifiedApprover(request: Request): string | undefined {
+    const header = request.header('authorization') ?? ''
+    if (!approvalUsername || !approvalPassword || !header.startsWith('Basic ')) return undefined
+    let supplied: string
+    try { supplied = Buffer.from(header.slice(6), 'base64').toString('utf8') } catch { return undefined }
+    const separator = supplied.indexOf(':')
+    if (separator < 0) return undefined
+    const username = supplied.slice(0, separator)
+    const password = supplied.slice(separator + 1)
+    return constantTimeEqual(username, approvalUsername) && constantTimeEqual(password, approvalPassword)
+      ? approvalUsername
+      : undefined
+  }
+
+  function requireApprover(request: Request, response: Response): string | undefined {
+    const approver = verifiedApprover(request)
+    if (!approver) {
+      response.setHeader('WWW-Authenticate', 'Basic realm="BugLab destructive approval", charset="UTF-8"')
+      response.status(401).json({ error: 'approval_credentials_required' })
+      return undefined
+    }
+    return approver
+  }
 
   app.get('/health', (_request, response) => response.json({ status: 'ok', app: 'BugLab' }))
 
@@ -157,6 +186,8 @@ export function createBugLabApp(
   })
 
   app.post('/api/sandbox/deletion-approvals', (request, response) => {
+    const approver = requireApprover(request, response)
+    if (!approver) return
     const origin = request.header('origin')
     const fetchSite = request.header('sec-fetch-site')
     if (!origin || !allowedUiOrigins.has(origin) || (fetchSite && fetchSite !== 'same-origin')) {
@@ -197,14 +228,17 @@ export function createBugLabApp(
       planVersion: store.stateVersion,
       planHash,
       targetDigest,
+      approver,
       expiresAt: now() + 5 * 60_000,
       approvedAt: new Date(now()).toISOString(),
     }
     approvals.set(approval.id, approval)
-    response.status(201).json({ approvalId: approval.id, action: approval.action, recordIds: ids, planVersion: approval.planVersion, planHash: approval.planHash, approvedAt: approval.approvedAt, expiresAt: new Date(approval.expiresAt).toISOString() })
+    response.status(201).json({ approvalId: approval.id, action: approval.action, approver: approval.approver, recordIds: ids, planVersion: approval.planVersion, planHash: approval.planHash, approvedAt: approval.approvedAt, expiresAt: new Date(approval.expiresAt).toISOString() })
   })
 
   app.post('/api/sandbox/records/delete', (request, response) => {
+    const approver = requireApprover(request, response)
+    if (!approver) return
     const origin = request.header('origin')
     const fetchSite = request.header('sec-fetch-site')
     if (!origin || !allowedUiOrigins.has(origin) || (fetchSite && fetchSite !== 'same-origin')) {

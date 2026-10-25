@@ -44,9 +44,11 @@ BUGLAB_WEB_HOST=0.0.0.0
 BUGLAB_RESET_TOKEN=<same-random-token-as-root>
 BUGLAB_UI_ORIGINS=http://host.docker.internal:4173,http://localhost:4173,http://127.0.0.1:4173
 VITE_BUGLAB_API_PROXY=http://127.0.0.1:4317
+BUGLAB_APPROVAL_USERNAME=<same-as-ReproProof-APPROVAL_USERNAME>
+BUGLAB_APPROVAL_PASSWORD=<same-as-ReproProof-APPROVAL_PASSWORD>
 ```
 
-The approval username/password are genuinely required by ReproProof's approval endpoint. They are operator-created synthetic demo credentials, not published defaults. Do not commit either `.env`, expose the Supabase service key in the browser, or use these development HTTP settings in production.
+The approval username/password are verified by both ReproProof's plan approval endpoint and BugLab's destructive-action endpoints. BugLab requires them for exact-record deletion approvals; its public Render service fails to start without them. They are operator-created synthetic demo credentials, not published defaults. Do not commit either `.env`, expose the Supabase service key in the browser, or use these development HTTP settings in production.
 
 ## Start the complete local demo
 
@@ -89,11 +91,9 @@ curl http://localhost:4000/health
 | **TC3** | Open `/sandbox`; select `sandbox-order-001`; attempt unapproved delete (must be denied); then approve the exact disposable record and execute. | Only the approved synthetic record is deleted. Rejected/expired/stale/replayed or modified approval must fail. Reset restores all three seeded records. |
 | **TC4** | Open `/scenarios/TC4`; load the synthetic token fixture; inspect sanitized logs and masked screenshot. | Token-like text is redacted from text evidence. Screenshot masking is applied. ReproProof video capture is disabled because frame-level redaction is unavailable. |
 
-<<<<<<< HEAD
 TC3's destructive actions remain constrained to the configured BugLab origin and `/sandbox` route, with a second approval at BugLab bound to exact action, record IDs, state version, and plan hash. TC4 uses only its synthetic fixture. ReproProof masks the `[data-sensitive="true"]` element in screenshots and sanitizes text evidence. The approved synthetic TC1 scenario may record video, but those recordings stay local and restricted because reliable frame-level redaction is unavailable; TC2–TC4 remain video-free.
-=======
+
 Reset manually from BugLab's Sandbox screen or call its same-origin UI reset:
->>>>>>> cb06554f291a62c9ebd455e57ec3b9ae815edf8a
 
 ```bash
 curl -X POST http://127.0.0.1:4317/api/sandbox/ui-reset \

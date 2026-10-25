@@ -53,6 +53,10 @@ function executionStages(run: RunRecord): Stage[] {
 
 export default function LiveExecution() {
   const { id = '' } = useParams()
+  return <LiveExecutionRun key={id} id={id} />
+}
+
+function LiveExecutionRun({ id }: { id: string }) {
   const [run, setRun] = useState<RunRecord | null>(null)
   const [error, setError] = useState('')
   const [refreshKey, setRefreshKey] = useState(0)
@@ -61,8 +65,6 @@ export default function LiveExecution() {
     const controller = new AbortController()
     let timer: number | undefined
     let failures = 0
-    setRun(null)
-    setError('')
     const poll = async () => {
       if (document.visibilityState === 'hidden') {
         timer = window.setTimeout(() => void poll(), 5000)

@@ -2,11 +2,12 @@ import { useEffect, useState } from 'react'
 import { product, syntheticToken, type CartState, type SandboxRecord } from '../shared/data.js'
 import { scenarios } from '../shared/scenarios.js'
 
-type DeletionApproval = { approvalId: string; action: 'delete_records'; recordIds: string[]; planVersion: number; planHash: string; approvedAt: string; expiresAt: string }
+type DeletionApproval = { approvalId: string; action: 'delete_records'; approver: string; recordIds: string[]; planVersion: number; planHash: string; approvedAt: string; expiresAt: string }
 type View = 'home' | 'product' | 'cart' | 'profile' | 'sandbox' | 'scenarios' | 'scenario'
+const apiBaseUrl = (import.meta.env.VITE_BUGLAB_API_BASE_URL || '').replace(/\/$/, '')
 
 async function api<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(`/api${path}`, {
+  const response = await fetch(`${apiBaseUrl}/api${path}`, {
     ...init,
     headers: { ...(init?.body ? { 'Content-Type': 'application/json' } : {}), ...init?.headers },
   })
@@ -17,6 +18,13 @@ async function api<T>(path: string, init?: RequestInit): Promise<T> {
 
 function money(cents: number): string {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(cents / 100)
+}
+
+function basicAuthorization(username: string, password: string): string {
+  const bytes = new TextEncoder().encode(`${username}:${password}`)
+  let binary = ''
+  for (const byte of bytes) binary += String.fromCharCode(byte)
+  return `Basic ${btoa(binary)}`
 }
 
 function currentView(): { view: View; scenarioId?: string } {
@@ -40,6 +48,8 @@ export function BugLab() {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [phrase, setPhrase] = useState('')
   const [approval, setApproval] = useState<DeletionApproval | null>(null)
+  const [approvalUsername, setApprovalUsername] = useState('')
+  const [approvalPassword, setApprovalPassword] = useState('')
   const [tokenLoaded, setTokenLoaded] = useState(false)
   const [logs, setLogs] = useState<Array<{ type: string; message: string; createdAt: string }>>([])
   const [notice, setNotice] = useState('')
@@ -95,6 +105,7 @@ export function BugLab() {
     try {
       const response = await api<DeletionApproval>('/sandbox/deletion-approvals', {
         method: 'POST',
+        headers: { Authorization: basicAuthorization(approvalUsername, approvalPassword) },
         body: JSON.stringify({ recordIds: selected, confirmation: phrase, planVersion: stateVersion }),
       })
       setApproval(response)
@@ -120,7 +131,7 @@ export function BugLab() {
       setError('Unexpected response: the server accepted a deletion without a valid approval.')
     } catch (cause) {
       const message = cause instanceof Error ? cause.message : 'deletion_approval_required_or_expired'
-      if (message === 'deletion_approval_required_or_expired') {
+      if (message === 'deletion_approval_required_or_expired' || message === 'approval_credentials_required') {
         setNotice('The server rejects an unapproved direct deletion request and the seed record remains.')
         setError('')
       } else setError(message)
@@ -132,6 +143,7 @@ export function BugLab() {
     try {
       const result = await api<{ deletedIds: string[]; stateVersion: number; remainingRecords: SandboxRecord[] }>('/sandbox/records/delete', {
         method: 'POST',
+        headers: { Authorization: basicAuthorization(approvalUsername, approvalPassword) },
         body: JSON.stringify({ approvalId: approval.approvalId, action: approval.action, recordIds: approval.recordIds, planVersion: approval.planVersion, planHash: approval.planHash }),
       })
       setRecords(result.remainingRecords)
@@ -140,6 +152,8 @@ export function BugLab() {
       setApproval(null)
       setDialogOpen(false)
       setPhrase('')
+      setApprovalUsername('')
+      setApprovalPassword('')
       setNotice(`Deleted ${result.deletedIds.length} approved disposable record(s).`)
       await refreshLogs()
     } catch (cause) { setError(cause instanceof Error ? cause.message : 'Approved deletion failed.') }
@@ -223,6 +237,6 @@ export function BugLab() {
 
     <footer><span>BugLab · isolated synthetic test target</span><span>No payment processor · no production data · local only</span></footer>
 
-    {dialogOpen && <div className="dialog-backdrop"><section className="approval-dialog" role="dialog" aria-modal="true" aria-labelledby="delete-title" data-testid="delete-confirmation"><button className="dialog-close" aria-label="Close deletion review" onClick={() => setDialogOpen(false)}>×</button><p className="eyebrow danger-ink">DESTRUCTIVE SANDBOX ACTION</p><h2 id="delete-title">Review records to delete</h2><p>This approval is tied to the exact delete action, selected IDs, and sandbox version {stateVersion}. It expires after five minutes and can be used once.</p><ul>{records.filter(record => selected.includes(record.id)).map(record => <li key={record.id}><strong>{record.name}</strong><code>{record.id}</code></li>)}</ul><label className="field-label" htmlFor="delete-approval-phrase">Type <code>{`DELETE ${selected.length} SANDBOX RECORD${selected.length === 1 ? '' : 'S'}`}</code> to approve</label><input id="delete-approval-phrase" data-testid="delete-approval-phrase" value={phrase} onChange={event => setPhrase(event.target.value)} autoComplete="off" />{approval && <p className="approval-receipt" role="status">Approved exact action and version {approval.planVersion} · {new Date(approval.approvedAt).toLocaleTimeString()} · expires {new Date(approval.expiresAt).toLocaleTimeString()}</p>}<div className="dialog-actions"><button className="button secondary" onClick={() => setDialogOpen(false)}>Cancel</button>{!approval ? <button className="button danger" data-testid="approve-deletion" onClick={() => void requestDeletionApproval()} disabled={!selected.length}>Approve exact record set</button> : <button className="button danger" data-testid="delete-approved-records" onClick={() => void executeApprovedDeletion()}>Execute approved deletion</button>}</div></section></div>}
+    {dialogOpen && <div className="dialog-backdrop"><section className="approval-dialog" role="dialog" aria-modal="true" aria-labelledby="delete-title" data-testid="delete-confirmation"><button className="dialog-close" aria-label="Close deletion review" onClick={() => { setDialogOpen(false); setApprovalUsername(''); setApprovalPassword('') }}>×</button><p className="eyebrow danger-ink">DESTRUCTIVE SANDBOX ACTION</p><h2 id="delete-title">Review records to delete</h2><p>This approval is tied to the exact delete action, selected IDs, and sandbox version {stateVersion}. It expires after five minutes and can be used once.</p><ul>{records.filter(record => selected.includes(record.id)).map(record => <li key={record.id}><strong>{record.name}</strong><code>{record.id}</code></li>)}</ul><label className="field-label" htmlFor="delete-approval-phrase">Type <code>{`DELETE ${selected.length} SANDBOX RECORD${selected.length === 1 ? '' : 'S'}`}</code> to approve</label><input id="delete-approval-phrase" data-testid="delete-approval-phrase" value={phrase} onChange={event => setPhrase(event.target.value)} autoComplete="off" />{!approval && <><label className="field-label" htmlFor="delete-approver">Approver username</label><input id="delete-approver" data-testid="delete-approver" value={approvalUsername} onChange={event => setApprovalUsername(event.target.value)} autoComplete="username" /><label className="field-label" htmlFor="delete-approver-password">Approver password</label><input id="delete-approver-password" data-testid="delete-approver-password" type="password" value={approvalPassword} onChange={event => setApprovalPassword(event.target.value)} autoComplete="current-password" /></>}{approval && <p className="approval-receipt" role="status">Approved by {approval.approver} for exact action and version {approval.planVersion} · {new Date(approval.approvedAt).toLocaleTimeString()} · expires {new Date(approval.expiresAt).toLocaleTimeString()}</p>}<div className="dialog-actions"><button className="button secondary" onClick={() => { setDialogOpen(false); setApprovalUsername(''); setApprovalPassword('') }}>Cancel</button>{!approval ? <button className="button danger" data-testid="approve-deletion" onClick={() => void requestDeletionApproval()} disabled={!selected.length || !approvalUsername || !approvalPassword}>Approve exact record set</button> : <button className="button danger" data-testid="delete-approved-records" onClick={() => void executeApprovedDeletion()}>Execute approved deletion</button>}</div></section></div>}
   </div>
 }
