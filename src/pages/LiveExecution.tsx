@@ -61,6 +61,8 @@ export default function LiveExecution() {
     const controller = new AbortController()
     let timer: number | undefined
     let failures = 0
+    setRun(null)
+    setError('')
     const poll = async () => {
       if (document.visibilityState === 'hidden') {
         timer = window.setTimeout(() => void poll(), 5000)
@@ -75,7 +77,12 @@ export default function LiveExecution() {
         if (active(latest)) timer = window.setTimeout(() => void poll(), 1500)
       } catch (cause) {
         if (controller.signal.aborted) return
-        setError(cause instanceof Error ? cause.message : 'Could not load execution status.')
+        const message = cause instanceof Error ? cause.message : 'Could not load execution status.'
+        if (/run_not_found|requested report, run, or evidence was not found/i.test(message)) {
+          setError('This ID is not a run saved by the connected API. Open Test Runs and select a current run.')
+          return
+        }
+        setError(message)
         if (failures < 5) {
           const delay = Math.min(1000 * 2 ** failures, 8000)
           failures += 1
@@ -91,6 +98,16 @@ export default function LiveExecution() {
   const files = run?.execution?.evidenceRecords ?? []
   const events = run?.execution?.telemetry ?? []
   const stages = run ? executionStages(run) : []
+
+  if (error && !run) {
+    const notFound = /run_not_found|requested report, run, or evidence was not found/i.test(error)
+    const message = notFound
+      ? 'This ID is not a run saved by the connected API. Open Test Runs and select a current run.'
+      : /failed to fetch|networkerror|fetch failed/i.test(error)
+        ? 'The ReproProof API could not be reached. Start the API service and try again.'
+        : error
+    return <main className="page execution-reference-page"><section className="run-load-state run-load-state-error" role="alert"><div className="run-load-icon"><CircleAlert size={22}/></div><div className="run-load-copy"><span className="eyebrow">EXECUTION DETAILS UNAVAILABLE</span><h1>We couldn’t load this run</h1><p>{message}</p><div className="run-load-meta"><span>Run ID</span><code>{id || 'Not provided'}</code></div><Link className="secondary-button" to="/runs"><ArrowRight size={15}/>Open Test Runs</Link><button className="primary-button" onClick={() => setRefreshKey(value => value + 1)}><RefreshCw size={15}/>Try again</button></div></section></main>
+  }
 
   return <main className="page execution-reference-page">
     <div className="execution-header-card"><div><div className="execution-breadcrumb"><Link to={`/runs/${id}`}>{id}</Link> / Live Execution</div><h1>Live Execution Monitor</h1><p>{run?.plan.summary ?? 'Run status and sanitized execution telemetry from the ReproProof API.'}</p><div className="execution-tags"><span>● {run?.status.replaceAll('_', ' ').toUpperCase() ?? 'LOADING'}</span><span>{run?.browser ?? 'Chromium'}</span><span>{run?.progress?.message ?? result}</span></div></div><div className="execution-header-actions"><button onClick={() => setRefreshKey(value => value + 1)}><RefreshCw size={14}/>Refresh</button><Link to={`/evidence/${encodeURIComponent(id)}`}><Camera size={15}/>View Evidence Passport</Link></div></div>

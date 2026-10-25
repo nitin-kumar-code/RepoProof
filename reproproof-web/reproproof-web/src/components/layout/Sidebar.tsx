@@ -1,4 +1,4 @@
-import { Activity, Bug, CheckCircle2, ClipboardCheck, LayoutDashboard, SearchCheck, Settings2, ShieldCheck, TerminalSquare } from 'lucide-react'
+import { Activity, Bug, ClipboardCheck, LayoutDashboard, SearchCheck, Settings2 } from 'lucide-react'
 import { NavLink } from 'react-router-dom'
 
 export default function Sidebar() {
@@ -8,9 +8,6 @@ export default function Sidebar() {
       <NavLink to="/" end><LayoutDashboard size={19}/>Overview / Dashboard</NavLink>
       <NavLink to="/investigations"><SearchCheck size={19}/>Investigations / Bug Reports</NavLink>
       <NavLink to="/runs"><Activity size={19}/>Test Runs</NavLink>
-      <NavLink to="/runs/RUN-8822"><CheckCircle2 size={19}/>Run Details &amp; Plan Approval</NavLink>
-      <NavLink to="/runs/RUN-8821/execution"><TerminalSquare size={19}/>Live Execution</NavLink>
-      <NavLink to="/evidence/RUN-8821"><ShieldCheck size={19}/>Evidence Passports</NavLink>
       <NavLink to="/qa-test-cases"><ClipboardCheck size={19}/>QA Test Cases</NavLink>
       <NavLink to="/settings"><Settings2 size={19}/>Settings &amp; Diagnostics</NavLink>
     </nav>

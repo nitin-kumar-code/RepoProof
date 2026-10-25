@@ -1,7 +1,63 @@
-import { useState } from 'react'
-import { Camera, Circle, CircleHelp, LockKeyhole, PauseCircle, Play, RefreshCw, ShieldAlert, XCircle } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { ArrowLeft, Camera, CircleAlert, RefreshCw } from 'lucide-react'
 import { Link, useParams } from 'react-router-dom'
+import { getRun } from '../api/runs'
+import type { RunRecord } from '../types/run'
 
-const stages=['Plan received','Approval state','Attempt 1','Evidence','Environment reset','Attempt 2','Diff match','Verdict']
-const logTabs=['All Logs','Errors','Network Requests','Redacted PII']
-export default function LiveExecution(){const {id='RUN-8821'}=useParams();const [tab,setTab]=useState('All Logs');return <main className="page execution-reference-page"><div className="execution-header-card"><div><div className="execution-breadcrumb"><Link to={`/runs/${id}`}>{id} / BUG-1042</Link> / <b>Live Execution</b></div><h1>Live Execution Monitor <span className="vm-label">RUNNER UNAVAILABLE</span></h1><p>Execution monitor layout preview. No live browser session or recorded evidence is connected.</p><div className="execution-tags"><span>● NOT RUN</span><span>RECORDED FIXTURE VIEW</span><span>Target: unavailable</span></div></div><div className="execution-header-actions"><button disabled><PauseCircle size={15}/>Pause</button><button disabled><XCircle size={15}/>Cancel Run</button><Link to={`/evidence/${id}`}><Camera size={15}/>View Evidence Passport</Link></div></div><section className="execution-stepper">{stages.map((s,i)=><div key={s} className={i===0?'step-current':''}><span>{i===0?<CircleHelp size={14}/>:<Circle size={14}/>}</span><b>{i+1}. {s}</b><small>{i===0?'Waiting for runner':'Not available'}</small></div>)}</section><div className="execution-reference-grid"><div className="execution-primary-column"><section className="browser-monitor-card"><div className="browser-monitor-top"><div><i/><i/><i/><b>Browser probe · mock viewport</b></div><button disabled aria-label="Refresh preview"><RefreshCw size={14}/></button></div><div className="browser-capture-label">RECORDED FIXTURE PREVIEW · NO SCREENSHOT CAPTURED</div><div className="browser-viewport"><div className="preview-empty"><Play size={22}/><b>Browser session not connected</b><small>A real browser view will appear when an execution service is available.</small></div></div><div className="browser-monitor-foot"><span><Camera size={13}/> No capture time</span><span>Attempt data unavailable</span><button disabled>Fullscreen</button></div></section><section className="execution-logs-card"><div className="execution-log-tabs">{logTabs.map(t=><button key={t} onClick={()=>setTab(t)} className={tab===t?'active':''}>{t}{t==='All Logs'?' 0':''}</button>)}<label>Filter stream <input aria-label="Filter log stream" placeholder="Filter…"/></label><span>No live stream</span></div><div className="execution-log-empty"><LockKeyhole size={18}/><b>{tab} are unavailable</b><p>The backend does not return browser logs or network events for runs.</p><code>Logs will appear here only when a supported execution source is connected.</code></div><div className="execution-log-foot"><span>Log source: unavailable</span><button disabled>Export log</button></div></section></div><aside className="execution-side-column"><section className="execution-side-card"><div className="execution-side-heading"><h2>Dual-Attempt Comparison</h2><span>NO RUN DATA</span></div><p>Attempt results need to come from the execution service.</p>{[1,2].map(i=><div className="attempt-preview" key={i}><div><b>Attempt {i}</b><span>Not executed</span></div><small>Status: unavailable</small><small>Failure fingerprint: unavailable</small></div>)}</section><section className="execution-side-card"><div className="execution-side-heading"><h2>Attempt Timing</h2><span>NO TELEMETRY</span></div><p>There is no timing trace to display.</p><div className="timing-empty"><CircleHelp size={17}/> Timing data not returned by API</div></section><section className="execution-side-card"><div className="execution-side-heading"><h2>Containment Status</h2><span className="unknown-pill">UNKNOWN</span></div><div className="containment-grid"><div><b>Environment</b><strong>Not reported</strong></div><div><b>Network egress</b><strong>Not verified</strong></div><div><b>Memory / CPU</b><strong>Unavailable</strong></div><div><b>Sandbox policy</b><strong><ShieldAlert size={12}/> Unknown</strong></div></div><p className="execution-safety-note">No containment guarantees are claimed for this fixture.</p></section></aside></div></main>}
+export default function LiveExecution() {
+  const { id = '' } = useParams()
+  const [run, setRun] = useState<RunRecord | null>(null)
+  const [error, setError] = useState('')
+  const [refreshKey, setRefreshKey] = useState(0)
+
+  useEffect(() => {
+    const controller = new AbortController()
+    setRun(null)
+    setError('')
+    void getRun(id, controller.signal).then(result => {
+      if (!controller.signal.aborted) setRun(result)
+    }).catch(cause => {
+      if (controller.signal.aborted) return
+      const message = cause instanceof Error ? cause.message : 'Could not load execution status.'
+      setError(/run_not_found|requested report, run, or evidence was not found/i.test(message)
+        ? 'This ID is a demo fixture and is not a run saved by the connected API. Open Test Runs and choose a current run.'
+        : /failed to fetch|networkerror|fetch failed/i.test(message)
+          ? 'The ReproProof API could not be reached. Start the API service and try again.'
+          : message)
+    })
+    return () => controller.abort()
+  }, [id, refreshKey])
+
+  if (error) return <main className="page execution-reference-page">
+    <section className="run-load-state run-load-state-error" role="alert">
+      <div className="run-load-icon"><CircleAlert size={22}/></div>
+      <div className="run-load-copy">
+        <span className="eyebrow">EXECUTION DETAILS UNAVAILABLE</span>
+        <h1>We couldn’t load this run</h1>
+        <p>{error}</p>
+        <div className="run-load-meta"><span>Run ID</span><code>{id || 'Not provided'}</code></div>
+        <Link className="secondary-button" to="/runs"><ArrowLeft size={15}/>Open Test Runs</Link>
+        <button className="primary-button" type="button" onClick={() => setRefreshKey(value => value + 1)}><RefreshCw size={15}/>Try again</button>
+      </div>
+    </section>
+  </main>
+
+  if (!run) return <main className="page execution-reference-page"><section className="run-load-state" role="status"><div className="run-load-copy"><span className="eyebrow">LIVE EXECUTION</span><h1>Loading run…</h1><p>Fetching the persisted run record from the ReproProof API.</p></div></section></main>
+
+  const verdict = run.status === 'failed' ? 'Infrastructure failure' : run.execution?.result.replaceAll('_', ' ') ?? 'No verdict yet'
+  const artifacts = run.execution?.evidenceRecords ?? []
+
+  return <main className="page execution-reference-page">
+    <div className="execution-header-card">
+      <div><div className="execution-breadcrumb"><Link to={`/runs/${encodeURIComponent(run.id)}`}>{run.id}</Link> / Live Execution</div><h1>Live Execution Monitor</h1><p>{run.plan.summary}</p><div className="execution-tags"><span>● {run.status.replaceAll('_', ' ').toUpperCase()}</span><span>{run.browser}</span><span>{verdict}</span></div></div>
+      <div className="execution-header-actions"><button onClick={() => setRefreshKey(value => value + 1)}><RefreshCw size={14}/>Refresh</button><Link to={`/evidence/${encodeURIComponent(run.id)}`}><Camera size={15}/>View Evidence Passport</Link></div>
+    </div>
+    {run.execution?.error && <div className="error-banner" role="alert"><CircleAlert size={15}/>{run.execution.error}</div>}
+    <section className="execution-reference-grid">
+      <div className="execution-primary-column">
+        <section className="browser-monitor-card"><div className="browser-monitor-top"><div><i/><i/><i/><b>Approved plan</b></div><span>{run.plan.steps.length} actions</span></div><ol className="execution-plan-list">{run.plan.steps.map(step=><li key={step.stepOrder}><b>{step.stepOrder}. {step.instruction}</b><small>{step.clarification ?? step.rationale}</small></li>)}</ol><div className="browser-monitor-foot"><span>Run state: {run.status.replaceAll('_', ' ')}</span><span>Verdict: {verdict}</span></div></section>
+      </div>
+      <aside className="execution-side-column"><section className="execution-side-card"><div className="execution-side-heading"><h2>Evidence artifacts</h2><span>{artifacts.length}</span></div>{artifacts.map(file=><article className="attempt-preview" key={file.id}><div><b>{file.type}</b><span>Attempt {file.attemptNumber}</span></div><Link to={`/evidence/${encodeURIComponent(run.id)}`}>{file.storageKey.split('/').pop()}</Link></article>)}{artifacts.length === 0 && <p>No evidence files have been saved for this run.</p>}<Link to={`/evidence/${encodeURIComponent(run.id)}`}>Open evidence passport</Link></section><section className="execution-side-card"><div className="execution-side-heading"><h2>Run state</h2><span>{run.status}</span></div><p>{run.execution?.error ?? 'Status is read from the persisted API run record.'}</p><small>Updated {new Date(run.updatedAt).toLocaleString()}</small></section></aside>
+    </section>
+  </main>
+}

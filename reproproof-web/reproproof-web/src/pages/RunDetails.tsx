@@ -19,7 +19,9 @@ export default function RunDetails() {
     }).catch(cause => {
       if (controller.signal.aborted) return
       const message = cause instanceof Error ? cause.message : 'Could not load this run.'
-      const friendlyMessage = /failed to fetch|networkerror|fetch failed/i.test(message)
+      const friendlyMessage = /run_not_found|requested report, run, or evidence was not found/i.test(message)
+        ? 'This ID is a demo fixture and is not a run saved by the connected API. Open Test Runs and choose a current run.'
+        : /failed to fetch|networkerror|fetch failed/i.test(message)
         ? 'The ReproProof API could not be reached. Start the API service and try again.'
         : message
       setState({ id, run: null, error: friendlyMessage })
@@ -42,6 +44,7 @@ export default function RunDetails() {
         <h1>We couldn’t load this run</h1>
         <p>{error}</p>
         <div className="run-load-meta"><span>Run ID</span><code>{id || 'Not provided'}</code></div>
+        <Link className="secondary-button" to="/runs">Open Test Runs</Link>
         <button className="primary-button" type="button" onClick={() => setRetryCount(count => count + 1)}>
           <RotateCw size={15} />Try again
         </button>
